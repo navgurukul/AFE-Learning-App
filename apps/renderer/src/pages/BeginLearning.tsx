@@ -77,7 +77,7 @@ function BeginLearning() {
 
             <div style={{ textAlign: 'center', marginTop: 'var(--spacing-xl)' }}>
                 <button className="btn btn-primary btn-large" onClick={handleCreateNew}>
-                    ✨ Create New Student
+                    ✨ Begin the Journey!
                 </button>
             </div>
         </div>
