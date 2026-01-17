@@ -1,0 +1,22 @@
+{
+    "name": "@backend/content-engine",
+    "type": "module",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Content manifest loader and validator",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": "./dist/index.js"
+    },
+    "scripts": {
+        "typecheck": "tsc --noEmit",
+        "build": "tsc"
+    },
+    "dependencies": {
+        "zod": "^3.22.4"
+    },
+    "devDependencies": {
+        "typescript": "^5.3.3"
+    }
+}

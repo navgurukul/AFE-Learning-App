@@ -1,0 +1,144 @@
+// Type-safe IPC client wrapper for renderer
+// Uses window.electronAPI from preload (NO direct backend imports)
+
+import { IPC_CHANNELS, type IPCContract } from '@afe/shared';
+
+class IPCClient {
+    private async invoke<K extends keyof IPCContract>(
+        channel: K,
+        data: IPCContract[K]['request']
+    ): Promise<IPCContract[K]['response']> {
+        if (!window.electronAPI) {
+            throw new Error('Electron API not available');
+        }
+
+        return await window.electronAPI.invoke(channel, data);
+    }
+
+    // Students
+    async createStudent(name: string, avatar: string) {
+        return await this.invoke(IPC_CHANNELS.STUDENT_CREATE, { name, avatar });
+    }
+
+    async getAllStudents() {
+        return await this.invoke(IPC_CHANNELS.STUDENT_GET_ALL, undefined);
+    }
+
+    async getStudentById(studentId: string) {
+        return await this.invoke(IPC_CHANNELS.STUDENT_GET_BY_ID, { studentId });
+    }
+
+    async updateStudentLastActive(studentId: string) {
+        return await this.invoke(IPC_CHANNELS.STUDENT_UPDATE_LAST_ACTIVE, { studentId });
+    }
+
+    // Content
+    async getModules() {
+        return await this.invoke(IPC_CHANNELS.CONTENT_GET_MODULES, undefined);
+    }
+
+    async getModuleById(moduleId: string) {
+        return await this.invoke(IPC_CHANNELS.CONTENT_GET_MODULE_BY_ID, { moduleId });
+    }
+
+    async getLessonById(lessonId: string) {
+        return await this.invoke(IPC_CHANNELS.CONTENT_GET_LESSON_BY_ID, { lessonId });
+    }
+
+    // Progress
+    async updateVideoProgress(
+        studentId: string,
+        lessonId: string,
+        watchedPercentage: number,
+        watchDuration: number
+    ) {
+        return await this.invoke(IPC_CHANNELS.PROGRESS_UPDATE_VIDEO, {
+            studentId,
+            lessonId,
+            watchedPercentage,
+            watchDuration,
+        });
+    }
+
+    async getVideoProgress(studentId: string, lessonId: string) {
+        return await this.invoke(IPC_CHANNELS.PROGRESS_GET_VIDEO, { studentId, lessonId });
+    }
+
+    async getAllProgressForStudent(studentId: string) {
+        return await this.invoke(IPC_CHANNELS.PROGRESS_GET_ALL_FOR_STUDENT, { studentId });
+    }
+
+    // Quizzes
+    async submitQuizAttempt(
+        studentId: string,
+        lessonId: string,
+        answers: Array<{ questionId: string; selectedAnswerIndex: number }>,
+        timeTaken: number
+    ) {
+        return await this.invoke(IPC_CHANNELS.QUIZ_SUBMIT_ATTEMPT, {
+            studentId,
+            lessonId,
+            answers,
+            timeTaken,
+        });
+    }
+
+    async getQuizAttempts(studentId: string, lessonId: string) {
+        return await this.invoke(IPC_CHANNELS.QUIZ_GET_ATTEMPTS, { studentId, lessonId });
+    }
+
+    async getBestQuizScore(studentId: string, lessonId: string) {
+        return await this.invoke(IPC_CHANNELS.QUIZ_GET_BEST_SCORE, { studentId, lessonId });
+    }
+
+    // Analytics
+    async trackEvent(studentId: string, eventType: string, metadata: Record<string, unknown>) {
+        return await this.invoke(IPC_CHANNELS.ANALYTICS_TRACK_EVENT, {
+            studentId,
+            eventType,
+            metadata,
+        });
+    }
+
+    async getAnalyticsSummary(studentId: string) {
+        return await this.invoke(IPC_CHANNELS.ANALYTICS_GET_SUMMARY, { studentId });
+    }
+
+    // AI Tutor
+    async sendAIMessage(studentId: string, message: string, sessionId: string) {
+        return await this.invoke(IPC_CHANNELS.AI_SEND_MESSAGE, {
+            studentId,
+            message,
+            sessionId,
+        });
+    }
+
+    async getAISessions(studentId: string) {
+        return await this.invoke(IPC_CHANNELS.AI_SESSION_GET_ALL, { studentId });
+    }
+
+    async createAISession(studentId: string, title: string, mode: 'tutor' | 'chat', moduleId?: string) {
+        return await this.invoke(IPC_CHANNELS.AI_SESSION_CREATE, { studentId, title, mode, moduleId });
+    }
+
+    async deleteAISession(sessionId: string) {
+        return await this.invoke(IPC_CHANNELS.AI_SESSION_DELETE, { sessionId });
+    }
+
+    async getAISessionHistory(sessionId: string) {
+        return await this.invoke(IPC_CHANNELS.AI_GET_SESSION_HISTORY, { sessionId });
+    }
+
+    async clearAIHistory(studentId: string) {
+        return await this.invoke(IPC_CHANNELS.AI_CLEAR_HISTORY, { studentId });
+    }
+
+    onAIStreamChunk(callback: (chunk: string) => void) {
+        if (!window.electronAPI?.on) return () => { };
+        return window.electronAPI.on(IPC_CHANNELS.AI_STREAM_CHUNK, (data: { chunk: string }) => {
+            callback(data.chunk);
+        });
+    }
+}
+
+export const ipc = new IPCClient();

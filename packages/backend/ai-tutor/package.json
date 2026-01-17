@@ -1,0 +1,26 @@
+{
+    "name": "@backend/ai-tutor",
+    "type": "module",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Ollama integration for offline AI tutor",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": "./dist/index.js"
+    },
+    "scripts": {
+        "typecheck": "tsc --noEmit",
+        "build": "tsc"
+    },
+    "dependencies": {
+        "ollama": "^0.5.0",
+        "drizzle-orm": "^0.29.3",
+        "@backend/db": "workspace:*",
+        "@backend/content-engine": "workspace:*",
+        "@afe/shared": "workspace:*"
+    },
+    "devDependencies": {
+        "typescript": "^5.3.3"
+    }
+}

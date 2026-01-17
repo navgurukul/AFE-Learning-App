@@ -1,0 +1,151 @@
+{
+    "version": "1.0.0",
+    "generatedAt": "2026-01-14T09:00:00Z",
+    "modules": [
+        {
+            "id": "550e8400-e29b-41d4-a716-446655440001",
+            "contentId": "550e8400-e29b-41d4-a716-446655440001",
+            "version": "1.0.0",
+            "hash": "abc123def456",
+            "title": "Introduction to Programming",
+            "description": "Learn the basics of programming with Python. Perfect for beginners!",
+            "thumbnailUrl": "",
+            "lessons": [
+                {
+                    "id": "550e8400-e29b-41d4-a716-446655440011",
+                    "contentId": "550e8400-e29b-41d4-a716-446655440011",
+                    "version": "1.0.0",
+                    "hash": "lesson1hash",
+                    "moduleId": "550e8400-e29b-41d4-a716-446655440001",
+                    "title": "What is Programming?",
+                    "description": "Understand what programming is and why it's important to learn.",
+                    "type": "video",
+                    "videoUrl": "assets/videos/python-video.mp4",
+                    "order": 1
+                },
+                {
+                    "id": "550e8400-e29b-41d4-a716-446655440012",
+                    "contentId": "550e8400-e29b-41d4-a716-446655440012",
+                    "version": "1.0.0",
+                    "hash": "lesson2hash",
+                    "moduleId": "550e8400-e29b-41d4-a716-446655440001",
+                    "title": "Variables and Data Types",
+                    "description": "Learn about variables, numbers, strings, and boolean values.",
+                    "type": "reading",
+                    "readingUrl": "assets/readables/Python-Tutorial.pdf",
+                    "order": 2
+                },
+                {
+                    "id": "550e8400-e29b-41d4-a716-446655440013",
+                    "contentId": "550e8400-e29b-41d4-a716-446655440013",
+                    "version": "1.0.0",
+                    "hash": "lesson3hash",
+                    "moduleId": "550e8400-e29b-41d4-a716-446655440001",
+                    "title": "Quiz: Programming Basics",
+                    "description": "Test your knowledge of programming basics.",
+                    "type": "quiz",
+                    "order": 3,
+                    "quizData": {
+                        "passingScore": 70,
+                        "questions": [
+                            {
+                                "id": "550e8400-e29b-41d4-a716-446655440101",
+                                "question": "What is a variable in programming?",
+                                "options": [
+                                    "A container for storing data",
+                                    "A type of loop",
+                                    "A mathematical operation",
+                                    "A function"
+                                ],
+                                "correctAnswerIndex": 0,
+                                "explanation": "A variable is a container that stores data values in a program."
+                            },
+                            {
+                                "id": "550e8400-e29b-41d4-a716-446655440102",
+                                "question": "Which of these is a data type in Python?",
+                                "options": [
+                                    "All of the above",
+                                    "String",
+                                    "Integer",
+                                    "Boolean"
+                                ],
+                                "correctAnswerIndex": 0,
+                                "explanation": "Python supports many data types including strings, integers, and booleans."
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "id": "550e8400-e29b-41d4-a716-446655440002",
+            "contentId": "550e8400-e29b-41d4-a716-446655440002",
+            "version": "1.0.0",
+            "hash": "xyz789ghi012",
+            "title": "Web Development Fundamentals",
+            "description": "Build beautiful websites with HTML, CSS, and JavaScript.",
+            "thumbnailUrl": "",
+            "lessons": [
+                {
+                    "id": "550e8400-e29b-41d4-a716-446655440021",
+                    "contentId": "550e8400-e29b-41d4-a716-446655440021",
+                    "version": "1.0.0",
+                    "hash": "weblesseon1",
+                    "moduleId": "550e8400-e29b-41d4-a716-446655440002",
+                    "title": "Introduction to HTML",
+                    "description": "Learn the structure of web pages with HTML.",
+                    "type": "video",
+                    "videoUrl": "assets/videos/python-video.mp4",
+                    "order": 1
+                },
+                {
+                    "id": "550e8400-e29b-41d4-a716-446655440022",
+                    "contentId": "550e8400-e29b-41d4-a716-446655440022",
+                    "version": "1.0.0",
+                    "hash": "weblesson2",
+                    "moduleId": "550e8400-e29b-41d4-a716-446655440002",
+                    "title": "Styling with CSS",
+                    "description": "Make your websites beautiful with CSS styling.",
+                    "type": "video",
+                    "videoUrl": "assets/videos/python-video.mp4",
+                    "order": 2
+                }
+            ]
+        },
+        {
+            "id": "550e8400-e29b-41d4-a716-446655440003",
+            "contentId": "550e8400-e29b-41d4-a716-446655440003",
+            "version": "1.0.0",
+            "hash": "math123abc",
+            "title": "Mathematics for Programmers",
+            "description": "Essential math concepts every programmer should know.",
+            "thumbnailUrl": "",
+            "lessons": [
+                {
+                    "id": "550e8400-e29b-41d4-a716-446655440031",
+                    "contentId": "550e8400-e29b-41d4-a716-446655440031",
+                    "version": "1.0.0",
+                    "hash": "mathlesson1",
+                    "moduleId": "550e8400-e29b-41d4-a716-446655440003",
+                    "title": "Binary Numbers",
+                    "description": "Understand how computers represent numbers.",
+                    "type": "video",
+                    "videoUrl": "assets/videos/python-video.mp4",
+                    "order": 1
+                },
+                {
+                    "id": "550e8400-e29b-41d4-a716-446655440032",
+                    "contentId": "550e8400-e29b-41d4-a716-446655440032",
+                    "version": "1.0.0",
+                    "hash": "mathlesson2",
+                    "moduleId": "550e8400-e29b-41d4-a716-446655440003",
+                    "title": "Logic and Boolean Algebra",
+                    "description": "Learn about logical operations in programming.",
+                    "type": "reading",
+                    "readingUrl": "assets/readables/Python-Tutorial.pdf",
+                    "order": 2
+                }
+            ]
+        }
+    ]
+}

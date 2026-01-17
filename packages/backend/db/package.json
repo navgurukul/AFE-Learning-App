@@ -1,0 +1,26 @@
+{
+    "name": "@backend/db",
+    "type": "module",
+    "version": "1.0.0",
+    "private": true,
+    "description": "SQLite database layer with Drizzle ORM",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": "./dist/index.js"
+    },
+    "scripts": {
+        "typecheck": "tsc --noEmit",
+        "build": "tsc",
+        "migrate": "drizzle-kit generate:sqlite"
+    },
+    "dependencies": {
+        "better-sqlite3": "^9.2.2",
+        "drizzle-orm": "^0.29.3"
+    },
+    "devDependencies": {
+        "@types/better-sqlite3": "^7.6.8",
+        "drizzle-kit": "^0.20.9",
+        "typescript": "^5.3.3"
+    }
+}

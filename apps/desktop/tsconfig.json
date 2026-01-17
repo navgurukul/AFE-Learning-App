@@ -1,0 +1,31 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "composite": true,
+        "lib": [
+            "ES2022"
+        ]
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "references": [
+        {
+            "path": "../../packages/shared"
+        },
+        {
+            "path": "../../packages/backend/db"
+        },
+        {
+            "path": "../../packages/backend/analytics"
+        },
+        {
+            "path": "../../packages/backend/content-engine"
+        },
+        {
+            "path": "../../packages/backend/ai-tutor"
+        }
+    ]
+}

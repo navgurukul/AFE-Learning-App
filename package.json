@@ -1,0 +1,33 @@
+{
+  "name": "offline-learning-app",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production-grade offline-first student learning application",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "scripts": {
+    "dev": "pnpm --filter desktop dev",
+    "build": "pnpm -r build",
+    "build:installer": "pnpm --filter desktop build:installer",
+    "lint": "eslint . --ext .ts,.tsx",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^4.0.2",
+    "@types/node": "^20.11.5",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "eslint": "^8.56.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "prettier": "^3.2.4",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

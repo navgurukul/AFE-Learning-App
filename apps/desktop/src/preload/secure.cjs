@@ -1,0 +1,63 @@
+const { contextBridge, ipcRenderer } = require('electron');
+
+console.log('🔌 Preload script loading (CommonJS)...');
+
+const VALID_CHANNELS = [
+    // Student operations
+    'student:create',
+    'student:getAll',
+    'student:getById',
+    'student:updateLastActive',
+
+    // Content operations
+    'content:getModules',
+    'content:getModuleById',
+    'content:getLessonById',
+
+    // Progress tracking
+    'progress:updateVideo',
+    'progress:getVideo',
+    'progress:getAllForStudent',
+
+    // Quiz operations
+    'quiz:submitAttempt',
+    'quiz:getAttempts',
+    'quiz:getBestScore',
+
+    // Analytics
+    'analytics:trackEvent',
+    'analytics:getSummary',
+
+    // AI Tutor
+    'ai:sendMessage',
+    'ai:getSessionHistory',
+    'ai:session:getAll',
+    'ai:session:create',
+    'ai:session:rename',
+    'ai:session:delete',
+    'ai:clearHistory',
+    'ai:streamChunk'
+];
+
+contextBridge.exposeInMainWorld('electronAPI', {
+    invoke: async (channel, data) => {
+        if (!VALID_CHANNELS.includes(channel)) {
+            console.error(`❌ Blocked unauthorized IPC call: ${channel}`);
+            throw new Error(`Invalid IPC channel: ${channel}`);
+        }
+        return await ipcRenderer.invoke(channel, data);
+    },
+    on: (channel, callback) => {
+        if (!VALID_CHANNELS.includes(channel)) {
+            console.error(`❌ Blocked unauthorized IPC listener: ${channel}`);
+            return;
+        }
+        // Wrapping ensures we don't leak the event object
+        const subscription = (_event, ...args) => callback(...args);
+        ipcRenderer.on(channel, subscription);
+
+        return () => {
+            ipcRenderer.removeListener(channel, subscription);
+        };
+    }
+});

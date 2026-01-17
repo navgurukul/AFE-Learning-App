@@ -1,0 +1,38 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+dist
+build
+out
+*.tsbuildinfo
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs
+
+# Environment
+.env
+.env.local
+
+# Installer outputs
+*.exe
+*.msi
+release
+
+# Database (local development)
+*.db
+*.db-journal
+*.db-shm
+*.db-wal

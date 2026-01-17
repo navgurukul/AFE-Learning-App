@@ -1,0 +1,23 @@
+{
+    "name": "@backend/analytics",
+    "type": "module",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Local analytics aggregation",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": "./dist/index.js"
+    },
+    "scripts": {
+        "typecheck": "tsc --noEmit",
+        "build": "tsc"
+    },
+    "dependencies": {
+        "drizzle-orm": "^0.29.3",
+        "@backend/db": "workspace:*"
+    },
+    "devDependencies": {
+        "typescript": "^5.3.3"
+    }
+}

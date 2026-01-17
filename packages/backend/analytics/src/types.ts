@@ -1,0 +1,33 @@
+// Analytics event types
+
+export type AnalyticsEventType =
+    | 'video_watched'
+    | 'quiz_completed'
+    | 'module_started'
+    | 'module_completed'
+    | 'student_login';
+
+export interface AnalyticsEvent {
+    id: string;
+    studentId: string;
+    eventType: AnalyticsEventType;
+    metadata: Record<string, unknown>;
+    timestamp: string;
+}
+
+export interface AnalyticsSummary {
+    totalWatchTime: number; // seconds
+    modulesStarted: number;
+    modulesCompleted: number;
+    quizzesTaken: number;
+    averageQuizScore: number;
+    lastActiveDate: string;
+}
+
+export interface ModuleAnalytics {
+    moduleId: string;
+    timeSpent: number; // seconds
+    started: boolean;
+    completed: boolean;
+    progress: number; // 0-100
+}

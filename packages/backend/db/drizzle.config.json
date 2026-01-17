@@ -1,0 +1,8 @@
+{
+    "schema": "./src/schema/index.ts",
+    "out": "./drizzle",
+    "driver": "better-sqlite",
+    "dbCredentials": {
+        "url": "C:/ProgramData/OfflineLearningApp/data.db"
+    }
+}

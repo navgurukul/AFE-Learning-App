@@ -1,0 +1,31 @@
+{
+    "name": "renderer",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "description": "React renderer for Offline Learning App",
+    "scripts": {
+        "dev": "vite",
+        "build": "tsc && vite build",
+        "preview": "vite preview",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@afe/shared": "workspace:*",
+        "@remix-run/router": "^1.23.2",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-markdown": "^10.1.0",
+        "react-pdf": "^10.3.0",
+        "react-router": "^6.30.3",
+        "react-router-dom": "6",
+        "remark-gfm": "^4.0.1"
+    },
+    "devDependencies": {
+        "@types/react": "^18.2.48",
+        "@types/react-dom": "^18.2.18",
+        "@vitejs/plugin-react": "^4.2.1",
+        "typescript": "^5.3.3",
+        "vite": "^5.0.11"
+    }
+}
