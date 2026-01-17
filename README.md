@@ -247,10 +247,6 @@ AFE/
 6. ✅ Upgrade to new version (data survives)
 7. ✅ Uninstall (data persists)
 
-## 📝 License
-
-[Your License Here]
-
 ## 👥 Authors
 
 NavGurukul Team
