@@ -1,4 +1,4 @@
-# Offline-First Student Learning App
+# AFE Student Learning App
 
 A production-grade, **installer-first** Electron desktop application for Windows with strict backend/frontend separation, silent install capability, and offline-first architecture.
 
