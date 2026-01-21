@@ -96,12 +96,28 @@ export function VideoPlayer({ src, lessonId, studentId, initialProgress, onCompl
     };
 
     return (
-        <div className="video-player-container" style={{ width: '100%', backgroundColor: '#000', borderRadius: '8px', overflow: 'hidden' }}>
+        <div className="video-player-container" style={{ 
+            width: '100%', 
+            aspectRatio: '16/9',
+            maxHeight: '80vh', 
+            backgroundColor: '#000', 
+            borderRadius: '8px', 
+            overflow: 'hidden',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+        }}>
             <video
                 ref={videoRef}
                 src={src}
                 className="video-element"
-                style={{ width: '100%', display: 'block' }}
+                style={{ 
+                    maxWidth: '100%', 
+                    maxHeight: '100%', 
+                    width: 'auto', 
+                    height: 'auto',
+                    display: 'block' 
+                }}
                 controls
                 onTimeUpdate={handleTimeUpdate}
                 onPlay={() => setIsPlaying(true)}
