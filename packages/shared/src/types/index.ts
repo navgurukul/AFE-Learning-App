@@ -109,3 +109,11 @@ export interface SyncQueueItem {
     createdAt: string;
     synced: boolean;
 }
+
+export interface StartedModule {
+    id: string;
+    studentId: string;
+    moduleId: string;
+    startedAt: string;
+    lastAccessedAt: string;
+}

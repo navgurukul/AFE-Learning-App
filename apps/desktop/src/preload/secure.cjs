@@ -18,6 +18,8 @@ const VALID_CHANNELS = [
     'progress:updateVideo',
     'progress:getVideo',
     'progress:getAllForStudent',
+    'progress:markModuleStarted',
+    'progress:getStartedModules',
 
     // Quiz operations
     'quiz:submitAttempt',
@@ -36,7 +38,8 @@ const VALID_CHANNELS = [
     'ai:session:rename',
     'ai:session:delete',
     'ai:clearHistory',
-    'ai:streamChunk'
+    'ai:streamChunk',
+    'ai:session:updated'
 ];
 
 contextBridge.exposeInMainWorld('electronAPI', {

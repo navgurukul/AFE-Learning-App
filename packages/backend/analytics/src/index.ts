@@ -1,5 +1,5 @@
 import { eq, and, sql } from 'drizzle-orm';
-import { getDatabase, analyticsEvents, videoProgress, quizAttempts } from '@backend/db';
+import { getDatabase, analyticsEvents, videoProgress, quizAttempts, startedModules } from '@backend/db';
 import { randomUUID } from 'crypto';
 import type { AnalyticsSummary, AnalyticsEventType } from './types.js';
 
@@ -46,14 +46,17 @@ export async function getAnalyticsSummary(studentId: string): Promise<AnalyticsS
         .where(
             and(
                 eq(analyticsEvents.studentId, studentId),
-                sql`${analyticsEvents.eventType} IN ('module_started', 'module_completed')`
+                eq(analyticsEvents.eventType, 'module_completed')
             )
         );
 
-    const modulesStarted = moduleEvents.filter((e) => e.eventType === 'module_started').length;
-    const modulesCompleted = moduleEvents.filter(
-        (e) => e.eventType === 'module_completed'
-    ).length;
+    const startedModulesData = await getDatabase()
+        .select()
+        .from(startedModules)
+        .where(eq(startedModules.studentId, studentId));
+
+    const modulesStarted = startedModulesData.length;
+    const modulesCompleted = moduleEvents.length;
 
     // Quiz statistics
     const quizData = await getDatabase()

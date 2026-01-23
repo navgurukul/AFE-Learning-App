@@ -13,6 +13,8 @@ import {
     submitQuizAttempt,
     getQuizAttempts,
     getBestQuizScore,
+    markModuleStarted,
+    getStartedModules,
 } from '@backend/db';
 import { trackEvent, getAnalyticsSummary } from '@backend/analytics';
 import {
@@ -106,6 +108,21 @@ export function registerIPCHandlers() {
         return await getAllVideoProgressForStudent(studentId);
     });
 
+    ipcMain.handle(IPC_CHANNELS.PROGRESS_MARK_MODULE_STARTED, async (_event, data) => {
+        const { studentId, moduleId } = data;
+        await markModuleStarted(studentId, moduleId);
+
+        // Track analytics
+        await trackEvent(studentId, 'module_started', {
+            moduleId,
+        });
+    });
+
+    ipcMain.handle(IPC_CHANNELS.PROGRESS_GET_STARTED_MODULES, async (_event, data) => {
+        const { studentId } = data;
+        return await getStartedModules(studentId);
+    });
+
     // ========== Quiz Operations ==========
 
     ipcMain.handle(IPC_CHANNELS.QUIZ_SUBMIT_ATTEMPT, async (_event, data) => {
@@ -187,6 +204,9 @@ export function registerIPCHandlers() {
             sessionId,
             (chunk) => {
                 event.sender.send(IPC_CHANNELS.AI_STREAM_CHUNK, { chunk });
+            },
+            (title) => {
+                event.sender.send(IPC_CHANNELS.AI_SESSION_UPDATED, { sessionId, title });
             }
         );
         return { response };

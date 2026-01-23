@@ -3,10 +3,13 @@ import { getDatabase } from '../core.js';
 import {
     videoProgress,
     quizAttempts,
+    startedModules,
     type VideoProgress,
     type NewVideoProgress,
     type QuizAttempt,
     type NewQuizAttempt,
+    type StartedModule,
+    type NewStartedModule,
 } from '../schema/index.js';
 import { randomUUID } from 'crypto';
 
@@ -163,4 +166,56 @@ export async function getQuizImprovement(
         bestScore,
         improvement: bestScore - firstScore,
     };
+}
+
+
+// ============ Module Tracking ============
+
+/**
+ * Mark a module as started (or update last accessed time)
+ */
+export async function markModuleStarted(
+    studentId: string,
+    moduleId: string
+): Promise<void> {
+    const now = new Date().toISOString();
+
+    // Check if record exists
+    const existing = await getDatabase()
+        .select()
+        .from(startedModules)
+        .where(and(eq(startedModules.studentId, studentId), eq(startedModules.moduleId, moduleId)));
+
+    if (existing.length > 0) {
+        // Update existing
+        await getDatabase()
+            .update(startedModules)
+            .set({
+                lastAccessedAt: now,
+            })
+            .where(and(eq(startedModules.studentId, studentId), eq(startedModules.moduleId, moduleId)));
+    } else {
+        // Create new
+        const newEntry: NewStartedModule = {
+            id: randomUUID(),
+            studentId,
+            moduleId,
+            startedAt: now,
+            lastAccessedAt: now,
+        };
+        await getDatabase().insert(startedModules).values(newEntry);
+    }
+}
+
+/**
+ * Get all started modules for a student
+ */
+export async function getStartedModules(
+    studentId: string
+): Promise<StartedModule[]> {
+    return await getDatabase()
+        .select()
+        .from(startedModules)
+        .where(eq(startedModules.studentId, studentId))
+        .orderBy(desc(startedModules.lastAccessedAt));
 }

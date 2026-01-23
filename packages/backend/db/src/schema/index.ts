@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 // Students table
 export const students = sqliteTable('students', {
@@ -145,3 +145,25 @@ export type NewAISession = typeof aiSessions.$inferInsert;
 
 export type SyncQueue = typeof syncQueue.$inferSelect;
 export type NewSyncQueue = typeof syncQueue.$inferInsert;
+
+// Started modules tracking
+export const startedModules = sqliteTable(
+    'started_modules',
+    {
+        id: text('id').primaryKey(),
+        studentId: text('student_id')
+            .notNull()
+            .references(() => students.id, { onDelete: 'cascade' }),
+        moduleId: text('module_id')
+            .notNull()
+            .references(() => modules.id),
+        startedAt: text('started_at').notNull(),
+        lastAccessedAt: text('last_accessed_at').notNull(),
+    },
+    (table) => ({
+        uniqueUserModule: uniqueIndex('unique_user_module').on(table.studentId, table.moduleId),
+    })
+);
+
+export type StartedModule = typeof startedModules.$inferSelect;
+export type NewStartedModule = typeof startedModules.$inferInsert;

@@ -31,6 +31,7 @@ function ModuleDetail() {
 
             // Track module started event
             if (studentId && moduleData) {
+                await ipc.markModuleStarted(studentId, moduleId);
                 await ipc.trackEvent(studentId, 'module_started', { moduleId });
             }
         } catch (error) {

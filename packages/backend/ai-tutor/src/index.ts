@@ -24,11 +24,40 @@ function getManifest() {
     return contentManifest;
 }
 
+async function generateSessionTitle(sessionId: string, firstMessage: string): Promise<string | null> {
+    try {
+        const client = getOllamaClient();
+        const response = await client.chat({
+            model: 'qwen2.5:1.5b',
+            messages: [
+                {
+                    role: 'system',
+                    content: 'You are a helpful assistant. Generate a short, concise title (3-5 words) for a chat session based on the user\'s first message. Do not use quotes or prefixes. Just the title.'
+                },
+                {
+                    role: 'user',
+                    content: firstMessage
+                }
+            ]
+        });
+
+        const title = response.message.content.trim();
+        if (title) {
+            await updateSessionTitle(sessionId, title);
+            return title;
+        }
+    } catch (error) {
+        console.error('Failed to generate session title:', error);
+    }
+    return null;
+}
+
 export async function sendMessage(
     studentId: string,
     message: string,
     sessionId: string,
-    onChunk?: (chunk: string) => void
+    onChunk?: (chunk: string) => void,
+    onTitleGenerated?: (title: string) => void
 ): Promise<string> {
     console.log('DEBUG: sendMessage arguments:', { studentId, sessionId });
     try {
@@ -71,6 +100,8 @@ export async function sendMessage(
             .where(eq(aiChatHistory.sessionId, sessionId))
             .orderBy(aiChatHistory.timestamp)
             .limit(20);
+
+        const isFirstMessage = history.length === 0;
 
         const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
             { role: 'system', content: systemPrompt },
@@ -132,6 +163,19 @@ export async function sendMessage(
                 .set({ lastMessageAt: now })
                 .where(eq(aiSessions.id, sessionId));
         });
+
+        // Trigger title generation if it's the first message
+        if (isFirstMessage) {
+            // Run asynchronously, don't await the result directly, but since we are in a request handler,
+            // we should probably at least trigger it. 
+            // Better to await it here to ensure it finishes before we return if we want to update UI immediately? 
+            // Or just fire and forget. Let's fire and forget but handle the promise.
+            generateSessionTitle(sessionId, message).then(title => {
+                if (title && onTitleGenerated) {
+                    onTitleGenerated(title);
+                }
+            });
+        }
 
         return aiResponse;
     } catch (error) {

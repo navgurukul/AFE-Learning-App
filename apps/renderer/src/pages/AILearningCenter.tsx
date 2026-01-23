@@ -51,6 +51,22 @@ function AILearningCenter() {
     }, []);
 
     useEffect(() => {
+        const cleanup = ipc.onSessionUpdated((sessionId, title) => {
+            setSessions(prev => prev.map(s =>
+                s.id === sessionId ? { ...s, title } : s
+            ));
+
+            setActiveSession(prev => {
+                if (prev && prev.id === sessionId) {
+                    return { ...prev, title };
+                }
+                return prev;
+            });
+        });
+        return cleanup;
+    }, []);
+
+    useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, streamingContent]);
 

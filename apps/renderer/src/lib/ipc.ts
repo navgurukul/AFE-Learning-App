@@ -68,6 +68,14 @@ class IPCClient {
         return await this.invoke(IPC_CHANNELS.PROGRESS_GET_ALL_FOR_STUDENT, { studentId });
     }
 
+    async markModuleStarted(studentId: string, moduleId: string) {
+        return await this.invoke(IPC_CHANNELS.PROGRESS_MARK_MODULE_STARTED, { studentId, moduleId });
+    }
+
+    async getStartedModules(studentId: string) {
+        return await this.invoke(IPC_CHANNELS.PROGRESS_GET_STARTED_MODULES, { studentId });
+    }
+
     // Quizzes
     async submitQuizAttempt(
         studentId: string,
@@ -137,6 +145,13 @@ class IPCClient {
         if (!window.electronAPI?.on) return () => { };
         return window.electronAPI.on(IPC_CHANNELS.AI_STREAM_CHUNK, (data: { chunk: string }) => {
             callback(data.chunk);
+        });
+    }
+
+    onSessionUpdated(callback: (sessionId: string, title: string) => void) {
+        if (!window.electronAPI?.on) return () => { };
+        return window.electronAPI.on(IPC_CHANNELS.AI_SESSION_UPDATED, (data: { sessionId: string; title: string }) => {
+            callback(data.sessionId, data.title);
         });
     }
 }

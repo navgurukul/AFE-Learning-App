@@ -8,6 +8,7 @@ import type {
     AnalyticsEvent,
     AIChatMessage,
     AISession,
+    StartedModule,
 } from '../types/index.js';
 
 // IPC Channel names
@@ -27,6 +28,8 @@ export const IPC_CHANNELS = {
     PROGRESS_UPDATE_VIDEO: 'progress:updateVideo',
     PROGRESS_GET_VIDEO: 'progress:getVideo',
     PROGRESS_GET_ALL_FOR_STUDENT: 'progress:getAllForStudent',
+    PROGRESS_MARK_MODULE_STARTED: 'progress:markModuleStarted',
+    PROGRESS_GET_STARTED_MODULES: 'progress:getStartedModules',
 
     // Quiz operations
     QUIZ_SUBMIT_ATTEMPT: 'quiz:submitAttempt',
@@ -45,6 +48,7 @@ export const IPC_CHANNELS = {
     AI_SESSION_DELETE: 'ai:session:delete',
     AI_CLEAR_HISTORY: 'ai:clearHistory',
     AI_STREAM_CHUNK: 'ai:streamChunk',
+    AI_SESSION_UPDATED: 'ai:session:updated',
 } as const;
 
 // Request/Response type definitions
@@ -86,6 +90,12 @@ export type ProgressGetVideoResponse = VideoProgress | null;
 
 export type ProgressGetAllForStudentRequest = { studentId: string };
 export type ProgressGetAllForStudentResponse = VideoProgress[];
+
+export type ProgressMarkModuleStartedRequest = { studentId: string; moduleId: string };
+export type ProgressMarkModuleStartedResponse = void;
+
+export type ProgressGetStartedModulesRequest = { studentId: string };
+export type ProgressGetStartedModulesResponse = StartedModule[];
 
 // Quiz
 export type QuizSubmitAttemptRequest = {
@@ -192,6 +202,14 @@ export interface IPCContract {
     [IPC_CHANNELS.PROGRESS_GET_ALL_FOR_STUDENT]: {
         request: ProgressGetAllForStudentRequest;
         response: ProgressGetAllForStudentResponse;
+    };
+    [IPC_CHANNELS.PROGRESS_MARK_MODULE_STARTED]: {
+        request: ProgressMarkModuleStartedRequest;
+        response: ProgressMarkModuleStartedResponse;
+    };
+    [IPC_CHANNELS.PROGRESS_GET_STARTED_MODULES]: {
+        request: ProgressGetStartedModulesRequest;
+        response: ProgressGetStartedModulesResponse;
     };
     [IPC_CHANNELS.QUIZ_SUBMIT_ATTEMPT]: {
         request: QuizSubmitAttemptRequest;
