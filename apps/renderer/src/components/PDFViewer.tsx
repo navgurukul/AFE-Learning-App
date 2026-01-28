@@ -12,9 +12,10 @@ interface PDFViewerProps {
     lessonId: string;
     studentId: string;
     initialProgress?: {
-        watchedPercentage: number;
-        totalWatchDuration: number; // Used as current page (floored)
-        lastWatchedAt: string;
+        readPercentage: number;
+        currentPage: number;
+        totalReadDuration: number;
+        lastReadAt: string;
     };
     onCompleted?: () => void;
 }
@@ -24,59 +25,133 @@ export default function PDFViewer({ src, lessonId, studentId, initialProgress, o
     const [pageNumber, setPageNumber] = useState<number>(1);
     const [maxPageReached, setMaxPageReached] = useState<number>(1);
 
+    // Track total time spend across the whole session (including previously saved)
+    const [totalReadTime, setTotalReadTime] = useState<number>(initialProgress?.totalReadDuration || 0);
+    // Track seconds spent since the last save operation
+    const [secondsSinceLastSave, setSecondsSinceLastSave] = useState<number>(0);
+
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+    // Use a ref for current delta to access it in cleanup/unmount
+    const deltaRef = useRef<number>(0);
+    // Store latest state in refs for use in async functions and cleanup
+    const pageRef = useRef<number>(1);
+    const maxPageRef = useRef<number>(1);
+    const numPagesRef = useRef<number>(0);
+
     useEffect(() => {
         // Restore progress
         if (initialProgress) {
-            // we use 'totalWatchDuration' to store the last page number in the 'video_progress' table hack
-            // or we can use watchedPercentage to derive it if accurate.
-            // Let's assume we store page number in 'totalWatchDuration' for reading types.
-            const savedPage = Math.floor(initialProgress.totalWatchDuration);
+            const savedPage = initialProgress.currentPage;
             if (savedPage > 1) {
                 setPageNumber(savedPage);
                 setMaxPageReached(savedPage);
+                pageRef.current = savedPage;
+                maxPageRef.current = savedPage;
             }
+            setTotalReadTime(initialProgress.totalReadDuration);
         }
     }, [initialProgress]);
 
-    function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
-        setNumPages(numPages);
-    }
+    // Track reading time while the component is mounted
+    useEffect(() => {
+        timerRef.current = setInterval(() => {
+            setSecondsSinceLastSave(prev => {
+                const next = prev + 1;
+                deltaRef.current = next;
+                return next;
+            });
+            setTotalReadTime(prev => prev + 1);
+        }, 1000);
 
-    async function changePage(offset: number) {
-        setPageNumber(prevPageNumber => {
-            const newPage = prevPageNumber + offset;
-            const validPage = Math.min(Math.max(1, newPage), numPages);
-
-            // Update Max Reached
-            if (validPage > maxPageReached) {
-                setMaxPageReached(validPage);
+        // Also handle window/application closure
+        const handleBeforeUnload = () => {
+            if (deltaRef.current > 0 && numPagesRef.current > 0) {
+                const percentage = (maxPageRef.current / numPagesRef.current) * 100;
+                // Use a sync IPC call if possible, or just fire and forget
+                // In Electron, we can use sendSync or just send
+                ipc.updateReadingProgress(
+                    studentId,
+                    lessonId,
+                    percentage,
+                    deltaRef.current,
+                    pageRef.current
+                ).catch(() => { }); // Ignore errors on close
             }
+        };
+        window.addEventListener('beforeunload', handleBeforeUnload);
 
-            // Update Progress in DB
-            updateProgress(validPage, Math.max(validPage, maxPageReached), numPages);
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            // Save final progress on unmount
+            // We use the values from refs to avoid closure issues
+            if (deltaRef.current > 0 && numPagesRef.current > 0) {
+                const percentage = (maxPageRef.current / numPagesRef.current) * 100;
+                console.log(`[PDFViewer] Unmount saving final progress: ${deltaRef.current}s`);
+                ipc.updateReadingProgress(
+                    studentId,
+                    lessonId,
+                    percentage,
+                    deltaRef.current,
+                    pageRef.current
+                ).catch(err => console.error('Failed to update progress on unmount', err));
+                // Reset to avoid double save if cleanup is called twice or something
+                deltaRef.current = 0;
+            }
+        };
+    }, [studentId, lessonId]); // Re-subscribe if IDs change (though key ensures re-mount)
 
-            return validPage;
-        });
-    }
+    // Periodic save every 30 seconds
+    useEffect(() => {
+        if (secondsSinceLastSave > 0 && secondsSinceLastSave % 30 === 0) {
+            saveProgress(30);
+            setSecondsSinceLastSave(0);
+            deltaRef.current = 0;
+        }
+    }, [secondsSinceLastSave]);
 
-    async function updateProgress(current: number, max: number, total: number) {
-        if (total === 0) return;
+    async function saveProgress(durationDelta: number) {
+        if (numPagesRef.current === 0) return;
+        const percentage = (maxPageReached / numPagesRef.current) * 100;
 
-        const percentage = (max / total) * 100;
-
-        // We use 'totalWatchDuration' field to store the Current Page Number for persistence
-        // so when we reload, we jump there.
         try {
-            await ipc.updateVideoProgress(studentId, lessonId, percentage, current);
+            await ipc.updateReadingProgress(studentId, lessonId, percentage, durationDelta, pageNumber);
         } catch (err) {
             console.error('Failed to update reading progress', err);
         }
+    }
 
-        if (percentage >= 90 || current === total) {
-            if (onCompleted) {
-                // Debounce completion? or just call it.
-                // onCompleted();
-            }
+    function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
+        setNumPages(numPages);
+        numPagesRef.current = numPages;
+    }
+
+    async function changePage(offset: number) {
+        if (numPagesRef.current === 0) return;
+        const newPage = Math.min(Math.max(1, pageNumber + offset), numPagesRef.current);
+        if (newPage === pageNumber) return;
+
+        setPageNumber(newPage);
+        pageRef.current = newPage;
+        if (newPage > maxPageReached) {
+            setMaxPageReached(newPage);
+            maxPageRef.current = newPage;
+        }
+
+        // Save progress when changing pages
+        const percentage = (Math.max(newPage, maxPageReached) / numPagesRef.current) * 100;
+        try {
+            // Save the delta since last save and reset
+            const delta = secondsSinceLastSave;
+            await ipc.updateReadingProgress(studentId, lessonId, percentage, delta, newPage);
+            setSecondsSinceLastSave(0);
+            deltaRef.current = 0;
+        } catch (err) {
+            console.error('Failed to update reading progress on page change', err);
+        }
+
+        if (percentage >= 90 || newPage === numPagesRef.current) {
+            if (onCompleted) onCompleted();
         }
     }
 
@@ -118,9 +193,18 @@ export default function PDFViewer({ src, lessonId, studentId, initialProgress, o
                 </Document>
             </div>
 
-            <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#666' }}>
-                Read {Math.round((maxPageReached / numPages) * 100 || 0)}%
-            </p>
+            <div style={{ marginTop: '0.5rem', textAlign: 'center' }}>
+                <p style={{ fontSize: '0.9rem', color: '#666' }}>
+                    Read {Math.round((maxPageReached / numPages) * 100 || 0)}%
+                </p>
+                <p style={{ fontSize: '0.8rem', color: '#999' }}>
+                    Time spent reading: {(() => {
+                        const mins = Math.floor(totalReadTime / 60);
+                        const secs = totalReadTime % 60;
+                        return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+                    })()}
+                </p>
+            </div>
         </div>
     );
 }

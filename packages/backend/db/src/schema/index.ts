@@ -167,3 +167,21 @@ export const startedModules = sqliteTable(
 
 export type StartedModule = typeof startedModules.$inferSelect;
 export type NewStartedModule = typeof startedModules.$inferInsert;
+
+// Reading progress tracking (PDFs)
+export const readingProgress = sqliteTable('reading_progress', {
+    id: text('id').primaryKey(),
+    studentId: text('student_id')
+        .notNull()
+        .references(() => students.id, { onDelete: 'cascade' }),
+    lessonId: text('lesson_id')
+        .notNull()
+        .references(() => lessons.id),
+    readPercentage: real('read_percentage').notNull().default(0),
+    totalReadDuration: integer('total_read_duration').notNull().default(0), // seconds
+    currentPage: integer('current_page').notNull().default(1),
+    lastReadAt: text('last_read_at').notNull(),
+});
+
+export type ReadingProgress = typeof readingProgress.$inferSelect;
+export type NewReadingProgress = typeof readingProgress.$inferInsert;

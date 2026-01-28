@@ -15,6 +15,9 @@ import {
     getBestQuizScore,
     markModuleStarted,
     getStartedModules,
+    updateReadingProgress,
+    getReadingProgress,
+    getAllReadingProgressForStudent,
 } from '@backend/db';
 import { trackEvent, getAnalyticsSummary } from '@backend/analytics';
 import {
@@ -121,6 +124,28 @@ export function registerIPCHandlers() {
     ipcMain.handle(IPC_CHANNELS.PROGRESS_GET_STARTED_MODULES, async (_event, data) => {
         const { studentId } = data;
         return await getStartedModules(studentId);
+    });
+
+    ipcMain.handle(IPC_CHANNELS.PROGRESS_UPDATE_READING, async (_event, data) => {
+        const { studentId, lessonId, readPercentage, readDuration, currentPage } = data;
+        console.log(`[IPC] Updating reading progress: Student=${studentId}, Lesson=${lessonId}, Duration=+${readDuration}s`);
+        await updateReadingProgress(studentId, lessonId, readPercentage, readDuration, currentPage);
+
+        // Track analytics event
+        await trackEvent(studentId, 'pdf_read', {
+            lessonId,
+            readDuration,
+        });
+    });
+
+    ipcMain.handle(IPC_CHANNELS.PROGRESS_GET_READING, async (_event, data) => {
+        const { studentId, lessonId } = data;
+        return await getReadingProgress(studentId, lessonId);
+    });
+
+    ipcMain.handle(IPC_CHANNELS.PROGRESS_GET_ALL_READING, async (_event, data) => {
+        const { studentId } = data;
+        return await getAllReadingProgressForStudent(studentId);
     });
 
     // ========== Quiz Operations ==========

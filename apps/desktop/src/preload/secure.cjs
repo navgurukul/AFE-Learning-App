@@ -20,6 +20,9 @@ const VALID_CHANNELS = [
     'progress:getAllForStudent',
     'progress:markModuleStarted',
     'progress:getStartedModules',
+    'progress:updateReading',
+    'progress:getReading',
+    'progress:getAllReadingForStudent',
 
     // Quiz operations
     'quiz:submitAttempt',

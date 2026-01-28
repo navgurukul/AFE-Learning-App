@@ -1,5 +1,5 @@
 import { eq, and, sql } from 'drizzle-orm';
-import { getDatabase, analyticsEvents, videoProgress, quizAttempts, startedModules } from '@backend/db';
+import { getDatabase, analyticsEvents, videoProgress, quizAttempts, startedModules, readingProgress } from '@backend/db';
 import { randomUUID } from 'crypto';
 import type { AnalyticsSummary, AnalyticsEventType } from './types.js';
 
@@ -36,6 +36,17 @@ export async function getAnalyticsSummary(studentId: string): Promise<AnalyticsS
 
     const totalWatchTime = videoProgressData.reduce(
         (sum, vp) => sum + vp.totalWatchDuration,
+        0
+    );
+
+    // Total read time from reading progress
+    const readingProgressData = await getDatabase()
+        .select()
+        .from(readingProgress)
+        .where(eq(readingProgress.studentId, studentId));
+
+    const totalReadTime = readingProgressData.reduce(
+        (sum, rp) => sum + rp.totalReadDuration,
         0
     );
 
@@ -83,6 +94,7 @@ export async function getAnalyticsSummary(studentId: string): Promise<AnalyticsS
 
     return {
         totalWatchTime,
+        totalReadTime,
         modulesStarted,
         modulesCompleted,
         quizzesTaken,

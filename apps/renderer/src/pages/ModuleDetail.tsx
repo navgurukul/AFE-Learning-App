@@ -51,13 +51,21 @@ function ModuleDetail() {
         // Dispatch event for global AI Tutor
         window.dispatchEvent(new CustomEvent('set-ai-lesson', { detail: { lessonId: lesson.id } }));
 
-        if (lesson.type === 'video' && studentId) {
+        if (studentId) {
             try {
-                // Fetch existing progress
-                const progress = await ipc.getVideoProgress(studentId, lesson.id);
-                setVideoProgress(progress);
+                if (lesson.type === 'video') {
+                    // Fetch existing video progress
+                    const progress = await ipc.getVideoProgress(studentId, lesson.id);
+                    setVideoProgress(progress);
+                } else if (lesson.type === 'reading') {
+                    // Fetch existing reading progress
+                    const progress = await ipc.getReadingProgress(studentId, lesson.id);
+                    // We can cast or handle it. For now, let's just make setVideoProgress accept both or use a generic state.
+                    // Actually, let's add a new state for reading progress or reuse existing one if types are compatible enough for the viewer.
+                    setVideoProgress(progress as any);
+                }
             } catch (err) {
-                console.error('Failed to load video progress', err);
+                console.error('Failed to load lesson progress', err);
             }
         }
     }
@@ -107,12 +115,15 @@ function ModuleDetail() {
     async function handleLessonCompleted() {
         // Refresh progress
         if (selectedLesson && studentId) {
-            if (selectedLesson.type === 'video') {
-                try {
+            try {
+                if (selectedLesson.type === 'video') {
                     const p = await ipc.getVideoProgress(studentId, selectedLesson.id);
                     setVideoProgress(p);
-                } catch { }
-            }
+                } else if (selectedLesson.type === 'reading') {
+                    const p = await ipc.getReadingProgress(studentId, selectedLesson.id);
+                    setVideoProgress(p as any);
+                }
+            } catch { }
         }
 
         await checkModuleCompletion();
@@ -179,6 +190,7 @@ function ModuleDetail() {
                     <h2>{selectedLesson.title}</h2>
                     {selectedLesson.type === 'video' && studentId && (
                         <VideoPlayer
+                            key={selectedLesson.id}
                             src={`media://${selectedLesson.videoUrl}`}
                             lessonId={selectedLesson.id}
                             studentId={studentId}
@@ -192,13 +204,15 @@ function ModuleDetail() {
                     )}
                     {selectedLesson.type === 'reading' && studentId && (
                         <PDFViewer
+                            key={selectedLesson.id}
                             src={`media://${selectedLesson.readingUrl}`} // Use readingUrl for PDFs
                             lessonId={selectedLesson.id}
                             studentId={studentId}
                             initialProgress={videoProgress ? {
-                                watchedPercentage: videoProgress.watchedPercentage,
-                                totalWatchDuration: videoProgress.totalWatchDuration,
-                                lastWatchedAt: videoProgress.lastWatchedAt
+                                readPercentage: (videoProgress as any).readPercentage,
+                                currentPage: (videoProgress as any).currentPage,
+                                totalReadDuration: (videoProgress as any).totalReadDuration,
+                                lastReadAt: (videoProgress as any).lastReadAt
                             } : undefined}
                             onCompleted={handleLessonCompleted}
                         />

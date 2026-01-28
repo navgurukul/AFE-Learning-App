@@ -76,6 +76,30 @@ class IPCClient {
         return await this.invoke(IPC_CHANNELS.PROGRESS_GET_STARTED_MODULES, { studentId });
     }
 
+    async updateReadingProgress(
+        studentId: string,
+        lessonId: string,
+        readPercentage: number,
+        readDuration: number,
+        currentPage: number
+    ) {
+        return await this.invoke(IPC_CHANNELS.PROGRESS_UPDATE_READING, {
+            studentId,
+            lessonId,
+            readPercentage,
+            readDuration,
+            currentPage,
+        });
+    }
+
+    async getReadingProgress(studentId: string, lessonId: string) {
+        return await this.invoke(IPC_CHANNELS.PROGRESS_GET_READING, { studentId, lessonId });
+    }
+
+    async getAllReadingProgress(studentId: string) {
+        return await this.invoke(IPC_CHANNELS.PROGRESS_GET_ALL_READING, { studentId });
+    }
+
     // Quizzes
     async submitQuizAttempt(
         studentId: string,

@@ -2,6 +2,7 @@
 
 export type AnalyticsEventType =
     | 'video_watched'
+    | 'pdf_read'
     | 'quiz_completed'
     | 'module_started'
     | 'module_completed'
@@ -17,6 +18,7 @@ export interface AnalyticsEvent {
 
 export interface AnalyticsSummary {
     totalWatchTime: number; // seconds
+    totalReadTime: number; // seconds
     modulesStarted: number;
     modulesCompleted: number;
     quizzesTaken: number;

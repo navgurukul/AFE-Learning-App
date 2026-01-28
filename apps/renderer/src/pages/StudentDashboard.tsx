@@ -5,6 +5,7 @@ import type { Student } from '@afe/shared';
 
 interface AnalyticsSummary {
     totalWatchTime: number;
+    totalReadTime: number;
     modulesStarted: number;
     modulesCompleted: number;
     quizzesTaken: number;
@@ -54,7 +55,15 @@ function StudentDashboard() {
         return <div className="container"><p>Student not found</p></div>;
     }
 
-    const watchTimeMinutes = Math.floor((analytics?.totalWatchTime || 0) / 60);
+    function formatTime(seconds: number) {
+        if (seconds < 60) return `${seconds}s`;
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}m ${secs}s`;
+    }
+
+    const watchTime = formatTime(Math.round(analytics?.totalWatchTime || 0));
+    const readTime = formatTime(Math.round(analytics?.totalReadTime || 0));
 
     return (
         <div className="container">
@@ -71,29 +80,35 @@ function StudentDashboard() {
             <div className="accent-bar"></div>
 
             <h2 style={{ marginBottom: 'var(--spacing-md)' }}>Your Progress</h2>
-            <div className="grid grid-4" style={{ marginBottom: 'var(--spacing-xl)' }}>
+            <div className="grid grid-5" style={{ marginBottom: 'var(--spacing-xl)' }}>
                 <div className="stat-card">
-                    <span className="stat-value">⏱️</span>
-                    <span className="stat-value" style={{ fontSize: '2rem' }}>{watchTimeMinutes}</span>
-                    <span className="stat-label">Minutes Watched</span>
+                    <span className="stat-value" style={{ fontSize: '3rem' }}>⏱️</span>
+                    <span className="stat-value" style={{ fontSize: '2rem' }}>{watchTime}</span>
+                    <span className="stat-label">Time Watched</span>
                 </div>
 
                 <div className="stat-card">
-                    <span className="stat-value">📚</span>
+                    <span className="stat-value" style={{ fontSize: '3rem' }}>📖</span>
+                    <span className="stat-value" style={{ fontSize: '2rem' }}>{readTime}</span>
+                    <span className="stat-label">Time Read</span>
+                </div>
+
+                <div className="stat-card">
+                    <span className="stat-value" style={{ fontSize: '3rem' }}>📚</span>
                     <span className="stat-value" style={{ fontSize: '2rem' }}>{analytics?.modulesStarted || 0}</span>
                     <span className="stat-label">Modules Started</span>
                 </div>
 
                 <div className="stat-card">
-                    <span className="stat-value">✅</span>
+                    <span className="stat-value" style={{ fontSize: '3rem' }}>✅</span>
                     <span className="stat-value" style={{ fontSize: '2rem' }}>{analytics?.modulesCompleted || 0}</span>
                     <span className="stat-label">Modules Completed</span>
                 </div>
 
                 <div className="stat-card">
-                    <span className="stat-value">🎯</span>
+                    <span className="stat-value" style={{ fontSize: '3rem' }}>🎯</span>
                     <span className="stat-value" style={{ fontSize: '2rem' }}>
-                        {analytics?.averageQuizScore.toFixed(0) || 0}%
+                        {analytics?.averageQuizScore ? analytics.averageQuizScore.toFixed(0) : 0}%
                     </span>
                     <span className="stat-label">Avg Quiz Score</span>
                 </div>

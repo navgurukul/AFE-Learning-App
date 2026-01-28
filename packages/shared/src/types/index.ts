@@ -117,3 +117,13 @@ export interface StartedModule {
     startedAt: string;
     lastAccessedAt: string;
 }
+
+export interface ReadingProgress {
+    id: string;
+    studentId: string;
+    lessonId: string;
+    readPercentage: number;
+    totalReadDuration: number; // in seconds
+    currentPage: number;
+    lastReadAt: string;
+}

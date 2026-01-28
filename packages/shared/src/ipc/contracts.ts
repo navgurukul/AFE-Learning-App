@@ -9,6 +9,7 @@ import type {
     AIChatMessage,
     AISession,
     StartedModule,
+    ReadingProgress,
 } from '../types/index.js';
 
 // IPC Channel names
@@ -30,6 +31,9 @@ export const IPC_CHANNELS = {
     PROGRESS_GET_ALL_FOR_STUDENT: 'progress:getAllForStudent',
     PROGRESS_MARK_MODULE_STARTED: 'progress:markModuleStarted',
     PROGRESS_GET_STARTED_MODULES: 'progress:getStartedModules',
+    PROGRESS_UPDATE_READING: 'progress:updateReading',
+    PROGRESS_GET_READING: 'progress:getReading',
+    PROGRESS_GET_ALL_READING: 'progress:getAllReadingForStudent',
 
     // Quiz operations
     QUIZ_SUBMIT_ATTEMPT: 'quiz:submitAttempt',
@@ -97,6 +101,21 @@ export type ProgressMarkModuleStartedResponse = void;
 export type ProgressGetStartedModulesRequest = { studentId: string };
 export type ProgressGetStartedModulesResponse = StartedModule[];
 
+export type ProgressUpdateReadingRequest = {
+    studentId: string;
+    lessonId: string;
+    readPercentage: number;
+    readDuration: number;
+    currentPage: number;
+};
+export type ProgressUpdateReadingResponse = void;
+
+export type ProgressGetReadingRequest = { studentId: string; lessonId: string };
+export type ProgressGetReadingResponse = ReadingProgress | null;
+
+export type ProgressGetAllReadingRequest = { studentId: string };
+export type ProgressGetAllReadingResponse = ReadingProgress[];
+
 // Quiz
 export type QuizSubmitAttemptRequest = {
     studentId: string;
@@ -123,6 +142,7 @@ export type AnalyticsTrackEventResponse = void;
 export type AnalyticsGetSummaryRequest = { studentId: string };
 export type AnalyticsGetSummaryResponse = {
     totalWatchTime: number;
+    totalReadTime: number;
     modulesStarted: number;
     modulesCompleted: number;
     quizzesTaken: number;
@@ -210,6 +230,18 @@ export interface IPCContract {
     [IPC_CHANNELS.PROGRESS_GET_STARTED_MODULES]: {
         request: ProgressGetStartedModulesRequest;
         response: ProgressGetStartedModulesResponse;
+    };
+    [IPC_CHANNELS.PROGRESS_UPDATE_READING]: {
+        request: ProgressUpdateReadingRequest;
+        response: ProgressUpdateReadingResponse;
+    };
+    [IPC_CHANNELS.PROGRESS_GET_READING]: {
+        request: ProgressGetReadingRequest;
+        response: ProgressGetReadingResponse;
+    };
+    [IPC_CHANNELS.PROGRESS_GET_ALL_READING]: {
+        request: ProgressGetAllReadingRequest;
+        response: ProgressGetAllReadingResponse;
     };
     [IPC_CHANNELS.QUIZ_SUBMIT_ATTEMPT]: {
         request: QuizSubmitAttemptRequest;

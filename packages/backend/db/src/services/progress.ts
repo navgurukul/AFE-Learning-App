@@ -4,12 +4,15 @@ import {
     videoProgress,
     quizAttempts,
     startedModules,
+    readingProgress,
     type VideoProgress,
     type NewVideoProgress,
     type QuizAttempt,
     type NewQuizAttempt,
     type StartedModule,
     type NewStartedModule,
+    type ReadingProgress,
+    type NewReadingProgress,
 } from '../schema/index.js';
 import { randomUUID } from 'crypto';
 
@@ -28,6 +31,15 @@ export async function updateVideoProgress(
 ): Promise<void> {
     const now = new Date().toISOString();
 
+    // Sanity check: prevent huge jumps (e.g. > 1 hour at once is likely a bug)
+    if (watchDuration > 3600) {
+        console.warn(`[ProgressService] Ignoring suspicious watchDuration: ${watchDuration}s`);
+        return;
+    }
+
+    // Ensure we store integers
+    const durationToAdd = Math.round(watchDuration);
+
     // Check if record exists
     const existing = await getDatabase()
         .select()
@@ -40,7 +52,7 @@ export async function updateVideoProgress(
             .update(videoProgress)
             .set({
                 watchedPercentage: Math.max(watchedPercentage, existing[0].watchedPercentage),
-                totalWatchDuration: existing[0].totalWatchDuration + watchDuration,
+                totalWatchDuration: existing[0].totalWatchDuration + durationToAdd,
                 lastWatchedAt: now,
             })
             .where(and(eq(videoProgress.studentId, studentId), eq(videoProgress.lessonId, lessonId)));
@@ -51,7 +63,7 @@ export async function updateVideoProgress(
             studentId,
             lessonId,
             watchedPercentage,
-            totalWatchDuration: watchDuration,
+            totalWatchDuration: durationToAdd,
             lastWatchedAt: now,
         };
         await getDatabase().insert(videoProgress).values(newProgress);
@@ -218,4 +230,77 @@ export async function getStartedModules(
         .from(startedModules)
         .where(eq(startedModules.studentId, studentId))
         .orderBy(desc(startedModules.lastAccessedAt));
+}
+
+// ============ Reading Progress ============
+
+/**
+ * Update reading progress (PDFs)
+ */
+export async function updateReadingProgress(
+    studentId: string,
+    lessonId: string,
+    readPercentage: number,
+    readDuration: number,
+    currentPage: number
+): Promise<void> {
+    const now = new Date().toISOString();
+
+    // Check if record exists
+    const existing = await getDatabase()
+        .select()
+        .from(readingProgress)
+        .where(and(eq(readingProgress.studentId, studentId), eq(readingProgress.lessonId, lessonId)));
+
+    if (existing.length > 0) {
+        // Update existing
+        await getDatabase()
+            .update(readingProgress)
+            .set({
+                readPercentage: Math.max(readPercentage, existing[0].readPercentage),
+                totalReadDuration: existing[0].totalReadDuration + readDuration,
+                currentPage: currentPage,
+                lastReadAt: now,
+            })
+            .where(and(eq(readingProgress.studentId, studentId), eq(readingProgress.lessonId, lessonId)));
+    } else {
+        // Create new
+        const newProgress: NewReadingProgress = {
+            id: randomUUID(),
+            studentId,
+            lessonId,
+            readPercentage,
+            totalReadDuration: readDuration,
+            currentPage,
+            lastReadAt: now,
+        };
+        await getDatabase().insert(readingProgress).values(newProgress);
+    }
+}
+
+/**
+ * Get reading progress for a student and lesson
+ */
+export async function getReadingProgress(
+    studentId: string,
+    lessonId: string
+): Promise<ReadingProgress | null> {
+    const result = await getDatabase()
+        .select()
+        .from(readingProgress)
+        .where(and(eq(readingProgress.studentId, studentId), eq(readingProgress.lessonId, lessonId)));
+
+    return (result[0] as ReadingProgress) || null;
+}
+
+/**
+ * Get all reading progress for a student
+ */
+export async function getAllReadingProgressForStudent(
+    studentId: string
+): Promise<ReadingProgress[]> {
+    return (await getDatabase()
+        .select()
+        .from(readingProgress)
+        .where(eq(readingProgress.studentId, studentId))) as ReadingProgress[];
 }

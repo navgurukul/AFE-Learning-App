@@ -22,6 +22,9 @@ export function VideoPlayer({ src, lessonId, studentId, initialProgress, onCompl
     const lastUpdateRef = useRef<number>(0);
     const initialSeekDone = useRef(false);
 
+    const currentTimeRef = useRef<number>(0);
+    const durationRef = useRef<number>(0);
+
     useEffect(() => {
         // Auto-resume if previously watched
         if (videoRef.current && initialProgress && initialProgress.watchedPercentage > 0 && !initialSeekDone.current) {
@@ -42,6 +45,37 @@ export function VideoPlayer({ src, lessonId, studentId, initialProgress, onCompl
         }
     }, [initialProgress]);
 
+    useEffect(() => {
+        const handleBeforeUnload = () => {
+            if (lastUpdateRef.current > 0 && isPlaying) {
+                const now = Date.now();
+                const deltaSeconds = Math.round((now - lastUpdateRef.current) / 1000);
+                if (deltaSeconds > 0 && deltaSeconds < 3600) {
+                    const pct = durationRef.current > 0 ? (currentTimeRef.current / durationRef.current) * 100 : progress;
+                    ipc.updateVideoProgress(studentId, lessonId, pct, deltaSeconds).catch(() => { });
+                }
+            }
+        };
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            // Save final progress on unmount
+            const now = Date.now();
+            if (lastUpdateRef.current > 0 && isPlaying) {
+                const deltaSeconds = Math.round((now - lastUpdateRef.current) / 1000);
+                if (deltaSeconds > 0 && deltaSeconds < 3600) {
+                    const pct = durationRef.current > 0 ? (currentTimeRef.current / durationRef.current) * 100 : progress;
+                    console.log(`[VideoPlayer] Unmount saving final progress: ${deltaSeconds}s`);
+                    ipc.updateVideoProgress(studentId, lessonId, pct, deltaSeconds)
+                        .catch(err => console.error('Failed to save video progress on unmount', err));
+                    // Reset to avoid double save
+                    lastUpdateRef.current = 0;
+                }
+            }
+        };
+    }, [isPlaying, progress, studentId, lessonId]); // Re-bind unmount if critical values change
+
 
     const handleTimeUpdate = async () => {
         if (!videoRef.current) return;
@@ -52,25 +86,38 @@ export function VideoPlayer({ src, lessonId, studentId, initialProgress, onCompl
 
         setProgress(currentProgress);
         setDuration(videoDuration);
+        currentTimeRef.current = currentTime;
+        durationRef.current = videoDuration;
 
-        // Update accumulated watch time (approximate)
-        // This is a simple counter, ideally we'd track actual segments watched
-        if (isPlaying) {
-            // In a perfect world we use a more complex interval, but this suffices for "total time spent"
-            // syncing it with exact playback time is tricky due to seeks
+        // Update accumulated watch time
+        const now = Date.now();
+        // Initialize if first update
+        if (lastUpdateRef.current === 0) {
+            lastUpdateRef.current = now;
+            return;
         }
 
-        // Debounce updates to backend (every 5 seconds or 5% change)
-        const now = Date.now();
         if (now - lastUpdateRef.current > 5000) {
-            await updateProgress(currentProgress, Math.floor(currentTime)); // sending current pos as 'duration' used for resume logic mostly
+            // Find how much time passed since last update
+            if (isPlaying) {
+                const deltaSeconds = Math.round((now - lastUpdateRef.current) / 1000);
+
+                // Sanity check: If delta is suspicious (e.g. > 1 hour), it's likely a bug or clock jump
+                if (deltaSeconds > 0 && deltaSeconds < 3600) {
+                    await updateProgress(currentProgress, deltaSeconds);
+                    setWatchTime(prev => prev + deltaSeconds);
+                }
+            } else {
+                // Just update percentage without adding time
+                await updateProgress(currentProgress, 0);
+            }
             lastUpdateRef.current = now;
         }
     };
 
-    const updateProgress = async (pct: number, currentPos: number) => {
+    const updateProgress = async (pct: number, durationDelta: number) => {
         try {
-            await ipc.updateVideoProgress(studentId, lessonId, pct, currentPos);
+            await ipc.updateVideoProgress(studentId, lessonId, pct, durationDelta);
         } catch (err) {
             console.error('Failed to update progress', err);
         }
@@ -96,37 +143,50 @@ export function VideoPlayer({ src, lessonId, studentId, initialProgress, onCompl
     };
 
     return (
-        <div className="video-player-container" style={{ 
-            width: '100%', 
-            aspectRatio: '16/9',
-            maxHeight: '80vh', 
-            backgroundColor: '#000', 
-            borderRadius: '8px', 
-            overflow: 'hidden',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center'
-        }}>
-            <video
-                ref={videoRef}
-                src={src}
-                className="video-element"
-                style={{ 
-                    maxWidth: '100%', 
-                    maxHeight: '100%', 
-                    width: 'auto', 
-                    height: 'auto',
-                    display: 'block' 
-                }}
-                controls
-                onTimeUpdate={handleTimeUpdate}
-                onPlay={() => setIsPlaying(true)}
-                onPause={() => setIsPlaying(false)}
-                onEnded={handleEnded}
-            >
-                Your browser does not support the video tag.
-            </video>
-            {/* Custom overlay or controls could go here if we wanted to hide native controls */}
+        <div style={{ width: '100%' }}>
+            <div className="video-player-container" style={{
+                width: '100%',
+                aspectRatio: '16/9',
+                maxHeight: '80vh',
+                backgroundColor: '#000',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+            }}>
+                <video
+                    ref={videoRef}
+                    src={src}
+                    className="video-element"
+                    style={{
+                        maxWidth: '100%',
+                        maxHeight: '100%',
+                        width: 'auto',
+                        height: 'auto',
+                        display: 'block'
+                    }}
+                    controls
+                    onTimeUpdate={handleTimeUpdate}
+                    onPlay={() => {
+                        lastUpdateRef.current = Date.now();
+                        setIsPlaying(true);
+                    }}
+                    onPause={() => setIsPlaying(false)}
+                    onEnded={handleEnded}
+                >
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            <div style={{ marginTop: '0.5rem', textAlign: 'center' }}>
+                <p style={{ fontSize: '0.8rem', color: '#999' }}>
+                    Time spent watching: {(() => {
+                        const mins = Math.floor(watchTime / 60);
+                        const secs = watchTime % 60;
+                        return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+                    })()}
+                </p>
+            </div>
         </div>
     );
 }
