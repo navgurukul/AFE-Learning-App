@@ -185,3 +185,17 @@ export const readingProgress = sqliteTable('reading_progress', {
 
 export type ReadingProgress = typeof readingProgress.$inferSelect;
 export type NewReadingProgress = typeof readingProgress.$inferInsert;
+
+// Learning summaries
+export const learningSummaries = sqliteTable('learning_summaries', {
+    id: text('id').primaryKey(),
+    studentId: text('student_id')
+        .notNull()
+        .references(() => students.id, { onDelete: 'cascade' }),
+    summaryText: text('summary_text').notNull(),
+    progressNote: text('progress_note'), // Diff from last summary
+    lastUpdatedAt: text('last_updated_at').notNull(),
+});
+
+export type LearningSummary = typeof learningSummaries.$inferSelect;
+export type NewLearningSummary = typeof learningSummaries.$inferInsert;

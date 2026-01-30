@@ -16,6 +16,9 @@
         },
         {
             "path": "../../shared"
+        },
+        {
+            "path": "../ai-tutor"
         }
     ]
 }

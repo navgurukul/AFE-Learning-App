@@ -47,3 +47,6 @@ export const ANALYTICS_EVENTS = {
     MODULE_STARTED: 'module_started',
     MODULE_COMPLETED: 'module_completed',
 } as const;
+
+// Summary refresh config
+export const SUMMARY_REFRESH_DAYS = 10;

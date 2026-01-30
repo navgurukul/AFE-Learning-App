@@ -8,4 +8,4 @@ export * from './services/students.js';
 export * from './services/progress.js';
 
 // Export Drizzle utilities
-export { eq, and, or, sql, desc, asc } from 'drizzle-orm';
+export { eq, and, or, sql, desc, asc, inArray } from 'drizzle-orm';

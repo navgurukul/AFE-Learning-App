@@ -10,8 +10,11 @@ import { initializeDatabase } from '@backend/db';
 import { loadContentManifest } from '@backend/content-engine';
 import { registerIPCHandlers } from '../ipc/handlers.js';
 import { syncContentToDatabase } from './content-sync.js';
+import { checkAndGenerateSummaries, SyncService } from '@backend/analytics';
 
-// Convert Windows paths to file: URLs for net.fetch
+/**
+ * Convert Windows paths to file: URLs for net.fetch
+ */
 const toFileUrl = (filePath: string) => {
     let pathName = path.resolve(filePath).replace(/\\/g, '/');
     if (!pathName.startsWith('/')) {
@@ -132,6 +135,26 @@ async function initialize() {
     console.log('🔌 Registering IPC handlers...');
     registerIPCHandlers();
     console.log('✓ IPC handlers registered');
+
+    // 5. Check and generate AI learning summaries
+    console.log('🤖 Checking AI learning summaries...');
+    try {
+        await checkAndGenerateSummaries();
+        console.log('✓ AI learning summaries check complete');
+    } catch (error) {
+        console.error('❌ Failed to process AI learning summaries:', error);
+    }
+
+    // 6. Sync data to centralized server
+    const serverUrl = process.env.CENTRALIZED_SERVER_URL || 'http://localhost:3000/api/sync';
+    console.log(`🌐 Starting sync to ${serverUrl}...`);
+    try {
+        const syncService = new SyncService(serverUrl, net.fetch);
+        await syncService.syncAllStudents();
+        console.log('✓ Data sync complete');
+    } catch (error) {
+        console.error('❌ Data sync failed:', error);
+    }
 
     console.log('✅ Initialization complete');
 }

@@ -1,4 +1,4 @@
-import { getDatabase, aiChatHistory, aiSessions, students, modules, eq, desc } from '@backend/db';
+import { getDatabase, aiChatHistory, aiSessions, students, modules, learningSummaries, eq, desc, sql, inArray } from '@backend/db';
 import { randomUUID } from 'crypto';
 import { Ollama } from 'ollama';
 import { buildSystemPrompt } from './prompts.js';
@@ -251,6 +251,73 @@ export async function isOllamaAvailable(): Promise<boolean> {
     } catch {
         return false;
     }
+}
+
+export async function generateLearningSummary(
+    studentId: string,
+    previousSummary?: string
+): Promise<{ summary: string; progressNote?: string }> {
+    const db = getDatabase();
+    const client = getOllamaClient();
+    const model = 'qwen2.5:1.5b';
+
+    // 1. Fetch all chat history for this student (across all sessions)
+    const sessions = await db.select().from(aiSessions).where(eq(aiSessions.studentId, studentId));
+    const sessionIds = sessions.map((s) => s.id);
+
+    let chatContext = '';
+    if (sessionIds.length > 0) {
+        const history = await db
+            .select()
+            .from(aiChatHistory)
+            .where(inArray(aiChatHistory.sessionId, sessionIds))
+            .orderBy(aiChatHistory.timestamp);
+
+        // Take last 50 messages to avoid context window issues
+        const recentHistory = history.slice(-50);
+        chatContext = recentHistory
+            .map((h) => `${h.role === 'user' ? 'Student' : 'AI'}: ${h.content}`)
+            .join('\n');
+    }
+
+    if (!chatContext) {
+        return { summary: "No chat history available to generate a summary." };
+    }
+
+    // 2. Generate Summary (<300 words)
+    const summaryResponse = await client.chat({
+        model,
+        messages: [
+            {
+                role: 'system',
+                content: 'You are an educational psychologist. Analyze the student\'s chat history and provide a concise learning summary (< 300 words). Focus on what they have learned, their strengths, and areas where they needed help. Use a supportive tone.'
+            },
+            { role: 'user', content: `Chat History:\n${chatContext}` }
+        ]
+    });
+
+    const summary = summaryResponse.message.content.trim();
+
+    // 3. Generate Progress Note if previous summary exists (<100 words)
+    let progressNote: string | undefined;
+    if (previousSummary) {
+        const progressResponse = await client.chat({
+            model,
+            messages: [
+                {
+                    role: 'system',
+                    content: 'You are an educational psychologist. Compare the NEW learning summary with the PREVIOUS one. Write a very brief note (< 100 words) highlighting the progress made or new topics covered. Be specific.'
+                },
+                {
+                    role: 'user',
+                    content: `PREVIOUS SUMMARY: ${previousSummary}\n\nNEW SUMMARY: ${summary}`
+                }
+            ]
+        });
+        progressNote = progressResponse.message.content.trim();
+    }
+
+    return { summary, progressNote };
 }
 
 export * from './prompts.js';

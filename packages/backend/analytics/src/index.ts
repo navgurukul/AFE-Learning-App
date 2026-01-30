@@ -1,9 +1,9 @@
-import { eq, and, sql } from 'drizzle-orm';
-import { getDatabase, analyticsEvents, videoProgress, quizAttempts, startedModules, readingProgress } from '@backend/db';
+import { eq, and, sql, desc } from '@backend/db';
+import { getDatabase, analyticsEvents, videoProgress, quizAttempts, startedModules, readingProgress, learningSummaries, students } from '@backend/db';
 import { randomUUID } from 'crypto';
 import type { AnalyticsSummary, AnalyticsEventType } from './types.js';
-
-
+import { generateLearningSummary } from '@backend/ai-tutor';
+import { SUMMARY_REFRESH_DAYS } from '@afe/shared';
 
 /**
  * Track an analytics event (append-only)
@@ -127,4 +127,62 @@ export async function getModuleTimeSpent(
     }, 0);
 }
 
+/**
+ * Check and generate learning summaries for all students
+ * To be called on application startup
+ */
+export async function checkAndGenerateSummaries(): Promise<void> {
+    const db = getDatabase();
+    const allStudents = await db.select().from(students);
+    const now = new Date();
+
+    for (const student of allStudents) {
+        try {
+            // Get latest summary for this student
+            const latestSummaryResult = await db
+                .select()
+                .from(learningSummaries)
+                .where(eq(learningSummaries.studentId, student.id))
+                .orderBy(desc(learningSummaries.lastUpdatedAt))
+                .limit(1);
+
+            const latestSummary = latestSummaryResult[0];
+            let shouldGenerate = false;
+
+            if (!latestSummary) {
+                shouldGenerate = true;
+                console.log(`[SummaryService] No summary found for student ${student.name}, generating first one...`);
+            } else {
+                const lastUpdated = new Date(latestSummary.lastUpdatedAt);
+                const diffTime = Math.abs(now.getTime() - lastUpdated.getTime());
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays >= SUMMARY_REFRESH_DAYS) {
+                    shouldGenerate = true;
+                    console.log(`[SummaryService] Summary for student ${student.name} is ${diffDays} days old, refreshing...`);
+                }
+            }
+
+            if (shouldGenerate) {
+                const { summary, progressNote } = await generateLearningSummary(
+                    student.id,
+                    latestSummary?.summaryText
+                );
+
+                await db.insert(learningSummaries).values({
+                    id: randomUUID(),
+                    studentId: student.id,
+                    summaryText: summary,
+                    progressNote: progressNote || null,
+                    lastUpdatedAt: now.toISOString()
+                });
+                console.log(`[SummaryService] Successfully generated summary for student ${student.name}`);
+            }
+        } catch (error) {
+            console.error(`[SummaryService] Failed to generate summary for student ${student.name}:`, error);
+        }
+    }
+}
+
+export * from './sync.js';
 export * from './types.js';

@@ -19,7 +19,7 @@
             "@backend/*": [
                 "./packages/backend/*/src/index.ts"
             ],
-            "@shared": [
+            "@afe/shared": [
                 "./packages/shared/src/index.ts"
             ]
         }

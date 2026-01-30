@@ -143,6 +143,12 @@ importers:
 
   packages/backend/analytics:
     dependencies:
+      '@afe/shared':
+        specifier: workspace:*
+        version: link:../../shared
+      '@backend/ai-tutor':
+        specifier: workspace:*
+        version: link:../ai-tutor
       '@backend/db':
         specifier: workspace:*
         version: link:../db
