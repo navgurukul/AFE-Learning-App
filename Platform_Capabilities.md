@@ -58,9 +58,7 @@ Designed for large-scale institutional deployment:
 - Centralized data synchronization when connectivity becomes available
 - Persistent data storage that survives app updates, reinstallations, and user account changes
 
----
-
-## 📊 Investment Justification
+<!-- ## 📊 Investment Justification
 
 ### Development Scope & Complexity
 
@@ -77,7 +75,7 @@ Designed for large-scale institutional deployment:
 | **UI/UX Design System** | Modern Neo-Brutalism design language with responsive components | ₹1,50,000 |
 | **Cloud Sync Framework** | Optional synchronization layer for centralized data collection | ₹1,00,000 |
 
-### **Total Estimated Investment: ₹20,00,000 (20 Lacs)**
+### **Total Estimated Investment: ₹20,00,000 (20 Lacs)** -->
 
 ---
 
