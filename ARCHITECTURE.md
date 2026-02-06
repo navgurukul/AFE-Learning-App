@@ -10,20 +10,21 @@ The project is architected as a **pnpm Monorepo**. This means multiple distinct 
 
 ### The Anatomy
 *   **`apps/renderer` (The Face)**
-    *   **Technology:** React 18, Vite, TailwindCSS.
+    *   **Technology:** React 18, Vite, TailwindCSS (Neo-Brutalism).
     *   **Role:** Handles all User Interface (UI) and User Experience (UX).
-    *   **Constraints:** It is a "dumb" terminal. It knows nothing about the file system, database, or operating system. It relies entirely on the backend for data.
+    *   **Constraints:** Sandboxed environment. It communicates with the backend exclusively via the IPC Bridge.
     
 *   **`apps/desktop` (The Brain)**
-    *   **Technology:** Electron (Node.js + Chromium), TypeScript.
-    *   **Role:** The main entry point. It controls the application lifecycle, creates windows, and manages system resources.
-    *   **Capabilities:** Full access to the OS (File System, Network, Shell). It runs the SQLite database.
+    *   **Technology:** Electron (v28+), TypeScript.
+    *   **Role:** The main entry point. Manages application lifecycle, window creation, and secure system access.
+    *   **Capabilities:** Powers the SQLite database, AI inference, and filesystem operations.
 
-*   **`packages/*` (The Skills)**
-    *   **`@backend/db`**: Manages the SQLite database connection, schema, and queries.
-    *   **`@backend/ai-tutor`**: Handles logic for the offline local AI model (Ollama).
-    *   **`@backend/analytics`**: Processes and stores user learning metrics.
-    *   **`@afe/shared`**: The "common language". Contains TypeScript interfaces, constants, and IPC contracts shared between the Brain and the Face.
+*   **`packages/backend/*` (The Core Services)**
+    *   **`@backend/db`**: SQLite core via `better-sqlite3` and Drizzle ORM. Manages schema, migrations, and type-safe queries.
+    *   **`@backend/content-engine`**: Parses `manifest.json`, validates content integrity, and resolves local asset paths.
+    *   **`@backend/ai-tutor`**: Orchestrates local AI inference using Ollama (`qwen2.5:1.5b`), generating session titles and learning summaries.
+    *   **`@backend/analytics`**: Processes learning telemetry (video watch time, PDF reading progress, quiz performance).
+    *   **`@afe/shared`**: The source of truth for TypeScript interfaces, IPC channel constants, and global configuration.
 
 ---
 
@@ -118,9 +119,32 @@ export type StudentCreateResponse = Student;
 ```
 Both sides import these types. If you change a variable name in the backend, the frontend build will fail immediately. This ensures **Full-Stack Type Safety**.
 
-### Database Persistence
-*   **Location:** `C:\ProgramData\OfflineLearningApp\data.db`
-*   **Engine:** `better-sqlite3`. This is a synchronous/fast C-binding to SQLite. It runs in the Main Process, ensuring the UI never freezes while waiting for a query (because we await the IPC result async).
+### Database & Persistence
+*   **Production Path:** `C:\ProgramData\OfflineLearningApp\data.db`
+*   **Engine:** `better-sqlite3` — A synchronous, high-performance C-binding for SQLite.
+*   **ORM:** Drizzle ORM. We use this for:
+    *   **Migrations:** Automatic schema updates on application startup.
+    *   **Type Safety:** `inferSelect` and `inferInsert` types ensure the Frontend never sends invalid data.
+*   **Isolation:** The database runs entirely in the Main Process. The Renderer cannot "accidentally" corrupt the DB.
+
+### AI Tutor (Ollama Integration)
+The application provides an AI-powered tutor that works 100% offline.
+*   **Runtime:** Ollama (running locally on `localhost:11434`).
+*   **Model:** `qwen2.5:1.5b` (chosen for the best speed/quality ratio on average hardware).
+*   **Key Features:**
+    *   **Context Injection:** The tutor knows which module/lesson the student is currently viewing.
+    *   **Automatic Summaries:** Generates initial learning summaries (<300 words) and follow-up progress notes (<100 words) every 10 days.
+    *   **Session Management:** Auto-generates concise chat titles based on the first interaction.
+
+### Learning Analytics & Sync Engine
+*   **Granular Tracking:**
+    *   **Video:** Precise watch percentage and total duration.
+    *   **PDF Reading:** Tracks page progress and reading duration for document-based lessons.
+    *   **Quizzes:** Stores every attempt, score, and detailed answer history.
+*   **Synchronization:**
+    *   **Mechanism:** When connectivity is detected, the app compiles an analytics payload (UUID, watch time, read time, latest AI summary).
+    *   **Idempotency:** The sync uses an upsert mechanism to ensure data consistency on the central server even if retried multiple times.
+    *   **Persistence:** A `sync_queue` table ensures no offline data is lost before it's successfully pushed to the cloud.
 
 ---
 
