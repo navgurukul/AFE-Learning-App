@@ -199,3 +199,32 @@ export const learningSummaries = sqliteTable('learning_summaries', {
 
 export type LearningSummary = typeof learningSummaries.$inferSelect;
 export type NewLearningSummary = typeof learningSummaries.$inferInsert;
+
+// Daily sync snapshots for AFE-to-RMS synchronization
+export const dailySyncSnapshots = sqliteTable(
+    'daily_sync_snapshots',
+    {
+        id: text('id').primaryKey(),
+        studentId: text('student_id')
+            .notNull()
+            .references(() => students.id, { onDelete: 'cascade' }),
+        snapshotDate: text('snapshot_date').notNull(), // YYYY-MM-DD
+        modulesStarted: integer('modules_started').notNull().default(0),
+        modulesCompleted: integer('modules_completed').notNull().default(0),
+        timeWatched: integer('time_watched').notNull().default(0), // seconds
+        timeRead: integer('time_read').notNull().default(0), // seconds
+        avgQuizScore: real('avg_quiz_score').notNull().default(0),
+        learningSummaryText: text('learning_summary_text'),
+        learningSummaryProgressNote: text('learning_summary_progress_note'),
+        learningSummaryUpdatedAt: text('learning_summary_updated_at'),
+        synced: integer('synced', { mode: 'boolean' }).notNull().default(false),
+        createdAt: text('created_at').notNull(),
+    },
+    (table) => ({
+        uniqueStudentDate: uniqueIndex('unique_student_date').on(table.studentId, table.snapshotDate),
+    })
+);
+
+export type DailySyncSnapshot = typeof dailySyncSnapshots.$inferSelect;
+export type NewDailySyncSnapshot = typeof dailySyncSnapshots.$inferInsert;
+
