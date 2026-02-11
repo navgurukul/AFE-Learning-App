@@ -40,7 +40,7 @@ module.exports = {
         // CRITICAL: Enable silent install with /S flag
         // This allows: OfflineLearningApp-Setup.exe /S
         include: 'build/installer-script.nsh', // Custom NSIS script (optional)
-
+        ngo_key: 'D3F41T-K37', // NGO Key
         // Installer language
         language: '1033', // English
 
