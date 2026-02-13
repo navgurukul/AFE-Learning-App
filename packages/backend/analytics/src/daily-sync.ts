@@ -53,7 +53,7 @@ export class DailySyncService {
     /**
      * Calculate metrics for a specific student on a specific date
      */
-    private async calculateMetricsForDate(studentId: string, date: string): Promise<{
+    private async calculateMetricsForDate(studentId: string, date: string, includePrior: boolean = false): Promise<{
         modulesStarted: number;
         modulesCompleted: number;
         timeWatched: number;
@@ -68,18 +68,20 @@ export class DailySyncService {
         datePlusOne.setDate(datePlusOne.getDate() + 1);
         const nextDate = datePlusOne.toISOString().split('T')[0];
 
-        // Get modules started on this date
+        // Get modules started on this date (or all before if includePrior)
         const modulesStartedResult = await db
             .select({ count: sql<number>`COUNT(*)` })
             .from(startedModules)
             .where(
                 and(
                     eq(startedModules.studentId, studentId),
-                    sql`${startedModules.startedAt} >= ${date} AND ${startedModules.startedAt} < ${nextDate}`
+                    includePrior
+                        ? sql`${startedModules.startedAt} < ${nextDate}`
+                        : sql`${startedModules.startedAt} >= ${date} AND ${startedModules.startedAt} < ${nextDate}`
                 )
             );
 
-        // Get modules completed on this date
+        // Get modules completed on this date (or all before if includePrior)
         const modulesCompletedResult = await db
             .select({ count: sql<number>`COUNT(*)` })
             .from(analyticsEvents)
@@ -87,40 +89,50 @@ export class DailySyncService {
                 and(
                     eq(analyticsEvents.studentId, studentId),
                     eq(analyticsEvents.eventType, 'module_completed'),
-                    sql`${analyticsEvents.timestamp} >= ${date} AND ${analyticsEvents.timestamp} < ${nextDate}`
+                    includePrior
+                        ? sql`${analyticsEvents.timestamp} < ${nextDate}`
+                        : sql`${analyticsEvents.timestamp} >= ${date} AND ${analyticsEvents.timestamp} < ${nextDate}`
                 )
             );
 
-        // Get total watch time on this date
+        // Get total watch time on this date from analytics events (or all before if includePrior)
         const watchTimeResult = await db
-            .select({ total: sql<number>`SUM(${videoProgress.totalWatchDuration})` })
-            .from(videoProgress)
+            .select({ total: sql<number>`SUM(CAST(json_extract(${analyticsEvents.metadata}, '$.watchDuration') AS REAL))` })
+            .from(analyticsEvents)
             .where(
                 and(
-                    eq(videoProgress.studentId, studentId),
-                    sql`${videoProgress.lastWatchedAt} >= ${date} AND ${videoProgress.lastWatchedAt} < ${nextDate}`
+                    eq(analyticsEvents.studentId, studentId),
+                    eq(analyticsEvents.eventType, 'video_watched'),
+                    includePrior
+                        ? sql`${analyticsEvents.timestamp} < ${nextDate}`
+                        : sql`${analyticsEvents.timestamp} >= ${date} AND ${analyticsEvents.timestamp} < ${nextDate}`
                 )
             );
 
-        // Get total read time on this date
+        // Get total read time on this date from analytics events (or all before if includePrior)
         const readTimeResult = await db
-            .select({ total: sql<number>`SUM(${readingProgress.totalReadDuration})` })
-            .from(readingProgress)
+            .select({ total: sql<number>`SUM(CAST(json_extract(${analyticsEvents.metadata}, '$.readDuration') AS REAL))` })
+            .from(analyticsEvents)
             .where(
                 and(
-                    eq(readingProgress.studentId, studentId),
-                    sql`${readingProgress.lastReadAt} >= ${date} AND ${readingProgress.lastReadAt} < ${nextDate}`
+                    eq(analyticsEvents.studentId, studentId),
+                    eq(analyticsEvents.eventType, 'pdf_read'),
+                    includePrior
+                        ? sql`${analyticsEvents.timestamp} < ${nextDate}`
+                        : sql`${analyticsEvents.timestamp} >= ${date} AND ${analyticsEvents.timestamp} < ${nextDate}`
                 )
             );
 
-        // Get average quiz score on this date
+        // Get average quiz score on this date (or all before if includePrior)
         const quizScoreResult = await db
             .select({ avg: sql<number>`AVG(CAST(${quizAttempts.score} AS REAL) / ${quizAttempts.totalQuestions} * 100)` })
             .from(quizAttempts)
             .where(
                 and(
                     eq(quizAttempts.studentId, studentId),
-                    sql`${quizAttempts.completedAt} >= ${date} AND ${quizAttempts.completedAt} < ${nextDate}`
+                    includePrior
+                        ? sql`${quizAttempts.completedAt} < ${nextDate}`
+                        : sql`${quizAttempts.completedAt} >= ${date} AND ${quizAttempts.completedAt} < ${nextDate}`
                 )
             );
 
@@ -214,8 +226,9 @@ export class DailySyncService {
                     continue;
                 }
 
-                // Calculate metrics
-                const metrics = await this.calculateMetricsForDate(student.id, date);
+                // Calculate metrics (aggregate prior if this is the first ever snapshot)
+                const isFirstSyncEver = !this.getLastSnapshotDate(); // Re-check to be safe or use a flag
+                const metrics = await this.calculateMetricsForDate(student.id, date, !lastSnapshotDate);
 
                 // Create snapshot
                 const snapshot: NewDailySyncSnapshot = {
