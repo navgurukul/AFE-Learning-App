@@ -273,19 +273,25 @@ export function registerIPCHandlers() {
 
     // ========== SST Engine ==========
     ipcMain.on(IPC_CHANNELS.STT_START, () => {
+        console.log('[IPC] STT_START received');
         resetAudio();
     });
 
     ipcMain.on(IPC_CHANNELS.STT_CHUNK, (_, chunk) => {
+        // console.log(`[IPC] STT_CHUNK received, size: ${chunk.byteLength}`);
         pushAudioChunk(Buffer.from(chunk));
     });
 
     ipcMain.on(IPC_CHANNELS.STT_STOP, async (event) => {
+        console.log('[IPC] STT_STOP received');
         const result = await processAudio();
         resetAudio();
 
         if (result) {
-            event.reply(IPC_CHANNELS.STT_RESULT, result);
+            console.log(`[IPC] Sending STT_PARTIAL_RESULT: "${result}"`);
+            event.reply(IPC_CHANNELS.STT_PARTIAL_RESULT, result);
+        } else {
+            console.log('[IPC] No STT result to send');
         }
     });
 

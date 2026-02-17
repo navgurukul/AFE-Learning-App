@@ -17,6 +17,8 @@ export function useStreamingSTT() {
       console.log("stream", stream)
       const audioContext = new AudioContext({ sampleRate: 16000 });
       console.log("audioContext", audioContext)
+      await audioContext.resume();
+      console.log("audioContext state:", audioContext.state);
       const source = audioContext.createMediaStreamSource(stream);
       console.log("source", source)
       const processor = audioContext.createScriptProcessor(2048, 1, 1);
@@ -30,7 +32,7 @@ export function useStreamingSTT() {
           let s = Math.max(-1, Math.min(1, input[i]));
           buffer[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
         }
-
+        console.log("buffer", buffer)
         window.electronAPI.stt.sendChunk(buffer.buffer);
       };
 
@@ -40,7 +42,7 @@ export function useStreamingSTT() {
       mediaStreamRef.current = stream;
       audioContextRef.current = audioContext;
       processorRef.current = processor;
-
+      console.log("processorRef.current", processorRef.current)
       setIsRecording(true);
     } catch (error) {
       console.error("Error starting recording:", error);
