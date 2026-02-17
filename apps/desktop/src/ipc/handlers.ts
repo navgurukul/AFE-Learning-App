@@ -30,6 +30,11 @@ import {
 } from '@backend/ai-tutor';
 import { loadContentManifest, getModuleById, getLessonById } from '@backend/content-engine';
 
+import {
+    pushAudioChunk,
+    processAudio,
+    resetAudio
+} from "@backend/stt-engine";
 // Content manifest (loaded once)
 let contentManifest: ReturnType<typeof loadContentManifest> | null = null;
 
@@ -42,6 +47,8 @@ function getManifest() {
     }
     return contentManifest;
 }
+
+let sttInterval: NodeJS.Timeout | null = null;
 
 /**
  * Register all IPC handlers
@@ -261,6 +268,27 @@ export function registerIPCHandlers() {
         const { studentId } = data;
         await clearChatHistory(studentId);
     });
+
+
+
+    // ========== SST Engine ==========
+    ipcMain.on(IPC_CHANNELS.STT_START, () => {
+        resetAudio();
+    });
+
+    ipcMain.on(IPC_CHANNELS.STT_CHUNK, (_, chunk) => {
+        pushAudioChunk(Buffer.from(chunk));
+    });
+
+    ipcMain.on(IPC_CHANNELS.STT_STOP, async (event) => {
+        const result = await processAudio();
+        resetAudio();
+
+        if (result) {
+            event.reply(IPC_CHANNELS.STT_RESULT, result);
+        }
+    });
+
 
     console.log('✓ All IPC handlers registered');
 }

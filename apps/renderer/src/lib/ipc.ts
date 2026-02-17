@@ -178,6 +178,27 @@ class IPCClient {
             callback(data.sessionId, data.title);
         });
     }
+
+    // STT
+    sendSTTAudioChunk(chunk: ArrayBuffer) {
+        if (!window.electronAPI?.stt) return;
+        window.electronAPI.stt.sendChunk(chunk);
+    }
+
+    startSTT() {
+        if (!window.electronAPI?.stt) return;
+        window.electronAPI.stt.start();
+    }
+
+    stopSTT() {
+        if (!window.electronAPI?.stt) return;
+        window.electronAPI.stt.stop();
+    }
+
+    onSTTPartialResult(callback: (text: string) => void) {
+        if (!window.electronAPI?.stt) return () => { };
+        return window.electronAPI.stt.onResult(callback);
+    }
 }
 
 export const ipc = new IPCClient();

@@ -7,7 +7,7 @@
     "main": "./dist/main/index.js",
     "scripts": {
         "dev": "concurrently \"pnpm dev:main\" \"pnpm dev:renderer\"",
-        "dev:main": "tsc -b && copy src\\preload\\secure.cjs dist\\preload\\secure.cjs && electron .",
+        "dev:main": "tsc -b && node -e \"require('fs').copyFileSync('src/preload/secure.cjs','dist/preload/secure.cjs')\" && electron .",
         "dev:renderer": "pnpm --filter renderer dev",
         "build": "tsc",
         "build:installer": "pnpm build && electron-builder",
@@ -19,8 +19,10 @@
         "@backend/analytics": "workspace:*",
         "@backend/content-engine": "workspace:*",
         "@backend/db": "workspace:*",
+        "@backend/stt-engine": "workspace:*",
         "better-sqlite3": "9.6.0",
-        "electron": "^28.1.3"
+        "electron": "^28.1.3",
+        "node-record-lpcm16": "^1.0.1"
     },
     "devDependencies": {
         "@types/node": "^20.11.5",

@@ -53,6 +53,14 @@ export const IPC_CHANNELS = {
     AI_CLEAR_HISTORY: 'ai:clearHistory',
     AI_STREAM_CHUNK: 'ai:streamChunk',
     AI_SESSION_UPDATED: 'ai:session:updated',
+
+
+    // STT
+    STT_CHUNK: "stt-chunk",
+    STT_STOP: "stt-stop",
+    STT_RESULT: "stt-result",
+    STT_START: "stt-start",
+    STT_PARTIAL_RESULT: "stt-partial-result",
 } as const;
 
 // Request/Response type definitions

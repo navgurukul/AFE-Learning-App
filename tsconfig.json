@@ -46,7 +46,11 @@
         },
         {
             "path": "./apps/desktop"
+        },
+        {
+            "path":"./packages/backend/stt-engine"
         }
+
     ],
     "exclude": [
         "node_modules",

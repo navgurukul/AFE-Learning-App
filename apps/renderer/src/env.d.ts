@@ -10,6 +10,13 @@ declare global {
         electronAPI: {
             invoke: IPCInvoke;
             on: (channel: string, callback: (...args: any[]) => void) => () => void;
+            send: (channel: string, data: any) => void;
+            stt: {
+                start: () => void;
+                stop: () => void;
+                sendChunk: (chunk: ArrayBufferLike) => void;
+                onResult: (callback: (text: string) => void) => () => void;
+            };
         };
     }
 }

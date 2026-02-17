@@ -4,13 +4,13 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ipc } from '../lib/ipc.ts';
 import type { AISession, AIChatMessage, Module } from '@afe/shared';
-
+import { useStreamingSTT } from './useStreamingSTT.ts';
 // Use standard icons for neo-brutalism look
 const ICON_BOT = '🤖';
 const ICON_USER = '👤';
 const ICON_TRASH = '🗑️';
 const ICON_PLUS = '➕';
-
+const ICON_MIC = '🎙';
 function AILearningCenter() {
     const { studentId } = useParams<{ studentId: string }>();
     const navigate = useNavigate();
@@ -22,9 +22,11 @@ function AILearningCenter() {
     const [loading, setLoading] = useState(false);
     const [streamingContent, setStreamingContent] = useState('');
     const [modulePage, setModulePage] = useState(0);
+    const [isAutoSpeakEnabled, setIsAutoSpeakEnabled] = useState(true);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+    const { isRecording, startRecording, stopRecording } = useStreamingSTT();
     const MODULES_PER_PAGE = 5;
 
     useEffect(() => {
@@ -32,7 +34,13 @@ function AILearningCenter() {
             loadInitialData();
         }
     }, [studentId]);
+    useEffect(() => {
+        const cleanup = ipc.onSTTPartialResult((text) => {
+            setInput(prev => prev + text);
+        });
 
+        return cleanup;
+    }, []);
     useEffect(() => {
         if (activeSession) {
             setLoading(false);
@@ -167,6 +175,11 @@ function AILearningCenter() {
                 timestamp: new Date().toISOString()
             };
             setMessages(prev => [...prev, botMsg]);
+
+            if (isAutoSpeakEnabled) {
+                speak(result.response);
+            }
+
             setStreamingContent('');
         } catch (error) {
             console.error('Failed to send message:', error);
@@ -179,7 +192,54 @@ function AILearningCenter() {
         modulePage * MODULES_PER_PAGE,
         (modulePage + 1) * MODULES_PER_PAGE
     );
+    function speak(text: string) {
+        if (!window.speechSynthesis) return;
 
+        // Cancel any current speaking
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        // Optional: configure voice, rate, pitch here
+        // const voices = window.speechSynthesis.getVoices();
+        // utterance.voice = voices.find(v => v.lang.startsWith('en')) || null;
+
+        window.speechSynthesis.speak(utterance);
+    }
+
+    useEffect(() => {
+        // Cleanup speech on unmount
+        return () => {
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
+        };
+    }, []);
+
+    async function handleSpeak() {
+        try {
+            console.log("handleSpeak called");
+            console.log("isRecording:", isRecording);
+            console.log("startRecording:", startRecording);
+            console.log("stopRecording:", stopRecording);
+
+            if (!isRecording) {
+                console.log("Starting recording...");
+                // Starting fresh speech session
+                setInput("");               // Clear previous draft
+                setStreamingContent("");    // Clear any AI stream text
+
+                console.log("About to call startRecording()");
+                await startRecording();
+                console.log("startRecording() completed");
+            } else {
+                console.log("Stopping recording...");
+                await stopRecording();
+                console.log("stopRecording() completed");
+            }
+        } catch (err) {
+            console.error("STT error:", err);
+        }
+    }
     return (
         <div className="ai-learning-center" style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
             {/* Sidebar */}
@@ -304,6 +364,13 @@ function AILearningCenter() {
                                     {activeSession.mode === 'tutor' ? 'Tutor Mode' : 'Chat Mode'}
                                 </span>
                             </div>
+                            <button
+                                className={`btn btn-sm ${isAutoSpeakEnabled ? 'btn-primary' : ''}`}
+                                onClick={() => setIsAutoSpeakEnabled(!isAutoSpeakEnabled)}
+                                title={isAutoSpeakEnabled ? "Disable Auto-Speak" : "Enable Auto-Speak"}
+                            >
+                                {isAutoSpeakEnabled ? '🔊 Auto-Speak ON' : '🔇 Auto-Speak OFF'}
+                            </button>
                         </div>
 
                         {/* Messages Area */}
@@ -355,28 +422,69 @@ function AILearningCenter() {
                             backgroundColor: 'transparent',
                         }}>
                             <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', gap: 'var(--spacing-md)' }}>
-                                <textarea
-                                    ref={textareaRef}
-                                    className="input"
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    placeholder="Type your question here..."
-                                    style={{
-                                        resize: 'none',
-                                        minHeight: '56px',
-                                        maxHeight: '150px',
-                                        paddingTop: 'var(--spacing-sm)',
-                                        paddingBottom: 'var(--spacing-sm)',
-                                        lineHeight: '1.5'
-                                    }}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && !e.shiftKey) {
-                                            e.preventDefault();
-                                            handleSend();
-                                        }
-                                    }}
-                                    disabled={loading}
-                                />
+                                <div style={{ width: '100%', position: 'relative', border: '3px solid #000', boxShadow: '4px 4px 0px #000', background: '#fff', display: 'flex', alignItems: 'flex-end' }}>
+                                    <textarea
+                                        ref={textareaRef}
+                                        className="input"
+                                        value={input}
+                                        onChange={(e) => setInput(e.target.value)}
+                                        placeholder="Type your question here..."
+                                        style={{
+                                            resize: 'none',
+                                            minHeight: '56px',
+                                            maxHeight: '150px',
+                                            padding: '14px 56px 14px 16px', // space for mic
+                                            lineHeight: '1.5',
+                                            width: '100%',
+                                            border: 'none',
+                                            outline: 'none',
+                                            fontSize: '16px',
+                                            fontWeight: '600',
+                                            background: 'transparent'
+                                        }}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                e.preventDefault();
+                                                handleSend();
+                                            }
+                                        }}
+                                        disabled={loading}
+                                    />
+                                    <button
+                                        onClick={handleSpeak}
+                                        aria-label={isRecording ? "Stop recording" : "Start voice input"}
+                                        title={isRecording ? "Click to stop recording" : "Click to speak"}
+                                        style={{
+                                            position: 'absolute',
+                                            right: '12px',
+                                            bottom: '20px',
+                                            width: '38px',
+                                            height: '38px',
+                                            fontSize: '18px',
+                                            fontWeight: '900',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.1s ease',
+                                            backgroundColor: isRecording ? '#ff4444' : '#ffffff',
+                                            border: isRecording ? '3px solid #cc0000' : '3px solid #000',
+                                            boxShadow: isRecording ? '0 0 0 4px rgba(255, 68, 68, 0.3)' : '3px 3px 0px #000',
+                                            animation: isRecording ? 'pulse 1.5s infinite' : 'none',
+                                        }}
+                                        onMouseDown={(e) => {
+                                            if (!isRecording) {
+                                                e.currentTarget.style.boxShadow = '1px 1px 0px #000';
+                                                e.currentTarget.style.transform = 'translate(2px, 2px)';
+                                            }
+                                        }}
+                                        onMouseUp={(e) => {
+                                            if (!isRecording) {
+                                                e.currentTarget.style.boxShadow = '3px 3px 0px #000';
+                                                e.currentTarget.style.transform = 'translate(0, 0)';
+                                            }
+                                        }}
+                                    >
+                                        {isRecording ? '⏺️' : ICON_MIC}
+                                    </button>
+                                </div>
                                 <button
                                     className="btn btn-primary"
                                     onClick={handleSend}

@@ -42,7 +42,13 @@ const VALID_CHANNELS = [
     'ai:session:delete',
     'ai:clearHistory',
     'ai:streamChunk',
-    'ai:session:updated'
+    'ai:session:updated',
+
+    // STT (Speech-to-Text)
+    'stt:start',
+    'stt:stop',
+    'stt:audioChunk',
+    'stt:partial-result'
 ];
 
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -52,6 +58,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
             throw new Error(`Invalid IPC channel: ${channel}`);
         }
         return await ipcRenderer.invoke(channel, data);
+    },
+    send: (channel, data) => {
+        if (!VALID_CHANNELS.includes(channel)) {
+            console.error(`❌ Blocked unauthorized IPC send: ${channel}`);
+            return;
+        }
+        ipcRenderer.send(channel, data);
     },
     on: (channel, callback) => {
         if (!VALID_CHANNELS.includes(channel)) {
@@ -65,5 +78,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
         return () => {
             ipcRenderer.removeListener(channel, subscription);
         };
+    },
+    stt: {
+        start: () => ipcRenderer.send('stt-start'),
+        stop: () => ipcRenderer.send('stt-stop'),
+        sendChunk: (chunk) => ipcRenderer.send('stt-chunk', chunk),
+        onResult: (callback) => {
+            const subscription = (_event, text) => callback(text);
+            ipcRenderer.on('stt-partial-result', subscription);
+
+            return () => {
+                ipcRenderer.removeListener('stt-partial-result', subscription);
+            };
+        }
     }
-});
+});                                 
