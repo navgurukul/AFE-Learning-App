@@ -49,6 +49,7 @@ function getManifest() {
 }
 
 let sttInterval: NodeJS.Timeout | null = null;
+let isRecording = false;
 
 /**
  * Register all IPC handlers
@@ -271,29 +272,74 @@ export function registerIPCHandlers() {
 
 
 
-    // ========== SST Engine ==========
+    // ===============================
+    // STT (Speech-To-Text) Handlers
+    // ===============================
+
+    // ---------- STT START ------- ---
     ipcMain.on(IPC_CHANNELS.STT_START, () => {
+        if (isRecording) {
+            console.warn('[IPC] STT_START ignored (already recording)');
+            return;
+        }
+
         console.log('[IPC] STT_START received');
         resetAudio();
+        isRecording = true;
     });
 
-    ipcMain.on(IPC_CHANNELS.STT_CHUNK, (_, chunk) => {
-        // console.log(`[IPC] STT_CHUNK received, size: ${chunk.byteLength}`);
-        pushAudioChunk(Buffer.from(chunk));
-    });
 
-    ipcMain.on(IPC_CHANNELS.STT_STOP, async (event) => {
-        console.log('[IPC] STT_STOP received');
-        const result = await processAudio();
-        resetAudio();
+    // ---------- STT CHUNK ----------
+    ipcMain.on(IPC_CHANNELS.STT_CHUNK, (_event, chunk: ArrayBuffer) => {
+        if (!isRecording) {
+            console.warn('[IPC] STT_CHUNK ignored (not recording)');
+            return;
+        }
 
-        if (result) {
-            console.log(`[IPC] Sending STT_PARTIAL_RESULT: "${result}"`);
-            event.reply(IPC_CHANNELS.STT_PARTIAL_RESULT, result);
-        } else {
-            console.log('[IPC] No STT result to send');
+        if (!chunk) {
+            console.warn('[IPC] STT_CHUNK received empty chunk');
+            return;
+        }
+
+        try {
+            pushAudioChunk(Buffer.from(chunk));
+        } catch (error) {
+            console.error('[IPC] Error pushing audio chunk:', error);
         }
     });
+
+
+    // ---------- STT STOP ----------
+    ipcMain.on(IPC_CHANNELS.STT_STOP, async (event) => {
+        if (!isRecording) {
+            console.warn('[IPC] STT_STOP ignored (not recording)');
+            return;
+        }
+
+        console.log('[IPC] STT_STOP received');
+        isRecording = false;
+
+        try {
+            // Prevent blocking event loop starvation
+            const result = await processAudio();
+
+            resetAudio();
+
+            if (result && result.trim().length > 0) {
+                console.log('[IPC] Sending STT_FINAL result');
+                event.reply(IPC_CHANNELS.STT_FINAL, result.trim());
+            } else {
+                console.log('[IPC] No transcript generated');
+                event.reply(IPC_CHANNELS.STT_FINAL, '');
+            }
+
+        } catch (error) {
+            console.error('[IPC] STT processing failed:', error);
+            event.reply(IPC_CHANNELS.STT_FINAL, '');
+            resetAudio();
+        }
+    });
+
 
 
     console.log('✓ All IPC handlers registered');

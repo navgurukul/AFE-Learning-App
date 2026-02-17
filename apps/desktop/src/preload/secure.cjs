@@ -44,11 +44,13 @@ const VALID_CHANNELS = [
     'ai:streamChunk',
     'ai:session:updated',
 
-    // STT (Speech-to-Text)
+    // STT
     'stt:start',
     'stt:stop',
-    'stt:audioChunk',
-    'stt:partial-result'
+    'stt:chunk',
+    'stt:partial',
+    'stt:final'
+
 ];
 
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -80,16 +82,24 @@ contextBridge.exposeInMainWorld('electronAPI', {
         };
     },
     stt: {
-        start: () => ipcRenderer.send('stt-start'),
-        stop: () => ipcRenderer.send('stt-stop'),
-        sendChunk: (chunk) => ipcRenderer.send('stt-chunk', chunk),
-        onResult: (callback) => {
-            const subscription = (_event, text) => callback(text);
-            ipcRenderer.on('stt-partial-result', subscription);
+        start: () => ipcRenderer.send('stt:start'),
 
-            return () => {
-                ipcRenderer.removeListener('stt-partial-result', subscription);
-            };
+        stop: () => ipcRenderer.send('stt:stop'),
+
+        sendChunk: (chunk) => {
+            ipcRenderer.send('stt:chunk', chunk);
+        },
+
+        onPartial: (callback) => {
+            const listener = (_event, text) => callback(text);
+            ipcRenderer.on('stt:partial', listener);
+            return () => ipcRenderer.removeListener('stt:partial', listener);
+        },
+
+        onFinal: (callback) => {
+            const listener = (_event, text) => callback(text);
+            ipcRenderer.on('stt:final', listener);
+            return () => ipcRenderer.removeListener('stt:final', listener);
         }
     }
 });                                 

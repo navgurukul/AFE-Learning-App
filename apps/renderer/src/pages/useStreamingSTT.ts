@@ -1,73 +1,119 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 
 export function useStreamingSTT() {
   const [isRecording, setIsRecording] = useState(false);
-  const mediaStreamRef = useRef<MediaStream | null>(null);
+
+  const isRecordingRef = useRef(false);
   const audioContextRef = useRef<AudioContext | null>(null);
-  const processorRef = useRef<ScriptProcessorNode | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const workletNodeRef = useRef<AudioWorkletNode | null>(null);
 
-  const startRecording = async () => {
-    if (isRecording) return;
+  const startRecording = useCallback(async () => {
+    if (isRecordingRef.current || audioContextRef.current) return;
+    if (!window.electronAPI?.stt) {
+      console.warn("[STT] electronAPI.stt not available (not in Electron?)");
+      return;
+    }
+
+    console.log("[STT] Starting recording...");
+
     try {
-      window.electronAPI.stt.start();
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        console.log("[STT] getUserMedia OK");
+      } catch (mediaErr) {
+        const e = mediaErr as DOMException;
+        console.error("[STT] getUserMedia failed:", e?.name, e?.message);
+        throw mediaErr;
+      }
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: { channelCount: 1 }
-      });
-      console.log("stream", stream)
-      const audioContext = new AudioContext({ sampleRate: 16000 });
-      console.log("audioContext", audioContext)
-      await audioContext.resume();
-      console.log("audioContext state:", audioContext.state);
+      const audioContext = new AudioContext();
       const source = audioContext.createMediaStreamSource(stream);
-      console.log("source", source)
-      const processor = audioContext.createScriptProcessor(2048, 1, 1);
-      console.log("processor", processor)
 
-      processor.onaudioprocess = (e) => {
-        const input = e.inputBuffer.getChannelData(0);
-        const buffer = new Int16Array(input.length);
+      // Root-relative in dev (http); same-dir in prod (file://) so worklet is found
+      const workletUrl =
+        window.location.protocol === "file:"
+          ? new URL("stt-worklet.js", window.location.href).href
+          : new URL("/stt-worklet.js", window.location.origin).href;
+      try {
+        await audioContext.audioWorklet.addModule(workletUrl);
+        console.log("[STT] Worklet loaded:", workletUrl);
+      } catch (workletErr) {
+        const e = workletErr as Error;
+        console.error("[STT] Worklet load failed:", workletUrl, e?.message);
+        throw workletErr;
+      }
 
-        for (let i = 0; i < input.length; i++) {
-          let s = Math.max(-1, Math.min(1, input[i]));
-          buffer[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+      const workletNode = new AudioWorkletNode(audioContext, "stt-processor", {
+        processorOptions: { sampleRate: audioContext.sampleRate },
+      });
+
+      workletNode.port.onmessage = (event) => {
+        if (!isRecordingRef.current || !window.electronAPI?.stt) return;
+        try {
+          window.electronAPI.stt.sendChunk(event.data);
+        } catch (err) {
+          console.error("[STT] Error sending chunk:", err);
         }
-        console.log("buffer", buffer)
-        window.electronAPI.stt.sendChunk(buffer.buffer);
       };
 
-      source.connect(processor);
-      processor.connect(audioContext.destination);
+      source.connect(workletNode);
+      workletNode.connect(audioContext.destination);
 
-      mediaStreamRef.current = stream;
       audioContextRef.current = audioContext;
-      processorRef.current = processor;
-      console.log("processorRef.current", processorRef.current)
+      mediaStreamRef.current = stream;
+      workletNodeRef.current = workletNode;
+
+      isRecordingRef.current = true;
       setIsRecording(true);
+
+      window.electronAPI.stt.start();
     } catch (error) {
-      console.error("Error starting recording:", error);
+      const isAbort =
+        error instanceof DOMException && error.name === "AbortError";
+      if (isAbort) {
+        console.log("[STT] Recording start cancelled (mic denied or aborted).");
+      } else {
+        console.error("[STT] Error starting recording:", error);
+      }
+      isRecordingRef.current = false;
+      // We only call stt.start() after setup succeeds, so no need to stop here
     }
-  };
-
-  const stopRecording = async () => {
-    if (!isRecording) return;
-    try {
-      processorRef.current?.disconnect();
-      await audioContextRef.current?.close();
-      mediaStreamRef.current?.getTracks().forEach(t => t.stop());
-
-      window.electronAPI.stt.stop();
-      setIsRecording(false);
-    } catch (error) {
-      console.log("error in stop recording", error)
-    }
-  };
-
-  useEffect(() => {
-    window.electronAPI.stt.onResult((text) => {
-      console.log("Transcript:", text);
-    });
   }, []);
 
-  return { isRecording, startRecording, stopRecording };
+  const stopRecording = useCallback(async () => {
+    if (!isRecordingRef.current) return;
+
+    isRecordingRef.current = false;
+
+    console.log("[STT] Stopping recording...");
+
+    try {
+      workletNodeRef.current?.disconnect();
+      mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+
+      if (audioContextRef.current?.state !== "closed") {
+        await audioContextRef.current?.close();
+      }
+
+      if (window.electronAPI?.stt) {
+        window.electronAPI.stt.stop();
+      }
+    } catch (err) {
+      console.error("[STT] Stop error:", err);
+    }
+
+    audioContextRef.current = null;
+    mediaStreamRef.current = null;
+    workletNodeRef.current = null;
+
+    setIsRecording(false);
+  }, []);
+
+  return {
+    isRecording,
+    startRecording,
+    stopRecording,
+  };
 }

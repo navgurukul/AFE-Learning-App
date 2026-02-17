@@ -56,11 +56,10 @@ export const IPC_CHANNELS = {
 
 
     // STT
-    STT_CHUNK: "stt-chunk",
-    STT_STOP: "stt-stop",
-    STT_RESULT: "stt-result",
-    STT_START: "stt-start",
-    STT_PARTIAL_RESULT: "stt-partial-result",
+    STT_START: 'stt:start',
+    STT_CHUNK: 'stt:chunk',
+    STT_STOP: 'stt:stop',
+    STT_FINAL: 'stt:final',
 } as const;
 
 // Request/Response type definitions

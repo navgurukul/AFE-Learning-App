@@ -25,6 +25,7 @@ function AILearningCenter() {
     const [isAutoSpeakEnabled, setIsAutoSpeakEnabled] = useState(true);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const [micBusy, setMicBusy] = useState(false);
 
     const { isRecording, startRecording, stopRecording } = useStreamingSTT();
     const MODULES_PER_PAGE = 5;
@@ -34,13 +35,6 @@ function AILearningCenter() {
             loadInitialData();
         }
     }, [studentId]);
-    useEffect(() => {
-        const cleanup = ipc.onSTTPartialResult((text) => {
-            setInput(prev => prev + text);
-        });
-
-        return cleanup;
-    }, []);
     useEffect(() => {
         if (activeSession) {
             setLoading(false);
@@ -85,6 +79,29 @@ function AILearningCenter() {
             textareaRef.current.style.height = `${newHeight}px`;
         }
     }, [input]);
+
+
+    useEffect(() => {
+        const cleanup = ipc.onSTTFinalResult((text) => {
+            if (!text) return;
+
+            // Append safely instead of overwrite
+            setInput(prev => prev ? prev + " " + text : text);
+        });
+
+        return cleanup;
+    }, []);
+    useEffect(() => {
+        return () => {
+            if (isRecording) {
+                stopRecording();
+            }
+
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
+        };
+    }, [isRecording]);
 
     async function loadInitialData() {
         if (!studentId) return;
@@ -214,32 +231,27 @@ function AILearningCenter() {
             }
         };
     }, []);
-
     async function handleSpeak() {
+        if (micBusy || loading) return;
+
+        setMicBusy(true);
+
         try {
-            console.log("handleSpeak called");
-            console.log("isRecording:", isRecording);
-            console.log("startRecording:", startRecording);
-            console.log("stopRecording:", stopRecording);
+            console.log("[STT] handleSpeak called");
 
-            if (!isRecording) {
-                console.log("Starting recording...");
-                // Starting fresh speech session
-                setInput("");               // Clear previous draft
-                setStreamingContent("");    // Clear any AI stream text
-
-                console.log("About to call startRecording()");
-                await startRecording();
-                console.log("startRecording() completed");
-            } else {
-                console.log("Stopping recording...");
+            if (isRecording) {
                 await stopRecording();
-                console.log("stopRecording() completed");
+            } else {
+                setInput(""); // Clear previous speech before recording
+                await startRecording();
             }
         } catch (err) {
             console.error("STT error:", err);
+        } finally {
+            setMicBusy(false);
         }
     }
+
     return (
         <div className="ai-learning-center" style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
             {/* Sidebar */}
@@ -452,6 +464,7 @@ function AILearningCenter() {
                                     />
                                     <button
                                         onClick={handleSpeak}
+                                        disabled={micBusy || loading}
                                         aria-label={isRecording ? "Stop recording" : "Start voice input"}
                                         title={isRecording ? "Click to stop recording" : "Click to speak"}
                                         style={{
@@ -462,24 +475,15 @@ function AILearningCenter() {
                                             height: '38px',
                                             fontSize: '18px',
                                             fontWeight: '900',
-                                            cursor: 'pointer',
+                                            cursor: micBusy || loading ? 'not-allowed' : 'pointer',
                                             transition: 'all 0.1s ease',
                                             backgroundColor: isRecording ? '#ff4444' : '#ffffff',
                                             border: isRecording ? '3px solid #cc0000' : '3px solid #000',
-                                            boxShadow: isRecording ? '0 0 0 4px rgba(255, 68, 68, 0.3)' : '3px 3px 0px #000',
+                                            boxShadow: isRecording
+                                                ? '0 0 0 4px rgba(255, 68, 68, 0.3)'
+                                                : '3px 3px 0px #000',
                                             animation: isRecording ? 'pulse 1.5s infinite' : 'none',
-                                        }}
-                                        onMouseDown={(e) => {
-                                            if (!isRecording) {
-                                                e.currentTarget.style.boxShadow = '1px 1px 0px #000';
-                                                e.currentTarget.style.transform = 'translate(2px, 2px)';
-                                            }
-                                        }}
-                                        onMouseUp={(e) => {
-                                            if (!isRecording) {
-                                                e.currentTarget.style.boxShadow = '3px 3px 0px #000';
-                                                e.currentTarget.style.transform = 'translate(0, 0)';
-                                            }
+                                            opacity: micBusy || loading ? 0.6 : 1
                                         }}
                                     >
                                         {isRecording ? '⏺️' : ICON_MIC}

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, protocol, net } from 'electron';
+import { app, BrowserWindow, protocol, net, session } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -162,7 +162,21 @@ async function initialize() {
 // App lifecycle
 
 app.whenReady().then(async () => {
-    // Register 'media' protocol to serve videos securely from APP_DATA
+    // Allow microphone/camera for STT; log to see exact permission strings
+    const ses = session.defaultSession;
+    const allowMedia = (p: string) =>
+        p === 'media' || p === 'mediaKeySystem' || p.includes('media') || p.includes('microphone');
+    ses.setPermissionCheckHandler((_, permission) => {
+        const allow = allowMedia(permission);
+        console.log('[Electron] Permission check:', permission, '->', allow);
+        return allow;
+    });
+    ses.setPermissionRequestHandler((_, permission, callback) => {
+        const allow = allowMedia(permission);
+        console.log('[Electron] Permission request:', permission, '->', allow);
+        callback(allow);
+    });
+
     // Register 'media' protocol to serve videos securely from APP_DATA
     protocol.handle('media', (request) => {
         const url = request.url.replace('media://', '');

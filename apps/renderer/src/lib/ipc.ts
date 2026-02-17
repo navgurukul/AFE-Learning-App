@@ -180,14 +180,17 @@ class IPCClient {
     }
 
     // STT
+    // STT
+    startSTT() {
+        if (!window.electronAPI?.stt) {
+            throw new Error("STT API not available");
+        }
+        window.electronAPI.stt.start();
+    }
+
     sendSTTAudioChunk(chunk: ArrayBuffer) {
         if (!window.electronAPI?.stt) return;
         window.electronAPI.stt.sendChunk(chunk);
-    }
-
-    startSTT() {
-        if (!window.electronAPI?.stt) return;
-        window.electronAPI.stt.start();
     }
 
     stopSTT() {
@@ -196,9 +199,19 @@ class IPCClient {
     }
 
     onSTTPartialResult(callback: (text: string) => void) {
-        if (!window.electronAPI?.stt) return () => { };
-        return window.electronAPI.stt.onResult(callback);
+        if (!window.electronAPI?.stt) {
+            return () => { };
+        }
+        return window.electronAPI.stt.onPartial(callback);
     }
+
+    onSTTFinalResult(callback: (text: string) => void) {
+        if (!window.electronAPI?.stt) {
+            return () => { };
+        }
+        return window.electronAPI.stt.onFinal(callback);
+    }
+
 }
 
 export const ipc = new IPCClient();
