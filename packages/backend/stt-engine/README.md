@@ -1,167 +1,246 @@
 # STT Engine (Speech-to-Text)
 
-This package runs **Whisper** (via [whisper.cpp](https://github.com/ggerganov/whisper.cpp)) for push-to-talk transcription. You need to build or obtain the `whisper-cli` binary and its shared library, and place the model file here.
+This package runs **Whisper** ([whisper.cpp](https://github.com/ggerganov/whisper.cpp)) for **push-to-talk** transcription. It is used by the desktop app in development and in packaged installers.
 
 ---
 
-## What must be in this folder
+## Why Whisper instead of the Web Speech API?
 
-| File | Linux | macOS | Windows |
-|------|-------|-------|---------|
-| Model | `ggml-small-q5_1.bin` | same | same |
-| CLI | `whisper-cli` | `whisper-cli` | **`whisper-cli.exe`** |
-| Library | `libwhisper.so` + `libwhisper.so.1` | `libwhisper.dylib` | Optional: DLL next to `.exe` (or use static build) |
+We use **Whisper** (run locally via whisper.cpp) rather than the browser’s **Web Speech API** (e.g. `webkitSpeechRecognition` / `SpeechRecognition`) for these reasons:
 
-The app sets library path (Linux/macOS) or PATH (Windows) so the binary finds libraries in this folder.
+| Concern | Web Speech API | Whisper (this package) |
+|--------|----------------|-------------------------|
+| **Offline** | Usually requires internet; many implementations send audio to a cloud service. | Runs fully on the device; no network needed after the model is downloaded. |
+| **Privacy** | Audio is typically sent to a third party (e.g. Google). | Audio stays on the user’s machine; no data leaves the device. |
+| **Control & consistency** | Depends on the browser and vendor; behavior and quality can change or differ by browser/region. | Same binary and model everywhere; we control the version and behaviour. |
+| **Desktop / Electron** | Tied to the renderer process and browser implementation; not ideal for a packaged desktop app that should work the same on all installs. | Runs in the main process with a fixed CLI and model; same experience across supported platforms. |
+| **Languages & quality** | Support and quality vary by provider and locale. | One open model (e.g. small) with broad language support and predictable quality. |
+
+So we use Whisper to keep speech-to-text **offline**, **private**, and **consistent** in the desktop app, instead of relying on the Web Speech API and cloud-based recognition.
 
 ---
 
-## Step-by-step setup (Linux)
+## Architecture
 
-### 1. Clone and build whisper.cpp
+### Components
 
-```bash
-# Pick a directory outside this repo, e.g. your home or /tmp
-cd ~
-git clone https://github.com/ggerganov/whisper.cpp
-cd whisper.cpp
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  Desktop App (Electron main process)                                        │
+│  apps/desktop/src/ipc/handlers.ts                                           │
+│  • Listens: STT_START, STT_CHUNK, STT_STOP                                  │
+│  • Replies: STT_FINAL (transcript)                                          │
+└───────────────────────────────────┬───────────────────────────────────────┘
+                                    │ calls
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  STT Engine (this package)  packages/backend/stt-engine/                   │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐ │
+│  │ index.ts    │  │ streaming.ts │  │ wavWriter.ts│  │ Native assets       │ │
+│  │             │  │             │  │             │  │                      │ │
+│  │ • init()    │  │ StreamingSTT│  │ createWav   │  │ whisper-cli         │ │
+│  │ • push…()   │  │ • pushChunk │  │ Header/File │  │ ggml-small-q5_1.bin  │ │
+│  │ • process   │  │ • process() │  │ (16 kHz     │  │ libwhisper.so*      │ │
+│  │   Audio()   │  │ • reset()   │  │  mono PCM)  │  │ (Linux, if shared)   │ │
+│  │ • reset…()  │  │             │  │             │  │                      │ │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘  └──────────┬──────────┘ │
+│         │                │                │                     │           │
+│         └────────────────┴────────────────┴─────────────────────┘           │
+│                                    │                                         │
+│                          WAV file + execFile(whisper-cli)                    │
+└────────────────────────────────────┬───────────────────────────────────────┘
+                                     │
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  whisper-cli (whisper.cpp binary)                                           │
+│  • Loads ggml-small-q5_1.bin                                                 │
+│  • Reads WAV from path                                                       │
+│  • Writes transcription to stdout                                           │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-Build the **shared library** and the **command-line tool**:
+### Module roles
+
+| Module        | Role |
+|---------------|------|
+| **index.ts**  | Push-to-talk API: in-memory buffer of PCM chunks, build WAV, run `whisper-cli`, return transcript. Exposes `init()`, `pushAudioChunk()`, `processAudio()`, `resetAudio()`. Used by the desktop app. |
+| **streaming.ts** | Optional streaming-style API: `StreamingSTT` class with `pushChunk()`, `process()` (min ~1 s audio), `reset()`. Uses `wavWriter` and a fixed temp path. |
+| **wavWriter.ts** | Builds 16-bit mono WAV from raw PCM (e.g. 16 kHz). Used by `streaming.ts`; `index.ts` has its own inline WAV builder. |
+
+### Where files are loaded from
+
+| Mode | Root directory |
+|------|-----------------|
+| **Development** (`pnpm run dev`) | `packages/backend/stt-engine/` |
+| **Packaged app** (installer) | Set via `init(sttRoot)` from Electron (e.g. `resources/stt`); assets usually come from `apps/desktop/stt-assets/win/` or `stt-assets/linux/` at build time. |
+
+---
+
+## Data flow (push-to-talk)
+
+End-to-end flow from “hold to talk” to transcript:
+
+1. **Renderer**  
+   User holds push-to-talk → capture audio (e.g. from microphone).
+
+2. **IPC**  
+   - **STT_START** → main process: “start recording.”  
+   - Main calls `resetAudio()` and sets `isRecording = true`.
+
+3. **Audio chunks**  
+   Renderer sends **STT_CHUNK** with `ArrayBuffer` (PCM, 16-bit mono, typically 16 kHz).  
+   Main calls `pushAudioChunk(Buffer.from(chunk))`; chunks are appended in memory.
+
+4. **STT_STOP**  
+   User releases button → **STT_STOP** to main.  
+   Main sets `isRecording = false` and calls `processAudio()`.
+
+5. **processAudio() (index.ts)**  
+   - Merge all chunks into one PCM buffer.  
+   - Build a WAV (44-byte header + PCM) at 16 kHz mono.  
+   - Write WAV to a temp file (e.g. `/tmp/recording-<uuid>.wav`).  
+   - Set `LD_LIBRARY_PATH` (Linux) or `PATH` (Windows) so `whisper-cli` finds libs.  
+   - Run: `whisper-cli -m <model> -f <wav> --no-timestamps --threads 4`.  
+   - Read transcript from stdout.  
+   - Delete temp WAV.  
+   - Return transcript string or `null`.
+
+6. **Reply**  
+   Main sends **STT_FINAL** to renderer with the transcript (or empty string).  
+   Then calls `resetAudio()`.
+
+7. **Renderer**  
+   Displays or uses the transcript.
+
+---
+
+## Steps to run
+
+### 1. Prerequisites in this folder
+
+For **development** (`pnpm run dev`), put these under `packages/backend/stt-engine/`:
+
+| Asset   | Linux              | Windows        |
+|---------|--------------------|----------------|
+| Model   | `ggml-small-q5_1.bin` | `ggml-small-q5_1.bin` |
+| CLI     | `whisper-cli`      | `whisper-cli.exe` |
+| Library | `libwhisper.so` + `libwhisper.so.1` (optional if static build) | Not needed for static build |
+
+### 2. Get the model
+
+If you see “invalid model data (bad magic)”, re-download the model:
 
 ```bash
-mkdir build
-cd build
-cmake .. -DBUILD_SHARED_LIBS=ON
+# From repo root
+bash packages/backend/stt-engine/download-model.sh
+```
+
+Or manually from Hugging Face (~181 MiB):
+
+- https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small-q5_1.bin  
+
+Save as `packages/backend/stt-engine/ggml-small-q5_1.bin`.
+
+### 3. Get the whisper binary (Linux)
+
+**Option A – Use the copy script (recommended)**  
+Build whisper.cpp locally, then copy the binary (and optional .so) into this package:
+
+```bash
+# Build (static = no .so needed)
+cd ~/Desktop/whisper.cpp   # or your clone path
+mkdir -p build && cd build
+cmake .. -DBUILD_SHARED_LIBS=OFF
 cmake --build . --config Release
+
+# Copy into this package (default path in script: ~/Desktop/whisper.cpp)
+bash /path/to/AFE-Learning-App/packages/backend/stt-engine/copy-whisper-from-idesktop.sh
 ```
 
-After this you should have something like:
-
-- `build/libwhisper.so` (or a versioned name)
-- `build/bin/main` (the CLI; we’ll copy it as `whisper-cli`)
-
-### 2. Copy files into this package
-
-From the **root of the AFE-Learning-App repo**:
+Override the whisper source if needed:
 
 ```bash
-STT_ENGINE=packages/backend/stt-engine
-WHISPER_BUILD=~/whisper.cpp/build   # or wherever you built
-
-# CLI (rename to whisper-cli)
-cp "$WHISPER_BUILD/bin/main" "$STT_ENGINE/whisper-cli"
-chmod +x "$STT_ENGINE/whisper-cli"
-
-# Shared library
-cp "$WHISPER_BUILD/libwhisper.so" "$STT_ENGINE/"
-
-# If the app looks for libwhisper.so.1, add a symlink
-cd "$STT_ENGINE"
-ln -sf libwhisper.so libwhisper.so.1
+WHISPER_SRC=/home/phantom/Desktop/whisper.cpp bash packages/backend/stt-engine/copy-whisper-from-idesktop.sh
 ```
 
-### 3. Model file (if you don’t have it)
-
-The app expects **`ggml-small-q5_1.bin`** in this folder. If you don’t have it:
-
-- Download from Hugging Face / whisper.cpp model links, or
-- Use the script in whisper.cpp:
+**Option B – Shared lib build**  
+If you built with `-DBUILD_SHARED_LIBS=ON`:
 
 ```bash
-cd ~/whisper.cpp
-bash ./models/download-ggml-model.sh small
-# Then convert to Q5_1 or copy the small model and rename if your script produces ggml-small-q5_1.bin
+STT=packages/backend/stt-engine
+WB=~/whisper.cpp/build
+cp "$WB/bin/whisper-cli" "$STT/whisper-cli"
+chmod +x "$STT/whisper-cli"
+cp "$WB/libwhisper.so" "$STT/" 2>/dev/null || cp "$WB/lib/libwhisper.so" "$STT/"
+cd "$STT" && ln -sf libwhisper.so libwhisper.so.1
 ```
 
-If the script produces a different name (e.g. `ggml-base.en.bin`), you can either rename it to `ggml-small-q5_1.bin` or change `MODEL_PATH` in `index.ts` to match.
+### 4. Get the whisper binary (Windows)
 
-### 4. Verify from the command line
-
-```bash
-cd packages/backend/stt-engine
-
-# So the loader finds libwhisper.so.1 in the current dir
-export LD_LIBRARY_PATH="$PWD:$LD_LIBRARY_PATH"
-
-# Create a short test WAV (e.g. 1 second of silence) or use any 16 kHz mono WAV
-./whisper-cli -m ggml-small-q5_1.bin -f /path/to/test.wav --no-timestamps --threads 4
-```
-
-If this prints a line of text (or empty for silence), the STT engine in the app will work the same way.
-
----
-
-## macOS
-
-- Build whisper.cpp the same way; the library will be `libwhisper.dylib`.
-- Copy `build/bin/main` to `whisper-cli` and put `libwhisper.dylib` in this folder. The app sets `DYLD_LIBRARY_PATH` to this folder so the binary can load the dylib.
-
----
-
-## Step-by-step setup (Windows)
-
-The app looks for **`whisper-cli.exe`** in this folder. Easiest is a **static** build (no DLLs).
-
-### 1. Install build tools
-
-- **Visual Studio 2022** (or Build Tools) with “Desktop development with C++”, or
-- **MinGW-w64** + CMake.
-
-### 2. Clone and build whisper.cpp (static = no DLL)
-
-Open **Developer Command Prompt for VS** or a terminal with `cmake` and a C++ compiler in PATH:
+Build whisper.cpp (e.g. Visual Studio 2022, “x64 Native Tools”):
 
 ```cmd
-cd %USERPROFILE%
-git clone https://github.com/ggerganov/whisper.cpp
-cd whisper.cpp
-
-mkdir build
-cd build
+cd %USERPROFILE%\whisper.cpp
+mkdir build && cd build
 cmake .. -DBUILD_SHARED_LIBS=OFF -A x64
 cmake --build . --config Release
 ```
 
-- With **MinGW**: `cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF` then `cmake --build .`
-- After build you should have `build\bin\Release\main.exe` (or `main.exe` in `build\bin`).
-
-### 3. Copy into this package
-
-From the **AFE-Learning-App repo root** (adjust paths if your clone is elsewhere):
+Copy the CLI (adjust path if your `main.exe` is under `build\bin`):
 
 ```cmd
-set STT_ENGINE=packages\backend\stt-engine
+set STT=packages\backend\stt-engine
 set WB=%USERPROFILE%\whisper.cpp\build
-
-copy "%WB%\bin\Release\main.exe" "%STT_ENGINE%\whisper-cli.exe"
+copy "%WB%\bin\Release\main.exe" "%STT%\whisper-cli.exe"
 ```
 
-If your build put `main.exe` in `build\bin` instead of `build\bin\Release`, use that path.
+Or copy `whisper-cli.exe` if your build names it that way.
 
-### 4. Model file
+### 5. Verify
 
-Put **`ggml-small-q5_1.bin`** in `packages\backend\stt-engine\`. Download from whisper.cpp’s model scripts or Hugging Face if needed.
+**Linux:**
 
-### 5. Verify from the command line
+```bash
+cd packages/backend/stt-engine
+export LD_LIBRARY_PATH="$PWD:$LD_LIBRARY_PATH"
+./whisper-cli -m ggml-small-q5_1.bin -f /tmp/test.wav --no-timestamps --threads 4
+```
+
+**Windows:**
 
 ```cmd
 cd packages\backend\stt-engine
 whisper-cli.exe -m ggml-small-q5_1.bin -f C:\path\to\test.wav --no-timestamps --threads 4
 ```
 
-If it prints a line (or nothing for silence), the app will work.
+If this runs without errors, STT in the app will work.
 
-### If you use a shared build (DLL)
+### 6. Run the app (development)
 
-- Build with `-DBUILD_SHARED_LIBS=ON`, then copy **`main.exe` → `whisper-cli.exe`** and the generated **`.dll`** (e.g. `whisper.dll`) into this folder.
-- The app adds this folder to `PATH` when spawning, so the loader will find the DLL next to the exe.
+From the **repo root**:
+
+```bash
+pnpm run dev
+```
+
+The desktop app will load `whisper-cli`, the model, and (on Linux) the shared library from `packages/backend/stt-engine/`.
+
+### 7. Packaged build (installer)
+
+For the **standalone installer**, STT assets go in **`apps/desktop/stt-assets/`**, not in this folder. The desktop app bundles them at build time.
+
+- Put model and binaries in `stt-assets/win/` and `stt-assets/linux/` (see `apps/desktop/stt-assets/README.md` if present).
+- Then from repo root: `pnpm run build:installer`.
 
 ---
 
-## Summary
+## Quick reference
 
-1. Build **whisper.cpp** for your OS (see Linux / macOS / Windows sections).
-2. Copy the CLI into this folder: **`whisper-cli`** (Linux/macOS) or **`whisper-cli.exe`** (Windows). On Linux/macOS also copy the shared library (and symlink if needed).
-3. Put **`ggml-small-q5_1.bin`** in this folder.
-4. Run the app; push-to-talk should produce transcripts.
+| Task | Command or location |
+|------|----------------------|
+| Run app (dev) | `pnpm run dev` (from repo root) |
+| STT assets (dev) | `packages/backend/stt-engine/` |
+| STT assets (installer) | `apps/desktop/stt-assets/win/` and `stt-assets/linux/` |
+| Download model | `bash packages/backend/stt-engine/download-model.sh` |
+| Copy whisper binary | `bash packages/backend/stt-engine/copy-whisper-from-idesktop.sh` |
+| Build installer | `pnpm run build:installer` |

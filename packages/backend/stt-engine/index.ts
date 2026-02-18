@@ -4,13 +4,30 @@ import os from "os";
 import path from "path";
 import crypto from "crypto";
 
-// Resolve from package root (parent of dist/) so model and binary are found when placed in stt-engine/
-const packageRoot = path.resolve(__dirname, "..");
-const MODEL_PATH = path.join(packageRoot, "ggml-small-q5_1.bin");
-const WHISPER_BIN = path.join(
-    packageRoot,
-    process.platform === "win32" ? "whisper-cli.exe" : "whisper-cli"
-);
+// When running inside the desktop app, init() sets this; otherwise use package dir (parent of dist/)
+let packageRoot = path.resolve(__dirname, "..");
+
+function getModelPath(): string {
+    return path.join(packageRoot, "ggml-small-q5_1.bin");
+}
+/** Prefer whisper-whisper-cli (Dec 2024+), fallback to whisper-cli (legacy). */
+function getWhisperBin(): string {
+    const ext = process.platform === "win32" ? ".exe" : "";
+    const candidates = [`whisper-whisper-cli${ext}`, `whisper-cli${ext}`];
+    for (const name of candidates) {
+        const bin = path.join(packageRoot, name);
+        if (fs.existsSync(bin)) return bin;
+    }
+    return path.join(packageRoot, candidates[1]); // default for "not found" error
+}
+
+/**
+ * Set the directory containing whisper-cli, model, and (on Linux) libwhisper.
+ * Call this from the Electron main process with getSttRoot() so packaged builds use resources/stt.
+ */
+export function init(sttRoot: string): void {
+    packageRoot = path.resolve(sttRoot);
+}
 
 let audioBuffer: Buffer[] = [];
 
@@ -64,13 +81,15 @@ export async function processAudio(): Promise<string | null> {
         return null;
     }
 
-    if (!fs.existsSync(MODEL_PATH)) {
-        console.error("[STT] Model file not found:", MODEL_PATH);
+    const modelPath = getModelPath();
+    const whisperBin = getWhisperBin();
+    if (!fs.existsSync(modelPath)) {
+        console.error("[STT] Model file not found:", modelPath);
         return null;
     }
 
-    if (!fs.existsSync(WHISPER_BIN)) {
-        console.error("[STT] whisper-cli binary not found:", WHISPER_BIN);
+    if (!fs.existsSync(whisperBin)) {
+        console.error("[STT] Whisper binary not found. Looked for whisper-whisper-cli or whisper-cli in:", packageRoot);
         return null;
     }
 
@@ -115,9 +134,9 @@ export async function processAudio(): Promise<string | null> {
 
     return new Promise((resolve) => {
         execFile(
-            WHISPER_BIN,
+            whisperBin,
             [
-                "-m", MODEL_PATH,
+                "-m", modelPath,
                 "-f", tempFile,
                 "--no-timestamps",
                 "--threads", "4"
@@ -134,7 +153,8 @@ export async function processAudio(): Promise<string | null> {
 
                 if (err) {
                     console.error("[STT] whisper-cli execution error:", err.message);
-                    if (stderr) console.error("[STT] stderr:", stderr);
+                    if (stderr && stderr.trim()) console.error("[STT] stderr:", stderr);
+                    if (stdout && stdout.trim()) console.error("[STT] stdout:", stdout);
                     resolve(null);
                     return;
                 }
