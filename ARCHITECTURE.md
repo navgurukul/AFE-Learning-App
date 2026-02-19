@@ -103,7 +103,75 @@ Instead of giving the UI a "Master Key", we give it a "Menu".
 
 ---
 
-## 4. Technical Implementation Details
+## 4. Why IPC Instead of HTTP APIs?
+
+You might wonder: "Why not just create a REST API with Express and have the UI make HTTP requests?"
+
+### The Fundamental Difference
+**APIs (HTTP/REST)** are designed for **network communication** between separate machines or services over a network. **IPCs** are designed for **same-machine, inter-process communication** within a single application.
+
+### Reasons We Use IPC
+
+#### 1. **Architectural Necessity**
+This is an Electron desktop application where:
+- Both the UI and backend run **on the same machine**
+- They are **parts of the same application**, not separate services
+- Using HTTP would require:
+  - Starting a local web server (unnecessary overhead)
+  - Managing ports (potential conflicts, security risks)
+  - Network stack overhead (slower performance)
+  - Exposed localhost endpoints (security vulnerability)
+
+#### 2. **Security Model**
+The IPC approach provides **built-in security** through Electron's architecture:
+- The Renderer is **sandboxed** and cannot access Node.js APIs
+- The Preload script acts as a **whitelist gateway**
+- Only explicitly allowed operations can reach the Main Process
+
+With HTTP APIs, you would need to:
+- Implement authentication/authorization mechanisms
+- Manage CORS policies
+- Secure localhost endpoints
+- Handle session management
+- All of this is **unnecessary complexity** for same-machine communication
+
+#### 3. **Performance**
+IPC is significantly faster because:
+- **No network stack**: Direct inter-process messaging via Electron's internal channels
+- **No HTTP overhead**: No headers, TCP handshake, or connection pooling
+- **Efficient serialization**: Electron handles data transfer optimization
+- **Lower latency**: Critical for responsive UI interactions (student switching, progress updates)
+
+#### 4. **Offline-First Architecture**
+This application is designed for **100% offline operation**:
+- No external server exists
+- All data is local (SQLite database)
+- Must work in environments with **zero internet connectivity**
+
+HTTP APIs imply a client-server architecture with network dependency, which contradicts the core requirement.
+
+#### 5. **Type Safety Across the Bridge**
+The IPC approach allows **full-stack TypeScript type safety**:
+```typescript
+// Shared contract in @afe/shared
+export type StudentCreateRequest = { name: string; avatar: string };
+export type StudentCreateResponse = Student;
+```
+Both the Renderer and Main Process import these types. If you change a field name in the backend, the frontend build **fails immediately** at compile time.
+
+### When Would You Use HTTP APIs Instead?
+You would use HTTP APIs if:
+- You had a **separate backend server** (e.g., Node.js/Express on a remote machine)
+- **Multiple client types** needed to connect (web app, mobile app, desktop app)
+- You needed **network-based communication** between distributed services
+- The backend needed to serve **multiple concurrent users** over a network
+
+### Conclusion
+For a **self-contained desktop application** like this, IPC is the correct architectural choice. It provides better security, performance, and simplicity while perfectly aligning with the offline-first requirement.
+
+---
+
+## 5. Technical Implementation Details
 
 ### The Preload Strategy (`secure.cjs`)
 We use a **CommonJS (.cjs)** preload script instead of TypeScript/ESM.
@@ -148,7 +216,7 @@ The application provides an AI-powered tutor that works 100% offline.
 
 ---
 
-## 5. Summary Metaphor
+## 6. Summary Metaphor
 
 Think of this application like a **High-Security Restaurant**.
 

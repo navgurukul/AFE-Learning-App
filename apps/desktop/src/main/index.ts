@@ -10,7 +10,8 @@ import { initializeDatabase } from '@backend/db';
 import { loadContentManifest } from '@backend/content-engine';
 import { registerIPCHandlers } from '../ipc/handlers.js';
 import { syncContentToDatabase } from './content-sync.js';
-import { checkAndGenerateSummaries, SyncService } from '@backend/analytics';
+import { SyncService, DailySyncService, checkAndGenerateSummaries } from '@backend/analytics';
+import { getDeviceInfo } from './device-info.js';
 
 /**
  * Convert Windows paths to file: URLs for net.fetch
@@ -86,8 +87,8 @@ async function initialize() {
     // 2. In development, copy manifest from dev-data if it exists
     if (!app.isPackaged) {
         const devManifestPath = path.join(process.cwd(), '../../dev-data/content/manifest.json');
-        const prodManifestDir = path.join('C:\\ProgramData\\OfflineLearningApp', 'content');
-        const prodManifestPath = path.join(prodManifestDir, 'manifest.json');
+        const prodManifestDir = PATHS.CONTENT_DIR;
+        const prodManifestPath = PATHS.MANIFEST;
 
         if (fs.existsSync(devManifestPath)) {
             try {
@@ -118,7 +119,7 @@ async function initialize() {
     // 3. Check for content manifest and SYNC to DB
     if (!hasContentManifest()) {
         console.warn(
-            '⚠️  No content manifest found. Please ensure content is installed in C:\\ProgramData\\OfflineLearningApp\\content\\'
+            `⚠️  No content manifest found. Please ensure content is installed in ${PATHS.CONTENT_DIR}`
         );
     } else {
         console.log('✓ Content manifest found');
@@ -136,27 +137,49 @@ async function initialize() {
     registerIPCHandlers();
     console.log('✓ IPC handlers registered');
 
-    // 5. Check and generate AI learning summaries
-    console.log('🤖 Checking AI learning summaries...');
-    try {
-        await checkAndGenerateSummaries();
-        console.log('✓ AI learning summaries check complete');
-    } catch (error) {
-        console.error('❌ Failed to process AI learning summaries:', error);
-    }
+    // 5. Launch background sync worker (NON-BLOCKING)
+    console.log('🚀 Launching background sync worker...');
+    console.log('✅ App initialization complete (sync running in background)');
 
-    // 6. Sync data to centralized server
-    const serverUrl = process.env.CENTRALIZED_SERVER_URL || 'http://localhost:3000/api/sync';
-    console.log(`🌐 Starting sync to ${serverUrl}...`);
-    try {
-        const syncService = new SyncService(serverUrl, net.fetch);
-        await syncService.syncAllStudents();
-        console.log('✓ Data sync complete');
-    } catch (error) {
-        console.error('❌ Data sync failed:', error);
-    }
+    // Run sync in background (non-blocking)
+    (async () => {
+        try {
+            console.log('🤖 Starting AI summary generation (background)...');
+            await checkAndGenerateSummaries();
+            console.log('✓ AI summaries generated');
 
-    console.log('✅ Initialization complete');
+            // Create daily snapshots
+            console.log('📸 Creating daily snapshots...');
+            const deviceInfo = await getDeviceInfo();
+            const dailySyncService = new DailySyncService(deviceInfo);
+            const snapshotsCreated = await dailySyncService.createSnapshots();
+            console.log(`✓ Created ${snapshotsCreated} snapshots`);
+
+            // Sync to RMS server
+            const serverUrl = process.env.CENTRALIZED_SERVER_URL || 'http://localhost:3000/api/afe';
+            console.log(`🌐 Syncing to ${serverUrl}...`);
+
+            const syncService = new SyncService(serverUrl, net.fetch);
+
+            // Validate NGO key first
+            const validation = await syncService.validateNGOKey(deviceInfo.ngoKey);
+            if (!validation.valid) {
+                console.error(`❌ NGO key validation failed: ${validation.error}`);
+                return;
+            }
+            console.log(`✓ NGO key validated: ${validation.ngoName} (ID: ${validation.ngoId})`);
+
+            // Sync data
+            const result = await syncService.syncToServer(deviceInfo);
+            if (result.success) {
+                console.log(`✓ Synced ${result.syncedCount} snapshots to server`);
+            } else {
+                console.warn('⚠️  Sync failed (will retry next startup)');
+            }
+        } catch (error) {
+            console.error('❌ Background sync failed:', error);
+        }
+    })();
 }
 
 // App lifecycle

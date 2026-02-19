@@ -1,5 +1,6 @@
-import { getAnalyticsSummary } from './index.js';
-import { getAllStudents, getDatabase, learningSummaries, desc, eq } from '@backend/db';
+import { getDatabase, dailySyncSnapshots, students, eq } from '@backend/db';
+import type { DeviceInfo } from '@afe/shared';
+import type { DailySyncSnapshot } from '@backend/db';
 
 export class SyncService {
     private serverUrl: string;
@@ -11,60 +12,104 @@ export class SyncService {
     }
 
     /**
-     * Sync all students data to the centralized server
+     * Validate NGO key with RMS server
      */
-    async syncAllStudents(): Promise<void> {
-        console.log('[SyncService] Starting synchronization...');
-        const students = await getAllStudents();
-        const db = getDatabase();
+    async validateNGOKey(ngoKey: string): Promise<{ valid: boolean; ngoId?: number; ngoName?: string; error?: string }> {
+        try {
+            const response = await this.fetchFn(`${this.serverUrl}/validate-key`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ngoKey })
+            });
 
-        for (const student of students) {
-            try {
-                // 1. Get analytics summary
-                const summary = await getAnalyticsSummary(student.id);
-
-                // 2. Get latest AI learning summary
-                const latestAiSummaryResult = await db
-                    .select()
-                    .from(learningSummaries)
-                    .where(eq(learningSummaries.studentId, student.id))
-                    .orderBy(desc(learningSummaries.lastUpdatedAt))
-                    .limit(1);
-
-                const aiSummary = latestAiSummaryResult[0];
-
-                // 3. Prepare payload
-                const payload = {
-                    uuid: student.id,
-                    name: student.name,
-                    modulesStarted: summary.modulesStarted,
-                    timeWatched: summary.totalWatchTime,
-                    timeRead: summary.totalReadTime,
-                    modulesCompleted: summary.modulesCompleted,
-                    avgQuizScore: summary.averageQuizScore,
-                    learningSummary: aiSummary ? {
-                        text: aiSummary.summaryText,
-                        progressNote: aiSummary.progressNote,
-                        lastUpdatedAt: aiSummary.lastUpdatedAt
-                    } : null
-                };
-
-                // 4. Send to centralized server (upsert)
-                const response = await this.fetchFn(this.serverUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (response.ok) {
-                    console.log(`[SyncService] Successfully synced data for student ${student.name}`);
-                } else {
-                    console.error(`[SyncService] Failed to sync data for student ${student.name}: ${response.statusText}`);
-                }
-            } catch (error) {
-                console.error(`[SyncService] Error syncing student ${student.name}:`, error);
+            if (!response.ok) {
+                return { valid: false, error: `Server responded with ${response.status}` };
             }
+
+            return await response.json();
+        } catch (error) {
+            console.error('[SyncService] NGO key validation failed:', error);
+            return { valid: false, error: String(error) };
         }
-        console.log('[SyncService] Synchronization complete');
+    }
+
+    /**
+     * Sync all unsynced snapshots to RMS server
+     */
+    async syncToServer(deviceInfo: DeviceInfo): Promise<{ success: boolean; syncedCount: number }> {
+        try {
+            const db = getDatabase();
+
+            // Get all unsynced snapshots
+            const unsyncedSnapshots = await db
+                .select()
+                .from(dailySyncSnapshots)
+                .where(eq(dailySyncSnapshots.synced, false))
+                .orderBy(dailySyncSnapshots.snapshotDate);
+
+            if (unsyncedSnapshots.length === 0) {
+                console.log('[SyncService] No unsynced snapshots found');
+                return { success: true, syncedCount: 0 };
+            }
+
+            console.log(`[SyncService] Found ${unsyncedSnapshots.length} unsynced snapshots`);
+
+            // Get student names (snapshots only have IDs)
+            const studentMap = new Map<string, string>();
+            const allStudents = await db.select().from(students);
+            for (const student of allStudents) {
+                studentMap.set(student.id, student.name);
+            }
+
+            // Build payload
+            const payload = {
+                ngoKey: deviceInfo.ngoKey,
+                serialNumber: deviceInfo.serialNumber,
+                macAddress: deviceInfo.macAddress,
+                snapshots: unsyncedSnapshots.map(snap => ({
+                    studentUuid: snap.studentId,
+                    studentName: studentMap.get(snap.studentId) || 'Unknown',
+                    snapshotDate: snap.snapshotDate,
+                    modulesStarted: snap.modulesStarted,
+                    modulesCompleted: snap.modulesCompleted,
+                    timeWatched: snap.timeWatched,
+                    timeRead: snap.timeRead,
+                    avgQuizScore: snap.avgQuizScore,
+                    learningSummary: snap.learningSummaryText ? {
+                        text: snap.learningSummaryText,
+                        progressNote: snap.learningSummaryProgressNote || null,
+                        lastUpdatedAt: snap.learningSummaryUpdatedAt || null
+                    } : null
+                }))
+            };
+
+            // Send to server
+            const response = await this.fetchFn(`${this.serverUrl}/sync`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                console.error(`[SyncService] Server responded with ${response.status}: ${response.statusText}`);
+                return { success: false, syncedCount: 0 };
+            }
+
+            const result = await response.json();
+
+            // Mark snapshots as synced
+            for (const snap of unsyncedSnapshots) {
+                await db.update(dailySyncSnapshots)
+                    .set({ synced: true })
+                    .where(eq(dailySyncSnapshots.id, snap.id));
+            }
+
+            console.log(`[SyncService] Successfully synced ${unsyncedSnapshots.length} snapshots`);
+            return { success: true, syncedCount: unsyncedSnapshots.length };
+        } catch (error) {
+            console.error('[SyncService] Sync failed:', error);
+            return { success: false, syncedCount: 0 };
+        }
     }
 }
+

@@ -14,12 +14,14 @@
         "build": "tsc"
     },
     "dependencies": {
-        "drizzle-orm": "^0.29.3",
-        "@backend/db": "workspace:*",
+        "@afe/shared": "workspace:*",
         "@backend/ai-tutor": "workspace:*",
-        "@afe/shared": "workspace:*"
+        "@backend/db": "workspace:*",
+        "drizzle-orm": "^0.29.3",
+        "uuid": "^13.0.0"
     },
     "devDependencies": {
+        "@types/uuid": "^11.0.0",
         "typescript": "^5.3.3"
     }
 }

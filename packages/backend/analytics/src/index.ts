@@ -186,3 +186,4 @@ export async function checkAndGenerateSummaries(): Promise<void> {
 
 export * from './sync.js';
 export * from './types.js';
+export * from './daily-sync.js';

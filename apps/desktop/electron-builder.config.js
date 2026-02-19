@@ -12,7 +12,6 @@ module.exports = {
     // Files to include
     files: ['dist/**/*', 'package.json'],
 
-    // Windows-specific configuration
     win: {
         target: [
             {
@@ -20,7 +19,15 @@ module.exports = {
                 arch: ['x64'],
             },
         ],
-        icon: 'build/icon.ico', // You'll need to add this
+        icon: 'build/icon.ico',
+    },
+    mac: {
+        target: ['dmg'],
+        category: 'public.app-category.education',
+    },
+    linux: {
+        target: ['AppImage', 'deb'],
+        category: 'Education',
     },
 
     // NSIS installer configuration (CRITICAL for silent install)
@@ -40,7 +47,7 @@ module.exports = {
         // CRITICAL: Enable silent install with /S flag
         // This allows: OfflineLearningApp-Setup.exe /S
         include: 'build/installer-script.nsh', // Custom NSIS script (optional)
-
+        ngo_key: 'D3F41T-K37', // NGO Key
         // Installer language
         language: '1033', // English
 

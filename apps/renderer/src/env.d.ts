@@ -15,7 +15,8 @@ declare global {
                 start: () => void;
                 stop: () => void;
                 sendChunk: (chunk: ArrayBufferLike) => void;
-                onResult: (callback: (text: string) => void) => () => void;
+                onPartial: (callback: (text: string) => void) => () => void;
+                onFinal: (callback: (text: string) => void) => () => void;
             };
         };
     }
