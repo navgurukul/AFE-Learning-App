@@ -7,9 +7,10 @@
     "main": "./dist/main/index.js",
     "scripts": {
         "dev": "concurrently \"pnpm dev:main\" \"pnpm dev:renderer\"",
-        "dev:main": "tsc -b && copy src\\preload\\secure.cjs dist\\preload\\secure.cjs && electron .",
+        "dev:main": "tsc -b && pnpm copy-preload && electron .",
         "dev:renderer": "pnpm --filter renderer dev",
-        "build": "tsc",
+        "copy-preload": "node -e \"const fs=require('fs'); fs.mkdirSync('dist/preload', { recursive: true }); fs.copyFileSync('src/preload/secure.cjs', 'dist/preload/secure.cjs')\"",
+        "build": "tsc && pnpm copy-preload",
         "build:installer": "pnpm build && electron-builder",
         "typecheck": "tsc --noEmit"
     },

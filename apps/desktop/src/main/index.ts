@@ -87,8 +87,8 @@ async function initialize() {
     // 2. In development, copy manifest from dev-data if it exists
     if (!app.isPackaged) {
         const devManifestPath = path.join(process.cwd(), '../../dev-data/content/manifest.json');
-        const prodManifestDir = path.join('C:\\ProgramData\\OfflineLearningApp', 'content');
-        const prodManifestPath = path.join(prodManifestDir, 'manifest.json');
+        const prodManifestDir = PATHS.CONTENT_DIR;
+        const prodManifestPath = PATHS.MANIFEST;
 
         if (fs.existsSync(devManifestPath)) {
             try {
@@ -119,7 +119,7 @@ async function initialize() {
     // 3. Check for content manifest and SYNC to DB
     if (!hasContentManifest()) {
         console.warn(
-            '⚠️  No content manifest found. Please ensure content is installed in C:\\ProgramData\\OfflineLearningApp\\content\\'
+            `⚠️  No content manifest found. Please ensure content is installed in ${PATHS.CONTENT_DIR}`
         );
     } else {
         console.log('✓ Content manifest found');

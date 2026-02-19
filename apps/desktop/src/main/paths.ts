@@ -4,7 +4,7 @@ import fs from 'fs';
 
 console.log(app.isPackaged);
 export const APP_DATA_ROOT = app.isPackaged
-    ? 'C:\\ProgramData\\OfflineLearningApp'
+    ? path.join(app.getPath('appData'), 'OfflineLearningApp')
     : path.join(process.cwd(), '../../dev-data');
 console.log('APP_DATA_ROOT:', APP_DATA_ROOT);
 export const PATHS = {

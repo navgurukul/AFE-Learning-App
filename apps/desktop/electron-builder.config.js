@@ -12,7 +12,6 @@ module.exports = {
     // Files to include
     files: ['dist/**/*', 'package.json'],
 
-    // Windows-specific configuration
     win: {
         target: [
             {
@@ -20,7 +19,15 @@ module.exports = {
                 arch: ['x64'],
             },
         ],
-        icon: 'build/icon.ico', // You'll need to add this
+        icon: 'build/icon.ico',
+    },
+    mac: {
+        target: ['dmg'],
+        category: 'public.app-category.education',
+    },
+    linux: {
+        target: ['AppImage', 'deb'],
+        category: 'Education',
     },
 
     // NSIS installer configuration (CRITICAL for silent install)

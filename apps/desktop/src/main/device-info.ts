@@ -1,3 +1,4 @@
+import os from 'os';
 import fs from 'fs';
 import path from 'path';
 import { app } from 'electron';
@@ -20,15 +21,28 @@ const CONFIG_PATH = app.isPackaged
     : path.join(process.cwd(), '../dev-data/config.json');
 
 /**
- * Get Windows serial number using WMIC
+ * Get device serial number cross-platform
  */
 async function getSerialNumber(): Promise<string> {
     try {
-        const { stdout } = await execAsync('wmic bios get serialnumber');
-        const lines = stdout.trim().split('\n');
-        // Skip header line, take first data line
-        const serial = lines[1]?.trim() || 'UNKNOWN-SERIAL';
-        return serial;
+        if (process.platform === 'win32') {
+            const { stdout } = await execAsync('wmic bios get serialnumber');
+            const lines = stdout.trim().split('\n');
+            return lines[1]?.trim() || 'UNKNOWN-SERIAL';
+        } else if (process.platform === 'darwin') {
+            const { stdout } = await execAsync(
+                "ioreg -l | grep IOPlatformSerialNumber | awk '{print $4}' | sed 's/\"//g'"
+            );
+            return stdout.trim() || 'UNKNOWN-SERIAL';
+        } else if (process.platform === 'linux') {
+            try {
+                return fs.readFileSync('/sys/class/dmi/id/product_serial', 'utf8').trim();
+            } catch (e) {
+                const { stdout } = await execAsync('cat /var/lib/dbus/machine-id');
+                return stdout.trim() || 'UNKNOWN-SERIAL';
+            }
+        }
+        return 'UNKNOWN-SERIAL';
     } catch (error) {
         console.error('[DeviceInfo] Failed to get serial number:', error);
         return 'UNKNOWN-SERIAL';
@@ -36,19 +50,20 @@ async function getSerialNumber(): Promise<string> {
 }
 
 /**
- * Get MAC address of the first active network adapter
+ * Get MAC address cross-platform using Node os module
  */
 async function getMacAddress(): Promise<string> {
     try {
-        const { stdout } = await execAsync('getmac /fo csv /nh');
-        const lines = stdout.trim().split('\n');
-        // Parse CSV: "Name","MAC Address"
-        const firstLine = lines[0];
-        if (firstLine) {
-            // Extract MAC from CSV format
-            const match = firstLine.match(/\"([^\"]+)\",\"([^\"]+)\"/);
-            if (match && match[2]) {
-                return match[2].replace(/-/g, ':');
+        const interfaces = os.networkInterfaces();
+        for (const name of Object.keys(interfaces)) {
+            const ifaces = interfaces[name];
+            if (!ifaces) continue;
+
+            for (const iface of ifaces) {
+                // Skip internal (loopback) and virtual interfaces without MAC
+                if (!iface.internal && iface.mac !== '00:00:00:00:00:00') {
+                    return iface.mac.replace(/-/g, ':');
+                }
             }
         }
         return 'UNKNOWN-MAC';
