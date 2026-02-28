@@ -122,9 +122,9 @@ export function useVoiceMode(): VoiceModeReturn {
                 processorOptions: {
                     sampleRate: audioContext.sampleRate,
                     vadEnabled: true,
-                    silenceThreshold: 0.04,
-                    silenceDuration: 1.8,
-                    minSpeechDuration: 0.5,
+                    silenceThreshold: 0.015,
+                    silenceDuration: 1.5,
+                    minSpeechDuration: 0.2,
                 },
             });
 

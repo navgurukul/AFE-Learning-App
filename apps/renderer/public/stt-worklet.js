@@ -53,11 +53,11 @@ class SttProcessor extends AudioWorkletProcessor {
 
     // VAD configuration
     this.vadEnabled = options.processorOptions?.vadEnabled ?? false;
-    this.silenceThreshold = options.processorOptions?.silenceThreshold ?? 0.04;
+    this.silenceThreshold = options.processorOptions?.silenceThreshold ?? 0.015;
     // Silence duration in seconds before triggering vad-silence
-    this.silenceDuration = options.processorOptions?.silenceDuration ?? 1.8;
+    this.silenceDuration = options.processorOptions?.silenceDuration ?? 1.5;
     // Minimum speech duration in seconds before we consider it real speech
-    this.minSpeechDuration = options.processorOptions?.minSpeechDuration ?? 0.5;
+    this.minSpeechDuration = options.processorOptions?.minSpeechDuration ?? 0.2;
 
     // VAD state
     this.silentFrameCount = 0;

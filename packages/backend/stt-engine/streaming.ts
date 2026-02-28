@@ -42,7 +42,7 @@ export class StreamingSTT {
           "-f", tempFile,
           "-otxt",
           "--no-timestamps",
-          "--threads", "4"
+          "--threads", "2"
         ],
         (err, stdout) => {
           this.processing = false;

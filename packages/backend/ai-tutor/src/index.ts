@@ -28,7 +28,7 @@ async function generateSessionTitle(sessionId: string, firstMessage: string): Pr
     try {
         const client = getOllamaClient();
         const response = await client.chat({
-            model: 'qwen2.5:1.5b',
+            model: 'qwen2.5:0.5b',
             messages: [
                 {
                     role: 'system',
@@ -165,15 +165,14 @@ export async function sendMessage(
 
         // Trigger title generation if it's the first message
         if (isFirstMessage) {
-            // Run asynchronously, don't await the result directly, but since we are in a request handler,
-            // we should probably at least trigger it. 
-            // Better to await it here to ensure it finishes before we return if we want to update UI immediately? 
-            // Or just fire and forget. Let's fire and forget but handle the promise.
-            generateSessionTitle(sessionId, message).then(title => {
-                if (title && onTitleGenerated) {
-                    onTitleGenerated(title);
-                }
-            });
+            // Defer title generation by 5s so it never overlaps with main inference
+            setTimeout(() => {
+                generateSessionTitle(sessionId, message).then(title => {
+                    if (title && onTitleGenerated) {
+                        onTitleGenerated(title);
+                    }
+                });
+            }, 5000);
         }
 
         return aiResponse;
@@ -271,7 +270,7 @@ export async function sendVoiceMessage(
             .from(aiChatHistory)
             .where(eq(aiChatHistory.sessionId, sessionId))
             .orderBy(aiChatHistory.timestamp)
-            .limit(50);
+            .limit(10); // Voice responses are brief; 10 messages is sufficient context
 
         const isFirstMessage = history.length === 0;
 
@@ -345,11 +344,14 @@ export async function sendVoiceMessage(
 
         // Trigger title generation for first message
         if (isFirstMessage) {
-            generateSessionTitle(sessionId, message).then(title => {
-                if (title && onTitleGenerated) {
-                    onTitleGenerated(title);
-                }
-            });
+            // Defer title generation by 5s so it never overlaps with main inference
+            setTimeout(() => {
+                generateSessionTitle(sessionId, message).then(title => {
+                    if (title && onTitleGenerated) {
+                        onTitleGenerated(title);
+                    }
+                });
+            }, 5000);
         }
 
         return aiResponse;
