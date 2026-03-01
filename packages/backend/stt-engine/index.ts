@@ -139,7 +139,7 @@ export async function processAudio(): Promise<string | null> {
                 "-m", modelPath,
                 "-f", tempFile,
                 "--no-timestamps",
-                "--detect-language",
+                "--language", "auto",
                 "--threads", "2"
             ],
             { maxBuffer: 10 * 1024 * 1024, env }, // 10MB stdout limit
