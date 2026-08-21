@@ -21,6 +21,7 @@ function AILearningCenter() {
     const [messages, setMessages] = useState<AIChatMessage[]>([]);
     const [modules, setModules] = useState<Module[]>([]);
     const [input, setInput] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(false);
     const [streamingContent, setStreamingContent] = useState('');
     const [modulePage, setModulePage] = useState(0);
@@ -273,7 +274,16 @@ function AILearningCenter() {
         setLoading(false);
     }
 
-    const paginatedModules = modules.slice(
+    const filteredModules = modules.filter(
+        m => (m.language || 'English') === 'English' && m.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // Reset module page when search query changes
+    useEffect(() => {
+        setModulePage(0);
+    }, [searchQuery]);
+
+    const paginatedModules = filteredModules.slice(
         modulePage * MODULES_PER_PAGE,
         (modulePage + 1) * MODULES_PER_PAGE
     );
@@ -369,7 +379,7 @@ function AILearningCenter() {
     }, [activeSession, voiceMode]);
 
     return (
-        <div className="ai-learning-center" style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+        <div className="ai-learning-center neo-root" style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
             {/* Voice Mode Overlay */}
             {voiceModeActive && (
                 <VoiceOrb
@@ -384,16 +394,16 @@ function AILearningCenter() {
             {/* Sidebar */}
             <div className="sidebar" style={{
                 width: '300px',
-                backgroundColor: 'var(--color-surface)',
-                borderRight: 'var(--border-width) solid var(--color-border)',
+                backgroundColor: '#FDF3E7',
+                borderRight: '2.5px solid #141210',
                 display: 'flex',
                 flexDirection: 'column'
             }}>
-                <div style={{ padding: 'var(--spacing-md)', borderBottom: '3px solid var(--color-border)' }}>
-                    <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => setActiveSession(null)}>
+                <div style={{ padding: 'var(--spacing-md)', borderBottom: '2.5px solid #141210' }}>
+                    <button className="neo-btn neo-btn--primary" style={{ width: '100%' }} onClick={() => setActiveSession(null)}>
                         {ICON_PLUS} New Chat
                     </button>
-                    <button className="btn" style={{ width: '100%', marginTop: 'var(--spacing-sm)', fontSize: '0.9rem' }} onClick={() => navigate(`/dashboard/${studentId}`)}>
+                    <button className="neo-btn" style={{ width: '100%', marginTop: 'var(--spacing-sm)', fontSize: '0.9rem' }} onClick={() => navigate(`/dashboard/${studentId}`)}>
                         🏠 Back Home
                     </button>
                 </div>
@@ -406,15 +416,15 @@ function AILearningCenter() {
                             onClick={() => setActiveSession(session)}
                             style={{
                                 padding: 'var(--spacing-sm)',
-                                border: '3px solid var(--color-border)',
+                                border: '2.5px solid #141210',
                                 borderRadius: '8px',
                                 marginBottom: 'var(--spacing-xs)',
                                 cursor: 'pointer',
                                 display: 'flex',
                                 justifyContent: 'space-between',
                                 alignItems: 'center',
-                                backgroundColor: activeSession?.id === session.id ? 'var(--color-accent)' : 'transparent',
-                                boxShadow: activeSession?.id === session.id ? '2px 2px 0 var(--color-border)' : 'none'
+                                backgroundColor: activeSession?.id === session.id ? '#FFE66D' : 'transparent',
+                                boxShadow: activeSession?.id === session.id ? '3px 3px 0 #141210' : 'none'
                             }}
                         >
                             <span style={{ fontSize: '0.9rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -432,7 +442,7 @@ function AILearningCenter() {
             </div>
 
             {/* Main Content */}
-            <div className="main-chat" style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: 'var(--color-bg)', position: 'relative' }}>
+            <div className="main-chat" style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#FDF3E7', position: 'relative' }}>
                 {!activeSession ? (
                     /* Welcome / Setup Screen */
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 'var(--spacing-xl)', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
@@ -441,37 +451,44 @@ function AILearningCenter() {
                             <h1>How can I help you today?</h1>
                             <p style={{ fontSize: '1.25rem', marginBottom: 'var(--spacing-xl)' }}>Select a module to start tutoring, or jump into a general conversation.</p>
 
-                            <div className="card" style={{ textAlign: 'left', width: '100%' }}>
-                                <div className="card-header">
-                                    <h3>Subject Browser</h3>
+                            <div className="neo-card" style={{ textAlign: 'left', width: '100%', padding: '32px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                                    <h3 style={{ margin: 0, fontSize: '28px', fontWeight: 900 }}>Subject Browser</h3>
+                                    <input 
+                                        className="neo-input" 
+                                        placeholder="Search courses..." 
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        style={{ maxWidth: '300px', width: '100%', padding: '10px 16px', fontSize: '16px', fontWeight: 600 }}
+                                    />
                                 </div>
-                                <div className="grid grid-1" style={{ gap: 'var(--spacing-sm)' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                     {paginatedModules.map(mod => (
-                                        <div key={mod.id} className="module-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--spacing-sm)' }}>
+                                        <div key={mod.id} className="neo-card neo-tap" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', margin: 0 }}>
                                             <div>
-                                                <h4 style={{ margin: 0 }}>{mod.title}</h4>
-                                                <p style={{ margin: 0, fontSize: '0.9rem' }}>{mod.lessons.length} Lessons</p>
+                                                <h4 style={{ margin: '0 0 4px' }}>{mod.title}</h4>
+                                                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--color-text-light)' }}>{mod.lessons.length} Lessons</p>
                                             </div>
-                                            <button className="btn btn-secondary" onClick={() => handleCreateSession('tutor', mod.id)}>
+                                            <button className="neo-btn neo-btn--teal" onClick={() => handleCreateSession('tutor', mod.id)}>
                                                 Select
                                             </button>
                                         </div>
                                     ))}
                                 </div>
 
-                                {modules.length > MODULES_PER_PAGE && (
+                                {filteredModules.length > MODULES_PER_PAGE && (
                                     <div style={{ display: 'flex', gap: 'var(--spacing-sm)', justifyContent: 'center', marginTop: 'var(--spacing-md)' }}>
                                         <button
-                                            className="btn btn-xs"
+                                            className="neo-chip"
                                             disabled={modulePage === 0}
                                             onClick={() => setModulePage(p => p - 1)}
                                         >
                                             Prev
                                         </button>
-                                        <span style={{ alignSelf: 'center', fontWeight: 700 }}>Page {modulePage + 1} of {Math.ceil(modules.length / MODULES_PER_PAGE)}</span>
+                                        <span style={{ alignSelf: 'center', fontWeight: 700 }}>Page {modulePage + 1} of {Math.ceil(filteredModules.length / MODULES_PER_PAGE)}</span>
                                         <button
-                                            className="btn btn-xs"
-                                            disabled={(modulePage + 1) * MODULES_PER_PAGE >= modules.length}
+                                            className="neo-chip"
+                                            disabled={(modulePage + 1) * MODULES_PER_PAGE >= filteredModules.length}
                                             onClick={() => setModulePage(p => p + 1)}
                                         >
                                             Next
@@ -480,7 +497,7 @@ function AILearningCenter() {
                                 )}
                             </div>
 
-                            <button className="btn btn-large" style={{ marginTop: 'var(--spacing-lg)' }} onClick={() => handleCreateSession('chat')}>
+                            <button className="neo-btn neo-btn--lg neo-btn--primary" style={{ marginTop: 'var(--spacing-lg)' }} onClick={() => handleCreateSession('chat')}>
                                 💬 Start a General Conversation
                             </button>
                         </div>
@@ -491,8 +508,8 @@ function AILearningCenter() {
                         {/* Chat Header */}
                         <div style={{
                             padding: 'var(--spacing-md)',
-                            backgroundColor: 'var(--color-surface)',
-                            borderBottom: 'var(--border-width) solid var(--color-border)',
+                            backgroundColor: '#FDF3E7',
+                            borderBottom: '2.5px solid #141210',
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center'
@@ -504,7 +521,7 @@ function AILearningCenter() {
                                 </span>
                             </div>
                             <button
-                                className={`btn btn-sm ${isAutoSpeakEnabled ? 'btn-primary' : ''}`}
+                                className={`neo-chip ${isAutoSpeakEnabled ? 'neo-chip--on' : ''}`}
                                 onClick={() => {
                                     const nextValue = !isAutoSpeakEnabled;
                                     setIsAutoSpeakEnabled(nextValue);
@@ -531,9 +548,9 @@ function AILearningCenter() {
                                         <div style={{ fontSize: '2rem', padding: 'var(--spacing-sm)' }}>
                                             {msg.role === 'user' ? ICON_USER : ICON_BOT}
                                         </div>
-                                        <div className="card message-content" style={{
+                                        <div className="neo-flat message-content" style={{
                                             maxWidth: '80%',
-                                            backgroundColor: msg.role === 'user' ? 'var(--color-secondary)' : 'var(--color-surface)',
+                                            backgroundColor: msg.role === 'user' ? '#4ECDC4' : '#FFFFFF',
                                             color: msg.role === 'user' ? 'white' : 'inherit',
                                             padding: 'var(--spacing-md)',
                                             fontSize: '1rem',
@@ -544,7 +561,7 @@ function AILearningCenter() {
                                             </ReactMarkdown>
                                             {msg.role === 'assistant' && (speakingMessageId === msg.id || lastSpokenMessageId === msg.id) && (
                                                 <button
-                                                    className="btn btn-xs"
+                                                    className="neo-chip"
                                                     onClick={() => {
                                                         if (isSpeaking && speakingMessageId === msg.id) {
                                                             handleStopSpeak();
@@ -572,7 +589,7 @@ function AILearningCenter() {
                                 {loading && (
                                     <div style={{ display: 'flex', marginBottom: 'var(--spacing-lg)' }}>
                                         <div style={{ fontSize: '2rem', padding: 'var(--spacing-sm)' }}>{ICON_BOT}</div>
-                                        <div className="card message-content" style={{ maxWidth: '80%', padding: 'var(--spacing-md)', fontSize: '1rem' }}>
+                                        <div className="neo-flat message-content" style={{ maxWidth: '80%', padding: 'var(--spacing-md)', fontSize: '1rem' }}>
                                             <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                                 {streamingContent || 'Thinking...'}
                                             </ReactMarkdown>
@@ -673,7 +690,7 @@ function AILearningCenter() {
                                     )}
                                 </div>
                                 <button
-                                    className="btn btn-primary"
+                                    className="neo-btn neo-btn--primary"
                                     onClick={handleSend}
                                     disabled={loading || !input.trim()}
                                 >

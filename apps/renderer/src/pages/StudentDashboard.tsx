@@ -352,6 +352,23 @@ function StudentDashboard() {
                     </div>
                 </div>
 
+                {/* AI Tutor Banner */}
+                <div 
+                    className="neo-card neo-tap" 
+                    onClick={() => navigate(`/ai-tutor/${studentId}`)}
+                    style={{ marginBottom: 40, padding: 32, display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FFE66D', flexWrap: 'wrap', gap: 16 }}
+                >
+                    <div>
+                        <h2 style={{ fontSize: 32, fontWeight: 900, margin: '0 0 8px' }}>🤖 AI Learning Center</h2>
+                        <p style={{ fontSize: 18, fontWeight: 600, color: '#141210', margin: 0 }}>
+                            Chat with your AI Tutor or ask questions about your modules.
+                        </p>
+                    </div>
+                    <button className="neo-btn neo-btn--primary">
+                        Start Chat
+                    </button>
+                </div>
+
                 {/* Modules Grid */}
                 {filteredModules.length > 0 ? (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 20, marginBottom: 40 }}>
