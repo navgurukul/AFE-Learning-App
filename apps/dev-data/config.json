@@ -1,9 +1,13 @@
 {
   "ngoKey": "D3F41T-K37",
   "partnerName": "sama",
-  "schoolName": "sama",
-  "schoolUdise": null,
+  "schoolName": "School of Programming, Navgurukul",
+  "schoolUdise": "9019902899",
   "state": "Delhi",
   "district": "New Delhi",
-  "locationPermissionStatus": "granted"
+  "locationPermissionStatus": "granted",
+  "city": "New Delhi",
+  "districtCode": "DST-102",
+  "schoolType": "Other",
+  "setupCompleted": true
 }

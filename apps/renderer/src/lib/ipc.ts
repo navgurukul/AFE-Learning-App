@@ -320,6 +320,27 @@ class IPCClient {
         await this.invoke('app:set-close-on-session-end' as any, undefined);
     }
 
+    // Config / School Setup
+    async getSetupStatus() {
+        return await this.invoke(IPC_CHANNELS.CONFIG_GET_SETUP_STATUS, undefined);
+    }
+
+    async saveSchoolDetails(data: {
+        schoolName: string;
+        schoolUdise: string;
+        state: string;
+        city: string;
+        district: string;
+        districtCode: string;
+        schoolType: string;
+    }) {
+        return await this.invoke(IPC_CHANNELS.CONFIG_SAVE_SCHOOL_DETAILS, data);
+    }
+
+    async verifyAdminPassword(password: string) {
+        return await this.invoke(IPC_CHANNELS.CONFIG_VERIFY_ADMIN_PASSWORD, { password });
+    }
+
 }
 
 export const ipc = new IPCClient();

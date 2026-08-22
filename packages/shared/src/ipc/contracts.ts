@@ -80,7 +80,12 @@ export const IPC_CHANNELS = {
     SESSION_PAUSE: 'session:pause',
     SESSION_SEEK: 'session:seek',
     SESSION_SPEED: 'session:speed',
-    SESSION_UPDATE_LANGUAGE: 'session:updateLanguage'
+    SESSION_UPDATE_LANGUAGE: 'session:updateLanguage',
+
+    // Config / School Setup
+    CONFIG_GET_SETUP_STATUS: 'config:getSetupStatus',
+    CONFIG_SAVE_SCHOOL_DETAILS: 'config:saveSchoolDetails',
+    CONFIG_VERIFY_ADMIN_PASSWORD: 'config:verifyAdminPassword'
 } as const;
 
 // Request/Response type definitions
@@ -403,6 +408,35 @@ export interface IPCContract {
     [IPC_CHANNELS.SESSION_UPDATE_LANGUAGE]: {
         request: { language: string };
         response: void;
+    };
+    [IPC_CHANNELS.CONFIG_GET_SETUP_STATUS]: {
+        request: void;
+        response: {
+            setupCompleted: boolean;
+            schoolName: string;
+            schoolUdise: string | null;
+            state: string;
+            city: string;
+            district: string;
+            districtCode: string;
+            schoolType: string;
+        };
+    };
+    [IPC_CHANNELS.CONFIG_SAVE_SCHOOL_DETAILS]: {
+        request: {
+            schoolName: string;
+            schoolUdise: string;
+            state: string;
+            city: string;
+            district: string;
+            districtCode: string;
+            schoolType: string;
+        };
+        response: { success: boolean };
+    };
+    [IPC_CHANNELS.CONFIG_VERIFY_ADMIN_PASSWORD]: {
+        request: { password: string };
+        response: { valid: boolean };
     };
 }
 

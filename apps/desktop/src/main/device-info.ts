@@ -17,7 +17,11 @@ export interface Config {
     schoolName?: string;
     schoolUdise?: string | null;
     state?: string;
+    city?: string;
     district?: string;
+    districtCode?: string;
+    schoolType?: string;
+    setupCompleted?: boolean;
     locationPermissionStatus?: 'granted' | 'denied';
 }
 
@@ -88,7 +92,11 @@ function readConfig(): Required<Config> {
         schoolName: 'sama',
         schoolUdise: null,
         state: '',
+        city: '',
         district: '',
+        districtCode: '',
+        schoolType: 'NGO',
+        setupCompleted: false,
         locationPermissionStatus: 'granted'
     };
 
@@ -107,7 +115,11 @@ function readConfig(): Required<Config> {
             schoolName: config.schoolName || defaultConfig.schoolName,
             schoolUdise: config.schoolUdise !== undefined ? config.schoolUdise : defaultConfig.schoolUdise,
             state: config.state !== undefined ? config.state : defaultConfig.state,
+            city: config.city !== undefined ? config.city : defaultConfig.city,
             district: config.district !== undefined ? config.district : defaultConfig.district,
+            districtCode: config.districtCode !== undefined ? config.districtCode : defaultConfig.districtCode,
+            schoolType: config.schoolType || defaultConfig.schoolType,
+            setupCompleted: config.setupCompleted !== undefined ? config.setupCompleted : defaultConfig.setupCompleted,
             locationPermissionStatus: config.locationPermissionStatus || defaultConfig.locationPermissionStatus
         };
     } catch (error) {
@@ -165,10 +177,13 @@ export async function getDeviceInfo(): Promise<DeviceInfo> {
         appVersion: app.getVersion(),
         partnerName: 'sama',
         ngoKey: config.ngoKey,
-        schoolName: 'sama',
-        schoolUdise: null,
+        schoolName: config.schoolName || 'sama',
+        schoolUdise: config.schoolUdise || null,
         state: config.state,
-        district: config.district
+        city: config.city,
+        district: config.district,
+        districtCode: config.districtCode,
+        schoolType: config.schoolType || 'NGO'
     };
 
     console.log('[DeviceInfo] Device fingerprint:', deviceInfo);

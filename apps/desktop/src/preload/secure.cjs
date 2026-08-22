@@ -78,7 +78,12 @@ const VALID_CHANNELS = [
     'app:request-logout',
     'app:request-exit',
     'app:exit-immediately',
-    'app:set-close-on-session-end'
+    'app:set-close-on-session-end',
+
+    // Config / School Setup
+    'config:getSetupStatus',
+    'config:saveSchoolDetails',
+    'config:verifyAdminPassword'
 ];
 
 contextBridge.exposeInMainWorld('electronAPI', {

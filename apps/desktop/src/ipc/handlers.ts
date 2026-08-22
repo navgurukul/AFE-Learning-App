@@ -1,5 +1,6 @@
 import { ipcMain, app } from 'electron';
 import { IPC_CHANNELS } from '@afe/shared';
+import bcrypt from 'bcryptjs';
 
 // Backend services
 import {
@@ -53,6 +54,10 @@ import { PATHS, APP_DATA_ROOT } from '../main/paths.js';
 import { getMp4Duration } from '../main/mp4-parser.js';
 import { getMkvDuration } from '../main/mkv-parser.js';
 import { SessionManager } from '../main/session-manager.js';
+import { writeConfig } from '../main/device-info.js';
+
+// Admin password hash (bcrypt, 10 rounds) — raw password is never stored
+const ADMIN_PWD_HASH = '$2b$10$TnoAwkgzB/PuqDdXW50v4.552E/D/uudKE8OVxiGj5V1LXQC13Koa';
 
 const LANG_CODE_TO_NAME: Record<string, string> = {
     en: 'English',
@@ -621,6 +626,78 @@ export function registerIPCHandlers() {
         return { available: ttsIsAvailable() };
     });
 
+
+    // ========== Config / School Setup ==========
+
+    ipcMain.handle(IPC_CHANNELS.CONFIG_GET_SETUP_STATUS, async () => {
+        try {
+            const configPath = app.isPackaged
+                ? path.join(app.getPath('appData'), 'OfflineLearningApp', 'config.json')
+                : path.join(process.cwd(), '../dev-data/config.json');
+
+            let config: any = {};
+            if (fs.existsSync(configPath)) {
+                try {
+                    config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+                } catch (e) {}
+            }
+
+            return {
+                setupCompleted: config.setupCompleted === true,
+                schoolName: config.schoolName || '',
+                schoolUdise: config.schoolUdise || '',
+                state: config.state || '',
+                city: config.city || '',
+                district: config.district || '',
+                districtCode: config.districtCode || '',
+                schoolType: config.schoolType || 'NGO',
+            };
+        } catch (error) {
+            console.error('[IPC] Failed to get setup status:', error);
+            return {
+                setupCompleted: false,
+                schoolName: '',
+                schoolUdise: '',
+                state: '',
+                city: '',
+                district: '',
+                districtCode: '',
+                schoolType: 'NGO',
+            };
+        }
+    });
+
+    ipcMain.handle(IPC_CHANNELS.CONFIG_SAVE_SCHOOL_DETAILS, async (_event, data) => {
+        try {
+            const { schoolName, schoolUdise, state, city, district, districtCode, schoolType } = data;
+            writeConfig({
+                schoolName,
+                schoolUdise,
+                state,
+                city,
+                district,
+                districtCode,
+                schoolType,
+                setupCompleted: true,
+            });
+            console.log('[IPC] School details saved successfully');
+            return { success: true };
+        } catch (error) {
+            console.error('[IPC] Failed to save school details:', error);
+            return { success: false };
+        }
+    });
+
+    ipcMain.handle(IPC_CHANNELS.CONFIG_VERIFY_ADMIN_PASSWORD, async (_event, data) => {
+        try {
+            const { password } = data;
+            const valid = await bcrypt.compare(password, ADMIN_PWD_HASH);
+            return { valid };
+        } catch (error) {
+            console.error('[IPC] Failed to verify admin password:', error);
+            return { valid: false };
+        }
+    });
 
     console.log('✓ All IPC handlers registered');
 }

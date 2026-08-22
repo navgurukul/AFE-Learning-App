@@ -7,7 +7,10 @@ export interface DeviceInfo {
     schoolName: string;
     schoolUdise: string | null;
     state: string;
+    city: string;
     district: string;
+    districtCode: string;
+    schoolType: string;
     appVersion?: string;
 }
 
@@ -20,7 +23,9 @@ export interface SyncSessionPayload {
     academicYear: string;
     monthName: string;
     state: string;
+    city: string;
     district: string;
+    districtCode: string;
     schoolUdise: string | null;
     schoolName: string;
     schoolType: string;

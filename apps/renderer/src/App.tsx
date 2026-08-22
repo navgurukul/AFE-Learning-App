@@ -1,5 +1,5 @@
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import BeginLearning from './pages/BeginLearning.js';
 import AvatarSelection from './pages/AvatarSelection.js';
 import StudentDashboard from './pages/StudentDashboard.js';
@@ -7,6 +7,8 @@ import ModuleDetail from './pages/ModuleDetail.js';
 import AILearningCenter from './pages/AILearningCenter.js';
 import { FeedbackSurveyModal } from './components/FeedbackSurveyModal.tsx';
 import { ConfirmModal } from './components/ConfirmModal.tsx';
+import { SchoolSetupModal } from './components/SchoolSetupModal.tsx';
+import { AdminPasswordModal } from './components/AdminPasswordModal.tsx';
 import { ipc } from './lib/ipc.ts';
 import { exitPictureInPictureAndCleanup } from './lib/mediaCleanup.ts';
 
@@ -15,6 +17,91 @@ function App() {
     const location = useLocation();
     const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
     const [isExitModalOpen, setIsExitModalOpen] = useState(false);
+
+    // School Setup state
+    const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
+    const [isAdminPwdOpen, setIsAdminPwdOpen] = useState(false);
+    const [setupData, setSetupData] = useState<{
+        schoolName: string;
+        schoolUdise: string;
+        state: string;
+        city: string;
+        district: string;
+        districtCode: string;
+        schoolType: string;
+    } | undefined>(undefined);
+
+    // First-run setup check
+    useEffect(() => {
+        (async () => {
+            try {
+                const status = await ipc.getSetupStatus();
+                if (!status.setupCompleted) {
+                    setSetupData({
+                        schoolName: status.schoolName,
+                        schoolUdise: status.schoolUdise || '',
+                        state: status.state,
+                        city: status.city,
+                        district: status.district,
+                        districtCode: status.districtCode,
+                        schoolType: status.schoolType,
+                    });
+                    setIsSetupModalOpen(true);
+                }
+            } catch (e) {
+                console.error('[App] Failed to check setup status:', e);
+            }
+        })();
+    }, []);
+
+    // Ctrl+Shift+A ×5 secret shortcut
+    const ctrlShiftACountRef = useRef(0);
+    const ctrlShiftATimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const handleKeyDown = useCallback((e: KeyboardEvent) => {
+        if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+            ctrlShiftACountRef.current++;
+
+            // Reset counter after 3 seconds of inactivity
+            if (ctrlShiftATimerRef.current) {
+                clearTimeout(ctrlShiftATimerRef.current);
+            }
+            ctrlShiftATimerRef.current = setTimeout(() => {
+                ctrlShiftACountRef.current = 0;
+            }, 3000);
+
+            if (ctrlShiftACountRef.current >= 5) {
+                ctrlShiftACountRef.current = 0;
+                if (ctrlShiftATimerRef.current) {
+                    clearTimeout(ctrlShiftATimerRef.current);
+                }
+                setIsAdminPwdOpen(true);
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [handleKeyDown]);
+
+    const handleAdminPasswordSuccess = async () => {
+        try {
+            const status = await ipc.getSetupStatus();
+            setSetupData({
+                schoolName: status.schoolName,
+                schoolUdise: status.schoolUdise || '',
+                state: status.state,
+                city: status.city,
+                district: status.district,
+                districtCode: status.districtCode,
+                schoolType: status.schoolType,
+            });
+            setIsSetupModalOpen(true);
+        } catch (e) {
+            console.error('[App] Failed to load setup data for re-edit:', e);
+        }
+    };
 
     useEffect(() => {
         if (!window.electronAPI?.on) return;
@@ -122,8 +209,21 @@ function App() {
                 onClose={() => setIsFeedbackOpen(false)}
                 onSubmit={handleFeedbackSubmit}
             />
+
+            <SchoolSetupModal
+                isOpen={isSetupModalOpen}
+                onClose={() => setIsSetupModalOpen(false)}
+                initialData={setupData}
+            />
+
+            <AdminPasswordModal
+                isOpen={isAdminPwdOpen}
+                onClose={() => setIsAdminPwdOpen(false)}
+                onSuccess={handleAdminPasswordSuccess}
+            />
         </div>
     );
 }
 
 export default App;
+
