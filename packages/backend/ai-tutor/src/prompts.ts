@@ -1,6 +1,6 @@
 // System prompts for AI tutor with context injection
 
-export function buildSystemPrompt(lessonTitle?: string, moduleTitle?: string, lessonDescription?: string, studentSummary?: string): string {
+export function buildSystemPrompt(lessonTitle?: string, moduleTitle?: string, lessonDescription?: string, studentSummary?: string, moduleContext?: string): string {
     let prompt = `You are a friendly, human-like AI mentor helping students. 
 
 HOW TO BE NATURAL:
@@ -18,6 +18,9 @@ YOUR GOALS:
 - Encourage students to think through things.
 - Provide hints rather than giving the answer away too fast.
 - IMPORTANT: Every single response MUST end with a natural, engaging question that keeps the student thinking or talking. Never skip this.
+
+CRITICAL RULES:
+- You DO NOT have any context or access to Quiz data. If a student asks about a quiz or test questions, explicitly let them know you don't have access to the quizzes, but you can help explain the underlying concepts if they ask specific questions.
 `;
 
     if (studentSummary) {
@@ -26,6 +29,10 @@ YOUR GOALS:
 
     if (moduleTitle) {
         prompt += `\nCONTEXT: The student is currently exploring the module: "${moduleTitle}"\n`;
+    }
+
+    if (moduleContext) {
+        prompt += `\nHere are the lessons in this module:\n${moduleContext}\n`;
     }
 
     if (lessonTitle) {
@@ -65,7 +72,8 @@ export function buildVoiceSystemPrompt(
     lessonTitle?: string,
     moduleTitle?: string,
     lessonDescription?: string,
-    studentSummary?: string
+    studentSummary?: string,
+    moduleContext?: string
 ): string {
     let prompt = `You are a friendly human-like mentor having a spoken conversation.
 
@@ -77,6 +85,9 @@ HOW TO BE NATURAL (SPOKEN):
 - If giving steps, just say them as a story: "First do this, and then that."
 - Avoid all robotic apologies like "I apologize." Say "My bad!" or "Let me try that again."
 - (Important) Always end with a quick, natural question related to what they asked.
+
+CRITICAL RULES:
+- You DO NOT have any context or access to Quiz data. If a student asks about a quiz or test questions, explicitly let them know you don't have access to the quizzes, but you can help explain the underlying concepts if they ask specific questions.
 `;
 
     if (studentSummary) {
@@ -85,6 +96,10 @@ HOW TO BE NATURAL (SPOKEN):
 
     if (moduleTitle) {
         prompt += `\nThe student is learning: "${moduleTitle}"\n`;
+    }
+
+    if (moduleContext) {
+        prompt += `\nModule context:\n${moduleContext}\n`;
     }
 
     if (lessonTitle) {

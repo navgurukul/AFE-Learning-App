@@ -91,10 +91,19 @@ export async function sendMessage(
 
         // Fetch module title if in tutor mode
         let moduleTitle: string | undefined;
+        let moduleContext: string | undefined;
         if (session.mode === 'tutor' && session.moduleId) {
             const manifest = getManifest();
             const module = getModuleById(manifest, session.moduleId);
-            if (module) moduleTitle = module.title;
+            if (module) {
+                moduleTitle = module.title;
+                const lessonContexts = module.lessons
+                    .filter((lesson: any) => lesson.type !== 'quiz')
+                    .map((lesson: any) => `- ${lesson.title}: ${lesson.description}`);
+                if (lessonContexts.length > 0) {
+                    moduleContext = lessonContexts.join('\n');
+                }
+            }
         }
 
         // Fetch student summary if available
@@ -103,7 +112,7 @@ export async function sendMessage(
 
         // Build system prompt
         const systemPrompt = session.mode === 'tutor'
-            ? buildSystemPrompt(undefined, moduleTitle, undefined, studentSummary)
+            ? buildSystemPrompt(undefined, moduleTitle, undefined, studentSummary, moduleContext)
             : `You are a helpful and friendly AI assistant. Answer questions clearly and concisely. ${studentSummary ? `Here is context on the student: ${studentSummary}` : ''}`;
 
         console.log(`DEBUG: Using systemPrompt for mode ${session.mode}: ${systemPrompt}`);
@@ -292,10 +301,19 @@ export async function sendVoiceMessage(
 
         // Fetch module title if in tutor mode
         let moduleTitle: string | undefined;
+        let moduleContext: string | undefined;
         if (session.mode === 'tutor' && session.moduleId) {
             const manifest = getManifest();
             const module = getModuleById(manifest, session.moduleId);
-            if (module) moduleTitle = module.title;
+            if (module) {
+                moduleTitle = module.title;
+                const lessonContexts = module.lessons
+                    .filter((lesson: any) => lesson.type !== 'quiz')
+                    .map((lesson: any) => `- ${lesson.title}: ${lesson.description}`);
+                if (lessonContexts.length > 0) {
+                    moduleContext = lessonContexts.join('\n');
+                }
+            }
         }
 
         // Fetch student summary
@@ -303,7 +321,7 @@ export async function sendVoiceMessage(
         const studentSummary = summaryRecord[0]?.summaryText;
 
         // Use concise voice prompt
-        const systemPrompt = buildVoiceSystemPrompt(undefined, moduleTitle, undefined, studentSummary);
+        const systemPrompt = buildVoiceSystemPrompt(undefined, moduleTitle, undefined, studentSummary, moduleContext);
 
         // Get recent chat history for this SESSION
         const history = await db
