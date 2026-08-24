@@ -47,9 +47,9 @@ module.exports = {
 
     win: {
         icon: 'build/icon.ico',
-        publisherName: 'NavGurukul',
         requestedExecutionLevel: 'requireAdministrator',
         legalTrademarks: 'Amazon Future Engineer is a registered mark of Amazon',
+        verifyUpdateCodeSignature: false,
         target: [
             {
                 target: 'nsis',

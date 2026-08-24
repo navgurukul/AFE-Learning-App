@@ -424,9 +424,29 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
         ipc.recordPause();
     };
 
-    const handleEnded = () => {
+    const handleEnded = async () => {
         setIsPlaying(false);
-        saveProgress(durationRef.current);
+        setCompleted(true);
+        const finalDuration = durationRef.current || (videoRef.current ? videoRef.current.duration : 0);
+        try {
+            await ipc.updateVideoProgress(
+                studentId,
+                lessonId,
+                100,
+                Math.round(accumulatedDurationRef.current),
+                watchedSegmentsRef.current,
+                finalDuration,
+                true
+            );
+            accumulatedDurationRef.current = 0;
+            setProgress(100);
+            if (onCompleted) {
+                onCompleted();
+            }
+        } catch (err) {
+            console.error('[VideoPlayer] handleEnded save error:', err);
+            saveProgress(finalDuration);
+        }
     };
 
     return (

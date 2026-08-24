@@ -380,36 +380,16 @@
             "passingScore": 70,
             "questions": [
               {
-                "id": "en001030201-ch10",
-                "question": "Which of the following is NOT hardware?",
-                "options": [
-                  "Mouse",
-                  "CPU",
-                  "CD",
-                  "Amazon App"
-                ],
-                "correctAnswerIndex": 3,
-                "explanation": "Amazon App is software, not hardware."
-              },
-              {
                 "id": "en001030401-ch10",
-                "question": "Ms. Surekha pressed the camera button. What type of process is this?",
+                "question": "We can’t remember IP addresses. Instead, we use:",
                 "options": [
-                  "Input",
-                  "Output"
+                  "URL",
+                  "Data Center",
+                  "Protocols",
+                  "DNS"
                 ],
                 "correctAnswerIndex": 0,
-                "explanation": "Pressing a button is an input action."
-              },
-              {
-                "id": "en001030402-ch10",
-                "question": "The phone took a photo and displayed it on the screen. What type of process is this?",
-                "options": [
-                  "Input",
-                  "Output"
-                ],
-                "correctAnswerIndex": 1,
-                "explanation": "Displaying a result on screen is an output."
+                "explanation": "We use easy-to-remember URLs instead of complex IP address numbers."
               }
             ]
           }
@@ -815,7 +795,7 @@
                   "Protocols",
                   "DNS"
                 ],
-                "correctAnswerIndex": 3
+                "correctAnswerIndex": 0
               }
             ]
           }
@@ -1221,7 +1201,7 @@
                   "Protocols",
                   "DNS"
                 ],
-                "correctAnswerIndex": 3
+                "correctAnswerIndex": 0
               }
             ]
           }
@@ -1627,7 +1607,7 @@
                   "Protocols",
                   "DNS"
                 ],
-                "correctAnswerIndex": 3
+                "correctAnswerIndex": 0
               }
             ]
           }
@@ -2033,7 +2013,7 @@
                   "Protocols",
                   "DNS"
                 ],
-                "correctAnswerIndex": 3
+                "correctAnswerIndex": 0
               }
             ]
           }
@@ -2439,7 +2419,7 @@
                   "Protocols",
                   "DNS"
                 ],
-                "correctAnswerIndex": 3
+                "correctAnswerIndex": 0
               }
             ]
           }
@@ -2845,7 +2825,7 @@
                   "Protocols",
                   "DNS"
                 ],
-                "correctAnswerIndex": 3
+                "correctAnswerIndex": 0
               }
             ]
           }
@@ -2900,10 +2880,10 @@
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_2.mkv"
         },
         {
-          "id": "rft-en-ch02-quiz1",
-          "contentId": "rft-en-ch02-quiz1",
+          "id": "rft-en-ch02-quiz",
+          "contentId": "rft-en-ch02-quiz",
           "version": "1.0.0",
-          "hash": "rft-en-ch02-quiz1-hash",
+          "hash": "rft-en-ch02-quiz-hash",
           "moduleId": "rft-english-001",
           "title": "What is an Algorithm and How does it work?",
           "description": "Take the quiz to test your knowledge about What is an Algorithm and How does it work?.",
@@ -2939,44 +2919,6 @@
           "isCertificateCriteria": true
         },
         {
-          "id": "rft-en-ch02-quiz2",
-          "contentId": "rft-en-ch02-quiz2",
-          "version": "1.0.0",
-          "hash": "rft-en-ch02-quiz2-hash",
-          "moduleId": "rft-english-001",
-          "title": "What is an Algorithm and How does it work?",
-          "description": "Take the quiz to test your knowledge about What is an Algorithm and How does it work?.",
-          "type": "quiz",
-          "order": 4,
-          "quizData": {
-            "passingScore": 70,
-            "questions": [
-              {
-                "id": "rft-en-ch02-quiz2-q01",
-                "question": "Which of the following is an example of an algorithm?",
-                "options": [
-                  "Watching TV",
-                  "Talking to friends",
-                  "Cooking",
-                  "Sleeping"
-                ],
-                "correctAnswerIndex": 2
-              },
-              {
-                "id": "rft-en-ch02-quiz2-q02",
-                "question": "The algorithms should be followed ____:",
-                "options": [
-                  "Step by step",
-                  "Can be randomly followed too",
-                  "In Alphabetical Order",
-                  "None of the above."
-                ],
-                "correctAnswerIndex": 0
-              }
-            ]
-          }
-        },
-        {
           "id": "rft-en-ch03-video",
           "contentId": "rft-en-ch03-video",
           "version": "1.0.0",
@@ -2985,7 +2927,7 @@
           "title": "Decoding Robots and Their Superpower",
           "description": "Watch the video to learn about Decoding Robots and Their Superpower.",
           "type": "video",
-          "order": 5,
+          "order": 4,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_3.mkv"
         },
         {
@@ -2997,7 +2939,7 @@
           "title": "Meet the Expert (Rohit Raman)",
           "description": "Watch the video to learn about Meet the Expert (Rohit Raman).",
           "type": "video",
-          "order": 6,
+          "order": 5,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_4.mkv",
           "isCourseCompletionCriteria": true
         },
@@ -3010,7 +2952,7 @@
           "title": "Meet the Expert (Rohit Raman)",
           "description": "Take the quiz to test your knowledge about Meet the Expert (Rohit Raman).",
           "type": "quiz",
-          "order": 7,
+          "order": 6,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -3037,7 +2979,7 @@
           "title": "FC Grid and Robotic Movement",
           "description": "Watch the video to learn about FC Grid and Robotic Movement.",
           "type": "video",
-          "order": 8,
+          "order": 7,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_5.mkv"
         },
         {
@@ -3049,7 +2991,7 @@
           "title": "FC Grid and Robotic Movement",
           "description": "Take the quiz to test your knowledge about FC Grid and Robotic Movement.",
           "type": "quiz",
-          "order": 9,
+          "order": 8,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -3098,7 +3040,7 @@
           "title": "More About Robotic Movement",
           "description": "Watch the video to learn about More About Robotic Movement.",
           "type": "video",
-          "order": 10,
+          "order": 9,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_6.mkv"
         },
         {
@@ -3110,7 +3052,7 @@
           "title": "More About Robotic Movement",
           "description": "Take the quiz to test your knowledge about More About Robotic Movement.",
           "type": "quiz",
-          "order": 11,
+          "order": 10,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -3148,7 +3090,7 @@
           "title": "The Process of Picking",
           "description": "Watch the video to learn about The Process of Picking.",
           "type": "video",
-          "order": 12,
+          "order": 11,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_7.mkv"
         },
         {
@@ -3160,7 +3102,7 @@
           "title": "The Process of Picking",
           "description": "Take the quiz to test your knowledge about The Process of Picking.",
           "type": "quiz",
-          "order": 13,
+          "order": 12,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -3198,7 +3140,7 @@
           "title": "The Process of Packing",
           "description": "Watch the video to learn about The Process of Packing.",
           "type": "video",
-          "order": 14,
+          "order": 13,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_8.mkv"
         },
         {
@@ -3210,7 +3152,7 @@
           "title": "The Process of Packing",
           "description": "Take the quiz to test your knowledge about The Process of Packing.",
           "type": "quiz",
-          "order": 15,
+          "order": 14,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -3248,7 +3190,7 @@
           "title": "SLAM: Quality Control",
           "description": "Watch the video to learn about SLAM: Quality Control.",
           "type": "video",
-          "order": 16,
+          "order": 15,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_9.mkv"
         },
         {
@@ -3260,7 +3202,7 @@
           "title": "SLAM: Quality Control",
           "description": "Take the quiz to test your knowledge about SLAM: Quality Control.",
           "type": "quiz",
-          "order": 17,
+          "order": 16,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -3298,7 +3240,7 @@
           "title": "What Happens After Quality Check? (SLAM Labels)",
           "description": "Watch the video to learn about What Happens After Quality Check? (SLAM Labels).",
           "type": "video",
-          "order": 18,
+          "order": 17,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_10.mkv"
         },
         {
@@ -3310,7 +3252,7 @@
           "title": "Meet the Expert: Erica (Research Scientist)",
           "description": "Watch the video to learn about Meet the Expert: Erica (Research Scientist).",
           "type": "video",
-          "order": 19,
+          "order": 18,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_11.mkv"
         },
         {
@@ -3322,7 +3264,7 @@
           "title": "Meet the Expert: Erica (Research Scientist)",
           "description": "Take the quiz to test your knowledge about Meet the Expert: Erica (Research Scientist).",
           "type": "quiz",
-          "order": 20,
+          "order": 19,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -3349,7 +3291,7 @@
           "title": "The Package is Ready: Shipping & Machine Learning",
           "description": "Watch the video to learn about The Package is Ready: Shipping & Machine Learning.",
           "type": "video",
-          "order": 21,
+          "order": 20,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_12.mkv"
         },
         {
@@ -3361,7 +3303,7 @@
           "title": "Meet the Expert: Julie Mitchell (Solutions Design Team)",
           "description": "Watch the video to learn about Meet the Expert: Julie Mitchell (Solutions Design Team).",
           "type": "video",
-          "order": 22,
+          "order": 21,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_13.mkv"
         },
         {
@@ -3373,7 +3315,7 @@
           "title": "Meet the Expert: Julie Mitchell (Solutions Design Team)",
           "description": "Take the quiz to test your knowledge about Meet the Expert: Julie Mitchell (Solutions Design Team).",
           "type": "quiz",
-          "order": 23,
+          "order": 22,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -3411,7 +3353,7 @@
           "title": "Outro & Reflection",
           "description": "Watch the video to learn about Outro & Reflection.",
           "type": "video",
-          "order": 24,
+          "order": 23,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_14.mkv",
           "isCertificateCriteria": true
         }
@@ -3453,10 +3395,10 @@
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_2.mkv"
         },
         {
-          "id": "rft-hi-ch02-quiz1",
-          "contentId": "rft-hi-ch02-quiz1",
+          "id": "rft-hi-ch02-quiz",
+          "contentId": "rft-hi-ch02-quiz",
           "version": "1.0.0",
-          "hash": "rft-hi-ch02-quiz1-hash",
+          "hash": "rft-hi-ch02-quiz-hash",
           "moduleId": "rft-hindi-001",
           "title": "Algorithm क्या है और यह कैसे काम करता है?",
           "description": "Algorithm क्या है और यह कैसे काम करता है? के बारे में अपनी जानकारी परखने के लिए क्विज खेलें।",
@@ -3492,44 +3434,6 @@
           "isCertificateCriteria": true
         },
         {
-          "id": "rft-hi-ch02-quiz2",
-          "contentId": "rft-hi-ch02-quiz2",
-          "version": "1.0.0",
-          "hash": "rft-hi-ch02-quiz2-hash",
-          "moduleId": "rft-hindi-001",
-          "title": "Algorithm क्या है और यह कैसे काम करता है?",
-          "description": "Algorithm क्या है और यह कैसे काम करता है? के बारे में अपनी जानकारी परखने के लिए क्विज खेलें।",
-          "type": "quiz",
-          "order": 4,
-          "quizData": {
-            "passingScore": 70,
-            "questions": [
-              {
-                "id": "rft-hi-ch02-quiz2-q01",
-                "question": "इनमें से Algorithm का उदाहरण कौन सा है?",
-                "options": [
-                  "TV देखना",
-                  "दोस्तों से बात करना",
-                  "खाना बनाना",
-                  "सोना"
-                ],
-                "correctAnswerIndex": 2
-              },
-              {
-                "id": "rft-hi-ch02-quiz2-q02",
-                "question": "Algorithms को ____ पालन करना चाहिए:",
-                "options": [
-                  "कदम-दर-कदम",
-                  "यादृच्छिक रूप से भी पालन किया जा सकता है",
-                  "Alphabetical order में",
-                  "इनमें से कोई नहीं"
-                ],
-                "correctAnswerIndex": 0
-              }
-            ]
-          }
-        },
-        {
           "id": "rft-hi-ch03-video",
           "contentId": "rft-hi-ch03-video",
           "version": "1.0.0",
@@ -3538,7 +3442,7 @@
           "title": "Robots और उनकी Superpower को समझना",
           "description": "Robots और उनकी Superpower को समझना के बारे में जानने के लिए वीडियो देखें।",
           "type": "video",
-          "order": 5,
+          "order": 4,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_3.mkv"
         },
         {
@@ -3550,7 +3454,7 @@
           "title": "Expert से मिलिए (Rohit Raman)",
           "description": "Expert से मिलिए (Rohit Raman) के बारे में जानने के लिए वीडियो देखें।",
           "type": "video",
-          "order": 6,
+          "order": 5,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_4.mkv",
           "isCourseCompletionCriteria": true
         },
@@ -3563,7 +3467,7 @@
           "title": "Expert से मिलिए (Rohit Raman)",
           "description": "Expert से मिलिए (Rohit Raman) के बारे में अपनी जानकारी परखने के लिए क्विज खेलें।",
           "type": "quiz",
-          "order": 7,
+          "order": 6,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -3590,7 +3494,7 @@
           "title": "FC Grid और Robotic Movement",
           "description": "FC Grid और Robotic Movement के बारे में जानने के लिए वीडियो देखें।",
           "type": "video",
-          "order": 8,
+          "order": 7,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_5.mkv"
         },
         {
@@ -3602,7 +3506,7 @@
           "title": "FC Grid और Robotic Movement",
           "description": "FC Grid और Robotic Movement के बारे में अपनी जानकारी परखने के लिए क्विज खेलें।",
           "type": "quiz",
-          "order": 9,
+          "order": 8,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -3651,7 +3555,7 @@
           "title": "Robotic Movement के बारे में और जानें",
           "description": "Robotic Movement के बारे में और जानें के बारे में जानने के लिए वीडियो देखें।",
           "type": "video",
-          "order": 10,
+          "order": 9,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_6.mkv"
         },
         {
@@ -3663,7 +3567,7 @@
           "title": "Robotic Movement के बारे में और जानें",
           "description": "Robotic Movement के बारे में और जानें के बारे में अपनी जानकारी परखने के लिए क्विज खेलें।",
           "type": "quiz",
-          "order": 11,
+          "order": 10,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -3701,7 +3605,7 @@
           "title": "Picking की प्रक्रिया",
           "description": "Picking की प्रक्रिया के बारे में जानने के लिए वीडियो देखें।",
           "type": "video",
-          "order": 12,
+          "order": 11,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_7.mkv"
         },
         {
@@ -3713,7 +3617,7 @@
           "title": "Picking की प्रक्रिया",
           "description": "Picking की प्रक्रिया के बारे में अपनी जानकारी परखने के लिए क्विज खेलें।",
           "type": "quiz",
-          "order": 13,
+          "order": 12,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -3751,7 +3655,7 @@
           "title": "Packing की प्रक्रिया",
           "description": "Packing की प्रक्रिया के बारे में जानने के लिए वीडियो देखें।",
           "type": "video",
-          "order": 14,
+          "order": 13,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_8.mkv"
         },
         {
@@ -3763,7 +3667,7 @@
           "title": "Packing की प्रक्रिया",
           "description": "Packing की प्रक्रिया के बारे में अपनी जानकारी परखने के लिए क्विज खेलें।",
           "type": "quiz",
-          "order": 15,
+          "order": 14,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -3801,7 +3705,7 @@
           "title": "SLAM: Quality Control",
           "description": "SLAM: Quality Control के बारे में जानने के लिए वीडियो देखें।",
           "type": "video",
-          "order": 16,
+          "order": 15,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_9.mkv"
         },
         {
@@ -3813,7 +3717,7 @@
           "title": "SLAM: Quality Control",
           "description": "SLAM: Quality Control के बारे में अपनी जानकारी परखने के लिए क्विज खेलें।",
           "type": "quiz",
-          "order": 17,
+          "order": 16,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -3851,7 +3755,7 @@
           "title": "Quality Check के बाद क्या होता है? (SLAM Labels)",
           "description": "Quality Check के बाद क्या होता है? (SLAM Labels) के बारे में जानने के लिए वीडियो देखें।",
           "type": "video",
-          "order": 18,
+          "order": 17,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_10.mkv"
         },
         {
@@ -3863,7 +3767,7 @@
           "title": "Expert से मिलिए: Erica (Research Scientist)",
           "description": "Expert से मिलिए: Erica (Research Scientist) के बारे में जानने के लिए वीडियो देखें।",
           "type": "video",
-          "order": 19,
+          "order": 18,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_11.mkv"
         },
         {
@@ -3875,7 +3779,7 @@
           "title": "Expert से मिलिए: Erica (Research Scientist)",
           "description": "Expert से मिलिए: Erica (Research Scientist) के बारे में अपनी जानकारी परखने के लिए क्विज खेलें।",
           "type": "quiz",
-          "order": 20,
+          "order": 19,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -3902,7 +3806,7 @@
           "title": "Package Ready है: Shipping & Machine Learning",
           "description": "Package Ready है: Shipping & Machine Learning के बारे में जानने के लिए वीडियो देखें।",
           "type": "video",
-          "order": 21,
+          "order": 20,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_12.mkv"
         },
         {
@@ -3914,7 +3818,7 @@
           "title": "Expert से मिलिए: Julie Mitchell (Solutions Design Team)",
           "description": "Expert से मिलिए: Julie Mitchell (Solutions Design Team) के बारे में जानने के लिए वीडियो देखें।",
           "type": "video",
-          "order": 22,
+          "order": 21,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_13.mkv"
         },
         {
@@ -3926,7 +3830,7 @@
           "title": "Expert से मिलिए: Julie Mitchell (Solutions Design Team)",
           "description": "Expert से मिलिए: Julie Mitchell (Solutions Design Team) के बारे में अपनी जानकारी परखने के लिए क्विज खेलें।",
           "type": "quiz",
-          "order": 23,
+          "order": 22,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -3964,7 +3868,7 @@
           "title": "Outro & Reflection",
           "description": "Outro & Reflection के बारे में जानने के लिए वीडियो देखें।",
           "type": "video",
-          "order": 24,
+          "order": 23,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_14.mkv",
           "isCertificateCriteria": true
         }
@@ -4006,10 +3910,10 @@
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_2.mkv"
         },
         {
-          "id": "rft-te-ch02-quiz1",
-          "contentId": "rft-te-ch02-quiz1",
+          "id": "rft-te-ch02-quiz",
+          "contentId": "rft-te-ch02-quiz",
           "version": "1.0.0",
-          "hash": "rft-te-ch02-quiz1-hash",
+          "hash": "rft-te-ch02-quiz-hash",
           "moduleId": "rft-telugu-001",
           "title": "Algorithm అంటే ఏమిటి? ఇది ఎలా పనిచేస్తుంది?",
           "description": "Algorithm అంటే ఏమిటి? ఇది ఎలా పనిచేస్తుంది? గురించి మీ జ్ఞానాన్ని పరీక్షించడానికి క్విజ్ తీసుకోండి.",
@@ -4045,44 +3949,6 @@
           "isCertificateCriteria": true
         },
         {
-          "id": "rft-te-ch02-quiz2",
-          "contentId": "rft-te-ch02-quiz2",
-          "version": "1.0.0",
-          "hash": "rft-te-ch02-quiz2-hash",
-          "moduleId": "rft-telugu-001",
-          "title": "Algorithm అంటే ఏమిటి? ఇది ఎలా పనిచేస్తుంది?",
-          "description": "Algorithm అంటే ఏమిటి? ఇది ఎలా పనిచేస్తుంది? గురించి మీ జ్ఞానాన్ని పరీక్షించడానికి క్విజ్ తీసుకోండి.",
-          "type": "quiz",
-          "order": 4,
-          "quizData": {
-            "passingScore": 70,
-            "questions": [
-              {
-                "id": "rft-te-ch02-quiz2-q01",
-                "question": "క్రింది వాటిలో ఏది Algorithmయొక్క ఉదాహరణ?",
-                "options": [
-                  "టీవీ చూడటం",
-                  "స్నే హితులతో మాట్లాడటం",
-                  "వంట చేయడం",
-                  "నిద్రపోవడం"
-                ],
-                "correctAnswerIndex": 2
-              },
-              {
-                "id": "rft-te-ch02-quiz2-q02",
-                "question": "Algorithms అనేవి ____ అనుసరించాలి:",
-                "options": [
-                  "Step By Step",
-                  "యాదృ చ్ఛి కంగా అనుసరించవచ్చు",
-                  "అక్షరక్రమంలో",
-                  "పైవేవీ\nకాదు"
-                ],
-                "correctAnswerIndex": 0
-              }
-            ]
-          }
-        },
-        {
           "id": "rft-te-ch03-video",
           "contentId": "rft-te-ch03-video",
           "version": "1.0.0",
@@ -4091,7 +3957,7 @@
           "title": "Robots మరియు వాటి Superpower ను అర్థం చేసుకోవడం",
           "description": "Robots మరియు వాటి Superpower ను అర్థం చేసుకోవడం గురించి తెలుసుకోవడానికి వీడియోను చూడండి.",
           "type": "video",
-          "order": 5,
+          "order": 4,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_3.mkv"
         },
         {
@@ -4103,7 +3969,7 @@
           "title": "Expert‌ని కలుద్దాం (Rohit Raman)",
           "description": "Expert‌ని కలుద్దాం (Rohit Raman) గురించి తెలుసుకోవడానికి వీడియోను చూడండి.",
           "type": "video",
-          "order": 6,
+          "order": 5,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_4.mkv",
           "isCourseCompletionCriteria": true
         },
@@ -4116,7 +3982,7 @@
           "title": "Expert से मिलिए (Rohit Raman)",
           "description": "Expert से मिलिए (Rohit Raman) గురించి మీ జ్ఞానాన్ని పరీక్షించడానికి క్విజ్ తీసుకోండి.",
           "type": "quiz",
-          "order": 7,
+          "order": 6,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -4143,7 +4009,7 @@
           "title": "FC Grid మరియు Robotic Movement",
           "description": "FC Grid మరియు Robotic Movement గురించి తెలుసుకోవడానికి వీడియోను చూడండి.",
           "type": "video",
-          "order": 8,
+          "order": 7,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_5.mkv"
         },
         {
@@ -4155,7 +4021,7 @@
           "title": "FC Grid మరియు Robotic Movement",
           "description": "FC Grid మరియు Robotic Movement గురించి మీ జ్ఞానాన్ని పరీక్షించడానికి క్విజ్ తీసుకోండి.",
           "type": "quiz",
-          "order": 9,
+          "order": 8,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -4204,7 +4070,7 @@
           "title": "Robotic Movement గురించి ఇంకా తెలుసుకుందాం",
           "description": "Robotic Movement గురించి ఇంకా తెలుసుకుందాం గురించి తెలుసుకోవడానికి వీడియోను చూడండి.",
           "type": "video",
-          "order": 10,
+          "order": 9,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_6.mkv"
         },
         {
@@ -4216,7 +4082,7 @@
           "title": "Robotic Movement గురించి ఇంకా తెలుసుకుందాం",
           "description": "Robotic Movement గురించి ఇంకా తెలుసుకుందాం గురించి మీ జ్ఞానాన్ని పరీక్షించడానికి క్విజ్ తీసుకోండి.",
           "type": "quiz",
-          "order": 11,
+          "order": 10,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -4254,7 +4120,7 @@
           "title": "Picking చేసే విధానం",
           "description": "Picking చేసే విధానం గురించి తెలుసుకోవడానికి వీడియోను చూడండి.",
           "type": "video",
-          "order": 12,
+          "order": 11,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_7.mkv"
         },
         {
@@ -4266,7 +4132,7 @@
           "title": "Picking చేసే విధానం",
           "description": "Picking చేసే విధానం గురించి మీ జ్ఞానాన్ని పరీక్షించడానికి క్విజ్ తీసుకోండి.",
           "type": "quiz",
-          "order": 13,
+          "order": 12,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -4304,7 +4170,7 @@
           "title": "Packing చేసే విధానం",
           "description": "Packing చేసే విధానం గురించి తెలుసుకోవడానికి వీడియోను చూడండి.",
           "type": "video",
-          "order": 14,
+          "order": 13,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_8.mkv"
         },
         {
@@ -4316,7 +4182,7 @@
           "title": "Packing చేసే విధానం",
           "description": "Packing చేసే విధానం గురించి మీ జ్ఞానాన్ని పరీక్షించడానికి క్విజ్ తీసుకోండి.",
           "type": "quiz",
-          "order": 15,
+          "order": 14,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -4354,7 +4220,7 @@
           "title": "SLAM: Quality Control",
           "description": "SLAM: Quality Control గురించి తెలుసుకోవడానికి వీడియోను చూడండి.",
           "type": "video",
-          "order": 16,
+          "order": 15,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_9.mkv"
         },
         {
@@ -4366,7 +4232,7 @@
           "title": "SLAM: Quality Control",
           "description": "SLAM: Quality Control గురించి మీ జ్ఞానాన్ని పరీక్షించడానికి క్విజ్ తీసుకోండి.",
           "type": "quiz",
-          "order": 17,
+          "order": 16,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -4404,7 +4270,7 @@
           "title": "Quality Check తర్వాత ఏమి జరుగుతుంది? (SLAM Labels)",
           "description": "Quality Check తర్వాత ఏమి జరుగుతుంది? (SLAM Labels) గురించి తెలుసుకోవడానికి వీడియోను చూడండి.",
           "type": "video",
-          "order": 18,
+          "order": 17,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_10.mkv"
         },
         {
@@ -4416,7 +4282,7 @@
           "title": "Expert‌ని కలుద్దాం: Erica (Research Scientist)",
           "description": "Expert‌ని కలుద్దాం: Erica (Research Scientist) గురించి తెలుసుకోవడానికి వీడియోను చూడండి.",
           "type": "video",
-          "order": 19,
+          "order": 18,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_11.mkv"
         },
         {
@@ -4428,7 +4294,7 @@
           "title": "Expert‌ని కలుద్దాం: Erica (Research Scientist)",
           "description": "Expert‌ని కలుద్దాం: Erica (Research Scientist) గురించి మీ జ్ఞానాన్ని పరీక్షించడానికి క్విజ్ తీసుకోండి.",
           "type": "quiz",
-          "order": 20,
+          "order": 19,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -4455,7 +4321,7 @@
           "title": "ప్యాకేజ్ రెడీ అయింది: Shipping మరియు Machine Learning",
           "description": "ప్యాకేజ్ రెడీ అయింది: Shipping మరియు Machine Learning గురించి తెలుసుకోవడానికి వీడియోను చూడండి.",
           "type": "video",
-          "order": 21,
+          "order": 20,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_12.mkv"
         },
         {
@@ -4467,7 +4333,7 @@
           "title": "Expert‌ని కలుద్దాం: Julie Mitchell (Solutions Design Team)",
           "description": "Expert‌ని కలుద్దాం: Julie Mitchell (Solutions Design Team) గురించి తెలుసుకోవడానికి వీడియోను చూడండి.",
           "type": "video",
-          "order": 22,
+          "order": 21,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_13.mkv"
         },
         {
@@ -4479,7 +4345,7 @@
           "title": "Expert‌ని కలుద్దాం: Julie Mitchell (Solutions Design Team)",
           "description": "Expert‌ని కలుద్దాం: Julie Mitchell (Solutions Design Team) గురించి మీ జ్ఞానాన్ని పరీక్షించడానికి క్విజ్ తీసుకోండి.",
           "type": "quiz",
-          "order": 23,
+          "order": 22,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -4517,7 +4383,7 @@
           "title": "Outro & Reflection",
           "description": "Outro & Reflection గురించి తెలుసుకోవడానికి వీడియోను చూడండి.",
           "type": "video",
-          "order": 24,
+          "order": 23,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_14.mkv",
           "isCertificateCriteria": true
         }
@@ -4559,10 +4425,10 @@
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_2.mkv"
         },
         {
-          "id": "rft-gu-ch02-quiz1",
-          "contentId": "rft-gu-ch02-quiz1",
+          "id": "rft-gu-ch02-quiz",
+          "contentId": "rft-gu-ch02-quiz",
           "version": "1.0.0",
-          "hash": "rft-gu-ch02-quiz1-hash",
+          "hash": "rft-gu-ch02-quiz-hash",
           "moduleId": "rft-gujarati-001",
           "title": "Algorithm શું છે? અને તે કેવી રીતે કામ કરે છે?",
           "description": "Algorithm શું છે? અને તે કેવી રીતે કામ કરે છે? વિશે તમારા જ્ઞાનની ચકાસણી કરવા માટે ક્વિઝ રમો.",
@@ -4598,44 +4464,6 @@
           "isCertificateCriteria": true
         },
         {
-          "id": "rft-gu-ch02-quiz2",
-          "contentId": "rft-gu-ch02-quiz2",
-          "version": "1.0.0",
-          "hash": "rft-gu-ch02-quiz2-hash",
-          "moduleId": "rft-gujarati-001",
-          "title": "Algorithm શું છે? અને તે કેવી રીતે કામ કરે છે?",
-          "description": "Algorithm શું છે? અને તે કેવી રીતે કામ કરે છે? વિશે તમારા જ્ઞાનની ચકાસણી કરવા માટે ક્વિઝ રમો.",
-          "type": "quiz",
-          "order": 4,
-          "quizData": {
-            "passingScore": 70,
-            "questions": [
-              {
-                "id": "rft-gu-ch02-quiz2-q01",
-                "question": "નીચેના પૈકી કયું Algorithmનું ઉદાહરણ છે?",
-                "options": [
-                  "TV જોવું",
-                  "મિત્રો સાથે વાત કરવી",
-                  "રસોઈ બનાવવી",
-                  "ઊંઘવું"
-                ],
-                "correctAnswerIndex": 2
-              },
-              {
-                "id": "rft-gu-ch02-quiz2-q02",
-                "question": "Algorithmને કેવી રીતે અનુસરવી જોઈએ?",
-                "options": [
-                  "Step by step",
-                  "Random રીતે પણ અનુસરાવી શકાય",
-                  "Alphabetical Order મુજબ",
-                  "ઉપરોક્ત પૈકી કોઈ નહીં"
-                ],
-                "correctAnswerIndex": 0
-              }
-            ]
-          }
-        },
-        {
           "id": "rft-gu-ch03-video",
           "contentId": "rft-gu-ch03-video",
           "version": "1.0.0",
@@ -4644,7 +4472,7 @@
           "title": "Robots અને તેમની Superpowerને સમજવું",
           "description": "Robots અને તેમની Superpowerને સમજવું વિશે જાણવા માટે વિડિયો જુઓ.",
           "type": "video",
-          "order": 5,
+          "order": 4,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_3.mkv"
         },
         {
@@ -4656,7 +4484,7 @@
           "title": "Expertને મળો (Rohit Raman)",
           "description": "Expertને મળો (Rohit Raman) વિશે જાણવા માટે વિડિયો જુઓ.",
           "type": "video",
-          "order": 6,
+          "order": 5,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_4.mkv",
           "isCourseCompletionCriteria": true
         },
@@ -4669,7 +4497,7 @@
           "title": "Expertને મળો (Rohit Raman)",
           "description": "Expertને મળો (Rohit Raman) વિશે તમારા જ્ઞાનની ચકાસણી કરવા માટે ક્વિઝ રમો.",
           "type": "quiz",
-          "order": 7,
+          "order": 6,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -4696,7 +4524,7 @@
           "title": "FC Grid અને Robotic Movement",
           "description": "FC Grid અને Robotic Movement વિશે જાણવા માટે વિડિયો જુઓ.",
           "type": "video",
-          "order": 8,
+          "order": 7,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_5.mkv"
         },
         {
@@ -4708,7 +4536,7 @@
           "title": "FC Grid અને Robotic Movement",
           "description": "FC Grid અને Robotic Movement વિશે તમારા જ્ઞાનની ચકાસણી કરવા માટે ક્વિઝ રમો.",
           "type": "quiz",
-          "order": 9,
+          "order": 8,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -4757,7 +4585,7 @@
           "title": "Robotic Movement વિશે વધુ જાણીએ",
           "description": "Robotic Movement વિશે વધુ જાણીએ વિશે જાણવા માટે વિડિયો જુઓ.",
           "type": "video",
-          "order": 10,
+          "order": 9,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_6.mkv"
         },
         {
@@ -4769,7 +4597,7 @@
           "title": "Robotic Movement વિશે વધુ જાણીએ",
           "description": "Robotic Movement વિશે વધુ જાણીએ વિશે તમારા જ્ઞાનની ચકાસણી કરવા માટે ક્વિઝ રમો.",
           "type": "quiz",
-          "order": 11,
+          "order": 10,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -4807,7 +4635,7 @@
           "title": "Picking કરવાની પ્રક્રિયા",
           "description": "Picking કરવાની પ્રક્રિયા વિશે જાણવા માટે વિડિયો જુઓ.",
           "type": "video",
-          "order": 12,
+          "order": 11,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_7.mkv"
         },
         {
@@ -4819,7 +4647,7 @@
           "title": "Picking કરવાની પ્રક્રિયા",
           "description": "Picking કરવાની પ્રક્રિયા વિશે તમારા જ્ઞાનની ચકાસણી કરવા માટે ક્વિઝ રમો.",
           "type": "quiz",
-          "order": 13,
+          "order": 12,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -4857,7 +4685,7 @@
           "title": "Packing કરવાની પ્રક્રિયા",
           "description": "Packing કરવાની પ્રક્રિયા વિશે જાણવા માટે વિડિયો જુઓ.",
           "type": "video",
-          "order": 14,
+          "order": 13,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_8.mkv"
         },
         {
@@ -4869,7 +4697,7 @@
           "title": "Packing કરવાની પ્રક્રિયા",
           "description": "Packing કરવાની પ્રક્રિયા વિશે તમારા જ્ઞાનની ચકાસણી કરવા માટે ક્વિઝ રમો.",
           "type": "quiz",
-          "order": 15,
+          "order": 14,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -4907,7 +4735,7 @@
           "title": "SLAM: Quality Control",
           "description": "SLAM: Quality Control વિશે જાણવા માટે વિડિયો જુઓ.",
           "type": "video",
-          "order": 16,
+          "order": 15,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_9.mkv"
         },
         {
@@ -4919,7 +4747,7 @@
           "title": "SLAM: Quality Control",
           "description": "SLAM: Quality Control વિશે તમારા જ્ઞાનની ચકાસણી કરવા માટે ક્વિઝ રમો.",
           "type": "quiz",
-          "order": 17,
+          "order": 16,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -4957,7 +4785,7 @@
           "title": "Quality Check પછી શું થાય છે? (SLAM Labels)",
           "description": "Quality Check પછી શું થાય છે? (SLAM Labels) વિશે જાણવા માટે વિડિયો જુઓ.",
           "type": "video",
-          "order": 18,
+          "order": 17,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_10.mkv"
         },
         {
@@ -4969,7 +4797,7 @@
           "title": "Expertને મળો: Erica (Research Scientist)",
           "description": "Expertને મળો: Erica (Research Scientist) વિશે જાણવા માટે વિડિયો જુઓ.",
           "type": "video",
-          "order": 19,
+          "order": 18,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_11.mkv"
         },
         {
@@ -4981,7 +4809,7 @@
           "title": "Expertને મળો: Erica (Research Scientist)",
           "description": "Expertને મળો: Erica (Research Scientist) વિશે તમારા જ્ઞાનની ચકાસણી કરવા માટે ક્વિઝ રમો.",
           "type": "quiz",
-          "order": 20,
+          "order": 19,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -5008,7 +4836,7 @@
           "title": "Package તૈયાર છે: Shipping અને Machine Learning",
           "description": "Package તૈયાર છે: Shipping અને Machine Learning વિશે જાણવા માટે વિડિયો જુઓ.",
           "type": "video",
-          "order": 21,
+          "order": 20,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_12.mkv"
         },
         {
@@ -5020,7 +4848,7 @@
           "title": "Expertને મળો: Julie Mitchell (Solutions Design Team)",
           "description": "Expertને મળો: Julie Mitchell (Solutions Design Team) વિશે જાણવા માટે વિડિયો જુઓ.",
           "type": "video",
-          "order": 22,
+          "order": 21,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_13.mkv"
         },
         {
@@ -5032,7 +4860,7 @@
           "title": "Expertને મળો: Julie Mitchell (Solutions Design Team)",
           "description": "Expertને મળો: Julie Mitchell (Solutions Design Team) વિશે તમારા જ્ઞાનની ચકાસણી કરવા માટે ક્વિઝ રમો.",
           "type": "quiz",
-          "order": 23,
+          "order": 22,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -5070,7 +4898,7 @@
           "title": "Outro & Reflection",
           "description": "Outro & Reflection વિશે જાણવા માટે વિડિયો જુઓ.",
           "type": "video",
-          "order": 24,
+          "order": 23,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_14.mkv",
           "isCertificateCriteria": true
         }
@@ -5112,10 +4940,10 @@
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_2.mkv"
         },
         {
-          "id": "rft-mr-ch02-quiz1",
-          "contentId": "rft-mr-ch02-quiz1",
+          "id": "rft-mr-ch02-quiz",
+          "contentId": "rft-mr-ch02-quiz",
           "version": "1.0.0",
-          "hash": "rft-mr-ch02-quiz1-hash",
+          "hash": "rft-mr-ch02-quiz-hash",
           "moduleId": "rft-marathi-001",
           "title": "Algorithm म्हणजे काय? आणि ते कसे काम करते?",
           "description": "Algorithm म्हणजे काय? आणि ते कसे काम करते? बद्दल तुमच्या ज्ञानाची चाचणी घेण्यासाठी क्विझ सोडवा.",
@@ -5151,44 +4979,6 @@
           "isCertificateCriteria": true
         },
         {
-          "id": "rft-mr-ch02-quiz2",
-          "contentId": "rft-mr-ch02-quiz2",
-          "version": "1.0.0",
-          "hash": "rft-mr-ch02-quiz2-hash",
-          "moduleId": "rft-marathi-001",
-          "title": "Algorithm म्हणजे काय? आणि ते कसे काम करते?",
-          "description": "Algorithm म्हणजे काय? आणि ते कसे काम करते? बद्दल तुमच्या ज्ञानाची चाचणी घेण्यासाठी क्विझ सोडवा.",
-          "type": "quiz",
-          "order": 4,
-          "quizData": {
-            "passingScore": 70,
-            "questions": [
-              {
-                "id": "rft-mr-ch02-quiz2-q01",
-                "question": "खालीलपैकी कोणते Algorithmचे उदाहरण आहे?",
-                "options": [
-                  "टीव्ही पाहणे",
-                  "मित्रांसोबत बोलणे",
-                  "स्वयंपाक करणे",
-                  "झोप घेणे"
-                ],
-                "correctAnswerIndex": 2
-              },
-              {
-                "id": "rft-mr-ch02-quiz2-q02",
-                "question": "Algorithm कशी पाळली पाहिजे?",
-                "options": [
-                  "Step by step",
-                  "Random पद्धतीनेही पाळू शकतो",
-                  "Alphabetical Order मध्ये",
-                  "वरीलपैकी काहीही नाही"
-                ],
-                "correctAnswerIndex": 0
-              }
-            ]
-          }
-        },
-        {
           "id": "rft-mr-ch03-video",
           "contentId": "rft-mr-ch03-video",
           "version": "1.0.0",
@@ -5197,7 +4987,7 @@
           "title": "Robots आणि त्यांची Superpower समजून घेऊया",
           "description": "Robots आणि त्यांची Superpower समजून घेऊया बद्दल जाणून घेण्यासाठी व्हिडिओ पहा.",
           "type": "video",
-          "order": 5,
+          "order": 4,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_3.mkv"
         },
         {
@@ -5209,7 +4999,7 @@
           "title": "Expert ला भेटूया (Rohit Raman)",
           "description": "Expert ला भेटूया (Rohit Raman) बद्दल जाणून घेण्यासाठी व्हिडिओ पहा.",
           "type": "video",
-          "order": 6,
+          "order": 5,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_4.mkv",
           "isCourseCompletionCriteria": true
         },
@@ -5222,7 +5012,7 @@
           "title": "Expert ला भेटूया (Rohit Raman)",
           "description": "Expert ला भेटूया (Rohit Raman) बद्दल तुमच्या ज्ञानाची चाचणी घेण्यासाठी क्विझ सोडवा.",
           "type": "quiz",
-          "order": 7,
+          "order": 6,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -5249,7 +5039,7 @@
           "title": "FC Grid आणि Robotic Movement",
           "description": "FC Grid आणि Robotic Movement बद्दल जाणून घेण्यासाठी व्हिडिओ पहा.",
           "type": "video",
-          "order": 8,
+          "order": 7,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_5.mkv"
         },
         {
@@ -5261,7 +5051,7 @@
           "title": "FC Grid आणि Robotic Movement",
           "description": "FC Grid आणि Robotic Movement बद्दल तुमच्या ज्ञानाची चाचणी घेण्यासाठी क्विझ सोडवा.",
           "type": "quiz",
-          "order": 9,
+          "order": 8,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -5310,7 +5100,7 @@
           "title": "Robotic Movement बद्दल आणखी जाणून घेऊया",
           "description": "Robotic Movement बद्दल आणखी जाणून घेऊया बद्दल जाणून घेण्यासाठी व्हिडिओ पहा.",
           "type": "video",
-          "order": 10,
+          "order": 9,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_6.mkv"
         },
         {
@@ -5322,7 +5112,7 @@
           "title": "Robotic Movement बद्दल आणखी जाणून घेऊया",
           "description": "Robotic Movement बद्दल आणखी जाणून घेऊया बद्दल तुमच्या ज्ञानाची चाचणी घेण्यासाठी क्विझ सोडवा.",
           "type": "quiz",
-          "order": 11,
+          "order": 10,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -5360,7 +5150,7 @@
           "title": "Picking करण्याची प्रक्रिया",
           "description": "Picking करण्याची प्रक्रिया बद्दल जाणून घेण्यासाठी व्हिडिओ पहा.",
           "type": "video",
-          "order": 12,
+          "order": 11,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_7.mkv"
         },
         {
@@ -5372,7 +5162,7 @@
           "title": "Picking करण्याची प्रक्रिया",
           "description": "Picking करण्याची प्रक्रिया बद्दल तुमच्या ज्ञानाची चाचणी घेण्यासाठी क्विझ सोडवा.",
           "type": "quiz",
-          "order": 13,
+          "order": 12,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -5410,7 +5200,7 @@
           "title": "Packing करण्याची प्रक्रिया",
           "description": "Packing करण्याची प्रक्रिया बद्दल जाणून घेण्यासाठी व्हिडिओ पहा.",
           "type": "video",
-          "order": 14,
+          "order": 13,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_8.mkv"
         },
         {
@@ -5422,7 +5212,7 @@
           "title": "Packing करण्याची प्रक्रिया",
           "description": "Packing करण्याची प्रक्रिया बद्दल तुमच्या ज्ञानाची चाचणी घेण्यासाठी क्विझ सोडवा.",
           "type": "quiz",
-          "order": 15,
+          "order": 14,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -5460,7 +5250,7 @@
           "title": "SLAM: Quality Control",
           "description": "SLAM: Quality Control बद्दल जाणून घेण्यासाठी व्हिडिओ पहा.",
           "type": "video",
-          "order": 16,
+          "order": 15,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_9.mkv"
         },
         {
@@ -5472,7 +5262,7 @@
           "title": "SLAM: Quality Control",
           "description": "SLAM: Quality Control बद्दल तुमच्या ज्ञानाची चाचणी घेण्यासाठी क्विझ सोडवा.",
           "type": "quiz",
-          "order": 17,
+          "order": 16,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -5510,7 +5300,7 @@
           "title": "Quality Check नंतर काय होते? (SLAM Labels)",
           "description": "Quality Check नंतर काय होते? (SLAM Labels) बद्दल जाणून घेण्यासाठी व्हिडिओ पहा.",
           "type": "video",
-          "order": 18,
+          "order": 17,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_10.mkv"
         },
         {
@@ -5522,7 +5312,7 @@
           "title": "Expert ला भेटूया: Erica (Research Scientist)",
           "description": "Expert ला भेटूया: Erica (Research Scientist) बद्दल जाणून घेण्यासाठी व्हिडिओ पहा.",
           "type": "video",
-          "order": 19,
+          "order": 18,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_11.mkv"
         },
         {
@@ -5534,7 +5324,7 @@
           "title": "Expert ला भेटूया: Erica (Research Scientist)",
           "description": "Expert ला भेटूया: Erica (Research Scientist) बद्दल तुमच्या ज्ञानाची चाचणी घेण्यासाठी क्विझ सोडवा.",
           "type": "quiz",
-          "order": 20,
+          "order": 19,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -5561,7 +5351,7 @@
           "title": "Package तयार आहे: Shipping आणि Machine Learning",
           "description": "Package तयार आहे: Shipping आणि Machine Learning बद्दल जाणून घेण्यासाठी व्हिडिओ पहा.",
           "type": "video",
-          "order": 21,
+          "order": 20,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_12.mkv"
         },
         {
@@ -5573,7 +5363,7 @@
           "title": "Expert ला भेटूया: Julie Mitchell (Solutions Design Team)",
           "description": "Expert ला भेटूया: Julie Mitchell (Solutions Design Team) बद्दल जाणून घेण्यासाठी व्हिडिओ पहा.",
           "type": "video",
-          "order": 22,
+          "order": 21,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_13.mkv"
         },
         {
@@ -5585,7 +5375,7 @@
           "title": "Expert ला भेटूया: Julie Mitchell (Solutions Design Team)",
           "description": "Expert ला भेटूया: Julie Mitchell (Solutions Design Team) बद्दल तुमच्या ज्ञानाची चाचणी घेण्यासाठी क्विझ सोडवा.",
           "type": "quiz",
-          "order": 23,
+          "order": 22,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -5623,7 +5413,7 @@
           "title": "Outro & Reflection",
           "description": "Outro & Reflection बद्दल जाणून घेण्यासाठी व्हिडिओ पहा.",
           "type": "video",
-          "order": 24,
+          "order": 23,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_14.mkv",
           "isCertificateCriteria": true
         }
@@ -5665,10 +5455,10 @@
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_2.mkv"
         },
         {
-          "id": "rft-kn-ch02-quiz1",
-          "contentId": "rft-kn-ch02-quiz1",
+          "id": "rft-kn-ch02-quiz",
+          "contentId": "rft-kn-ch02-quiz",
           "version": "1.0.0",
-          "hash": "rft-kn-ch02-quiz1-hash",
+          "hash": "rft-kn-ch02-quiz-hash",
           "moduleId": "rft-kannada-001",
           "title": "Algorithm ಎಂದರೇನು? ಇದು ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ?",
           "description": "Algorithm ಎಂದರೇನು? ಇದು ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ? ಕುರಿತು ನಿಮ್ಮ ಜ್ಞಾನವನ್ನು ಪರೀಕ್ಷಿಸಲು ರಸಪ್ರಶ್ನೆ ತೆಗೆದುಕೊಳ್ಳಿ.",
@@ -5704,44 +5494,6 @@
           "isCertificateCriteria": true
         },
         {
-          "id": "rft-kn-ch02-quiz2",
-          "contentId": "rft-kn-ch02-quiz2",
-          "version": "1.0.0",
-          "hash": "rft-kn-ch02-quiz2-hash",
-          "moduleId": "rft-kannada-001",
-          "title": "Algorithm ಎಂದರೇನು? ಇದು ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ?",
-          "description": "Algorithm ಎಂದರೇನು? ಇದು ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ? ಕುರಿತು ನಿಮ್ಮ ಜ್ಞಾನವನ್ನು ಪರೀಕ್ಷಿಸಲು ರಸಪ್ರಶ್ನೆ ತೆಗೆದುಕೊಳ್ಳಿ.",
-          "type": "quiz",
-          "order": 4,
-          "quizData": {
-            "passingScore": 70,
-            "questions": [
-              {
-                "id": "rft-kn-ch02-quiz2-q01",
-                "question": "ಕೆಳಗಿನವುಗಳಲ್ಲಿ ಯಾವುದು Algorithm ಉದಾಹರಣೆ?",
-                "options": [
-                  "ಟಿವಿ ನೋಡುವುದು",
-                  "ಸ್ನೇಹಿತರೊಂದಿಗೆ ಮಾತನಾಡುವುದು",
-                  "ಅಡುಗೆ ಮಾಡುವುದು",
-                  "ನಿದ್ರೆ ಮಾಡುವುದು"
-                ],
-                "correctAnswerIndex": 2
-              },
-              {
-                "id": "rft-kn-ch02-quiz2-q02",
-                "question": "Algorithms ಅನ್ನು ____ ಅನುಸರಿಸಬೇಕು:",
-                "options": [
-                  "Step by step",
-                  "ಯಾದೃಚ್ಛಿಕವಾಗಿ ಅನುಸರಿಸಬಹುದು",
-                  "ಅಕ್ಷರ ಕ್ರಮದಲ್ಲಿ",
-                  "ಮೇಲಿನವುಗಳಲ್ಲಿ ಯಾವುದೂ ಅಲ್ಲ"
-                ],
-                "correctAnswerIndex": 0
-              }
-            ]
-          }
-        },
-        {
           "id": "rft-kn-ch03-video",
           "contentId": "rft-kn-ch03-video",
           "version": "1.0.0",
@@ -5750,7 +5502,7 @@
           "title": "Robots ಮತ್ತು ಅವುಗಳ Superpower ಅನ್ನು ಅರ್ಥಮಾಡಿಕೊಳ್ಳುವುದು",
           "description": "Robots ಮತ್ತು ಅವುಗಳ Superpower ಅನ್ನು ಅರ್ಥಮಾಡಿಕೊಳ್ಳುವುದು ಕುರಿತು ತಿಳಿಯಲು ವೀಡಿಯೊವನ್ನು ವೀಕ್ಷಿಸಿ.",
           "type": "video",
-          "order": 5,
+          "order": 4,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_3.mkv"
         },
         {
@@ -5762,7 +5514,7 @@
           "title": "Expertರನ್ನು ಭೇಟಿ ಮಾಡೋಣ (Rohit Raman)",
           "description": "Expertರನ್ನು ಭೇಟಿ ಮಾಡೋಣ (Rohit Raman) ಕುರಿತು ತಿಳಿಯಲು ವೀಡಿಯೊವನ್ನು ವೀಕ್ಷಿಸಿ.",
           "type": "video",
-          "order": 6,
+          "order": 5,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_4.mkv",
           "isCourseCompletionCriteria": true
         },
@@ -5775,7 +5527,7 @@
           "title": "Expertರನ್ನು ಭೇಟಿ ಮಾಡೋಣ (Rohit Raman)",
           "description": "Expertರನ್ನು ಭೇಟಿ ಮಾಡೋಣ (Rohit Raman) ಕುರಿತು ನಿಮ್ಮ ಜ್ಞಾನವನ್ನು ಪರೀಕ್ಷಿಸಲು ರಸಪ್ರಶ್ನೆ ತೆಗೆದುಕೊಳ್ಳಿ.",
           "type": "quiz",
-          "order": 7,
+          "order": 6,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -5802,7 +5554,7 @@
           "title": "FC Grid ಮತ್ತು Robotic Movement",
           "description": "FC Grid ಮತ್ತು Robotic Movement ಕುರಿತು ತಿಳಿಯಲು ವೀಡಿಯೊವನ್ನು ವೀಕ್ಷಿಸಿ.",
           "type": "video",
-          "order": 8,
+          "order": 7,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_5.mkv"
         },
         {
@@ -5814,7 +5566,7 @@
           "title": "FC Grid ಮತ್ತು Robotic Movement",
           "description": "FC Grid ಮತ್ತು Robotic Movement ಕುರಿತು ನಿಮ್ಮ ಜ್ಞಾನವನ್ನು ಪರೀಕ್ಷಿಸಲು ರಸಪ್ರಶ್ನೆ ತೆಗೆದುಕೊಳ್ಳಿ.",
           "type": "quiz",
-          "order": 9,
+          "order": 8,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -5863,7 +5615,7 @@
           "title": "Robotic Movement ಬಗ್ಗೆ ಇನ್ನಷ್ಟು ತಿಳಿದುಕೊಳ್ಳೋಣ",
           "description": "Robotic Movement ಬಗ್ಗೆ ಇನ್ನಷ್ಟು ತಿಳಿದುಕೊಳ್ಳೋಣ ಕುರಿತು ತಿಳಿಯಲು ವೀಡಿಯೊವನ್ನು ವೀಕ್ಷಿಸಿ.",
           "type": "video",
-          "order": 10,
+          "order": 9,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_6.mkv"
         },
         {
@@ -5875,7 +5627,7 @@
           "title": "Robotic Movement ಬಗ್ಗೆ ಇನ್ನಷ್ಟು ತಿಳಿದುಕೊಳ್ಳೋಣ",
           "description": "Robotic Movement ಬಗ್ಗೆ ಇನ್ನಷ್ಟು ತಿಳಿದುಕೊಳ್ಳೋಣ ಕುರಿತು ನಿಮ್ಮ ಜ್ಞಾನವನ್ನು ಪರೀಕ್ಷಿಸಲು ರಸಪ್ರಶ್ನೆ ತೆಗೆದುಕೊಳ್ಳಿ.",
           "type": "quiz",
-          "order": 11,
+          "order": 10,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -5913,7 +5665,7 @@
           "title": "Picking ಮಾಡುವ ಪ್ರಕ್ರಿಯೆ",
           "description": "Picking ಮಾಡುವ ಪ್ರಕ್ರಿಯೆ ಕುರಿತು ತಿಳಿಯಲು ವೀಡಿಯೊವನ್ನು ವೀಕ್ಷಿಸಿ.",
           "type": "video",
-          "order": 12,
+          "order": 11,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_7.mkv"
         },
         {
@@ -5925,7 +5677,7 @@
           "title": "Picking ಮಾಡುವ ಪ್ರಕ್ರಿಯೆ",
           "description": "Picking ಮಾಡುವ ಪ್ರಕ್ರಿಯೆ ಕುರಿತು ನಿಮ್ಮ ಜ್ಞಾನವನ್ನು ಪರೀಕ್ಷಿಸಲು ರಸಪ್ರಶ್ನೆ ತೆಗೆದುಕೊಳ್ಳಿ.",
           "type": "quiz",
-          "order": 13,
+          "order": 12,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -5963,7 +5715,7 @@
           "title": "Packing ಮಾಡುವ ಪ್ರಕ್ರಿಯೆ",
           "description": "Packing ಮಾಡುವ ಪ್ರಕ್ರಿಯೆ ಕುರಿತು ತಿಳಿಯಲು ವೀಡಿಯೊವನ್ನು ವೀಕ್ಷಿಸಿ.",
           "type": "video",
-          "order": 14,
+          "order": 13,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_8.mkv"
         },
         {
@@ -5975,7 +5727,7 @@
           "title": "Packing ಮಾಡುವ ಪ್ರಕ್ರಿಯೆ",
           "description": "Packing ಮಾಡುವ ಪ್ರಕ್ರಿಯೆ ಕುರಿತು ನಿಮ್ಮ ಜ್ಞಾನವನ್ನು ಪರೀಕ್ಷಿಸಲು ರಸಪ್ರಶ್ನೆ ತೆಗೆದುಕೊಳ್ಳಿ.",
           "type": "quiz",
-          "order": 15,
+          "order": 14,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -6013,7 +5765,7 @@
           "title": "SLAM: Quality Control",
           "description": "SLAM: Quality Control ಕುರಿತು ತಿಳಿಯಲು ವೀಡಿಯೊವನ್ನು ವೀಕ್ಷಿಸಿ.",
           "type": "video",
-          "order": 16,
+          "order": 15,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_9.mkv"
         },
         {
@@ -6025,7 +5777,7 @@
           "title": "SLAM: Quality Control",
           "description": "SLAM: Quality Control ಕುರಿತು ನಿಮ್ಮ ಜ್ಞಾನವನ್ನು ಪರೀಕ್ಷಿಸಲು ರಸಪ್ರಶ್ನೆ ತೆಗೆದುಕೊಳ್ಳಿ.",
           "type": "quiz",
-          "order": 17,
+          "order": 16,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -6063,7 +5815,7 @@
           "title": "Quality Check ಆದ ನಂತರ ಏನು ಆಗುತ್ತದೆ? (SLAM Labels)",
           "description": "Quality Check ಆದ ನಂತರ ಏನು ಆಗುತ್ತದೆ? (SLAM Labels) ಕುರಿತು ತಿಳಿಯಲು ವೀಡಿಯೊವನ್ನು ವೀಕ್ಷಿಸಿ.",
           "type": "video",
-          "order": 18,
+          "order": 17,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_10.mkv"
         },
         {
@@ -6075,7 +5827,7 @@
           "title": "Expertರನ್ನು ಭೇಟಿ ಮಾಡೋಣ: Erica (Research Scientist)",
           "description": "Expertರನ್ನು ಭೇಟಿ ಮಾಡೋಣ: Erica (Research Scientist) ಕುರಿತು ತಿಳಿಯಲು ವೀಡಿಯೊವನ್ನು ವೀಕ್ಷಿಸಿ.",
           "type": "video",
-          "order": 19,
+          "order": 18,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_11.mkv"
         },
         {
@@ -6087,7 +5839,7 @@
           "title": "Expertರನ್ನು ಭೇಟಿ ಮಾಡೋಣ: Erica (Research Scientist)",
           "description": "Expertರನ್ನು ಭೇಟಿ ಮಾಡೋಣ: Erica (Research Scientist) ಕುರಿತು ನಿಮ್ಮ ಜ್ಞಾನವನ್ನು ಪರೀಕ್ಷಿಸಲು ರಸಪ್ರಶ್ನೆ ತೆಗೆದುಕೊಳ್ಳಿ.",
           "type": "quiz",
-          "order": 20,
+          "order": 19,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -6114,7 +5866,7 @@
           "title": "ಪ್ಯಾಕೇಜ್ ಸಿದ್ಧವಾಗಿದೆ: Shipping ಮತ್ತು Machine Learning",
           "description": "ಪ್ಯಾಕೇಜ್ ಸಿದ್ಧವಾಗಿದೆ: Shipping ಮತ್ತು Machine Learning ಕುರಿತು ತಿಳಿಯಲು ವೀಡಿಯೊವನ್ನು ವೀಕ್ಷಿಸಿ.",
           "type": "video",
-          "order": 21,
+          "order": 20,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_12.mkv"
         },
         {
@@ -6126,7 +5878,7 @@
           "title": "Expertರನ್ನು ಭೇಟಿ ಮಾಡೋಣ: Julie Mitchell (Solutions Design Team)",
           "description": "Expertರನ್ನು ಭೇಟಿ ಮಾಡೋಣ: Julie Mitchell (Solutions Design Team) ಕುರಿತು ತಿಳಿಯಲು ವೀಡಿಯೊವನ್ನು ವೀಕ್ಷಿಸಿ.",
           "type": "video",
-          "order": 22,
+          "order": 21,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_13.mkv"
         },
         {
@@ -6138,7 +5890,7 @@
           "title": "Expertರನ್ನು ಭೇಟಿ ಮಾಡೋಣ: Julie Mitchell (Solutions Design Team)",
           "description": "Expertರನ್ನು ಭೇಟಿ ಮಾಡೋಣ: Julie Mitchell (Solutions Design Team) ಕುರಿತು ನಿಮ್ಮ ಜ್ಞಾನವನ್ನು ಪರೀಕ್ಷಿಸಲು ರಸಪ್ರಶ್ನೆ ತೆಗೆದುಕೊಳ್ಳಿ.",
           "type": "quiz",
-          "order": 23,
+          "order": 22,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -6176,7 +5928,7 @@
           "title": "Outro & Reflection",
           "description": "Outro & Reflection ಕುರಿತು ತಿಳಿಯಲು ವೀಡಿಯೊವನ್ನು ವೀಕ್ಷಿಸಿ.",
           "type": "video",
-          "order": 24,
+          "order": 23,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_14.mkv",
           "isCertificateCriteria": true
         }
@@ -6218,10 +5970,10 @@
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_2.mkv"
         },
         {
-          "id": "rft-ta-ch02-quiz1",
-          "contentId": "rft-ta-ch02-quiz1",
+          "id": "rft-ta-ch02-quiz",
+          "contentId": "rft-ta-ch02-quiz",
           "version": "1.0.0",
-          "hash": "rft-ta-ch02-quiz1-hash",
+          "hash": "rft-ta-ch02-quiz-hash",
           "moduleId": "rft-tamil-001",
           "title": "Algorithm என்றால் என்ன? அது எப்படி வேலை செய்கிறது?",
           "description": "Algorithm என்றால் என்ன? அது எப்படி வேலை செய்கிறது? பற்றிய உங்கள் அறிவை சோதிக்க வினாடி வினாவை எதிர்கொள்ளுங்கள்.",
@@ -6257,44 +6009,6 @@
           "isCertificateCriteria": true
         },
         {
-          "id": "rft-ta-ch02-quiz2",
-          "contentId": "rft-ta-ch02-quiz2",
-          "version": "1.0.0",
-          "hash": "rft-ta-ch02-quiz2-hash",
-          "moduleId": "rft-tamil-001",
-          "title": "Algorithm என்றால் என்ன? அது எப்படி வேலை செய்கிறது?",
-          "description": "Algorithm என்றால் என்ன? அது எப்படி வேலை செய்கிறது? பற்றிய உங்கள் அறிவை சோதிக்க வினாடி வினாவை எதிர்கொள்ளுங்கள்.",
-          "type": "quiz",
-          "order": 4,
-          "quizData": {
-            "passingScore": 70,
-            "questions": [
-              {
-                "id": "rft-ta-ch02-quiz2-q01",
-                "question": "கீழ்கண்டவற்றில் எது Algorithm-இன் ஒரு உதாரணம்?",
-                "options": [
-                  "தொலைக்காட்சி பார்ப்பது",
-                  "நண்பர்களுடன் பேசுவது",
-                  "சமைப்பது",
-                  "தூங்குவது"
-                ],
-                "correctAnswerIndex": 2
-              },
-              {
-                "id": "rft-ta-ch02-quiz2-q02",
-                "question": "Algorithm பின்பற்றப்பட வேண்டியது ____:",
-                "options": [
-                  "Step by step",
-                  "சீரற்ற முறையிலும் பின்பற்றலாம்",
-                  "Alphabetical Order-ல்",
-                  "மேலே உள்ள எதுவும் இ   ல்லை"
-                ],
-                "correctAnswerIndex": 0
-              }
-            ]
-          }
-        },
-        {
           "id": "rft-ta-ch03-video",
           "contentId": "rft-ta-ch03-video",
           "version": "1.0.0",
@@ -6303,7 +6017,7 @@
           "title": "Robots மற்றும் அவற்றின் Superpower-ஐ புரிந்து கொள்ளுதல்",
           "description": "Robots மற்றும் அவற்றின் Superpower-ஐ புரிந்து கொள்ளுதல் பற்றி அறிய வீடியோவை பார்க்கவும்.",
           "type": "video",
-          "order": 5,
+          "order": 4,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_3.mkv"
         },
         {
@@ -6315,7 +6029,7 @@
           "title": "Expert-ஐ சந்திப்போம் (Rohit Raman)",
           "description": "Expert-ஐ சந்திப்போம் (Rohit Raman) பற்றி அறிய வீடியோவை பார்க்கவும்.",
           "type": "video",
-          "order": 6,
+          "order": 5,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_4.mkv",
           "isCourseCompletionCriteria": true
         },
@@ -6328,7 +6042,7 @@
           "title": "Expert-ஐ சந்திப்போம் (Rohit Raman)",
           "description": "Expert-ஐ சந்திப்போம் (Rohit Raman) பற்றிய உங்கள் அறிவை சோதிக்க வினாடி வினாவை எதிர்கொள்ளுங்கள்.",
           "type": "quiz",
-          "order": 7,
+          "order": 6,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -6355,7 +6069,7 @@
           "title": "FC Grid மற்றும் Robotic Movement",
           "description": "FC Grid மற்றும் Robotic Movement பற்றி அறிய வீடியோவை பார்க்கவும்.",
           "type": "video",
-          "order": 8,
+          "order": 7,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_5.mkv"
         },
         {
@@ -6367,7 +6081,7 @@
           "title": "FC Grid மற்றும் Robotic Movement",
           "description": "FC Grid மற்றும் Robotic Movement பற்றிய உங்கள் அறிவை சோதிக்க வினாடி வினாவை எதிர்கொள்ளுங்கள்.",
           "type": "quiz",
-          "order": 9,
+          "order": 8,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -6416,7 +6130,7 @@
           "title": "Robotic Movement பற்றி மேலும் தெரிந்துகொள்வோம்",
           "description": "Robotic Movement பற்றி மேலும் தெரிந்துகொள்வோம் பற்றி அறிய வீடியோவை பார்க்கவும்.",
           "type": "video",
-          "order": 10,
+          "order": 9,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_6.mkv"
         },
         {
@@ -6428,7 +6142,7 @@
           "title": "Robotic Movement பற்றி மேலும் தெரிந்துகொள்வோம்",
           "description": "Robotic Movement பற்றி மேலும் தெரிந்துகொள்வோம் பற்றிய உங்கள் அறிவை சோதிக்க வினாடி வினாவை எதிர்கொள்ளுங்கள்.",
           "type": "quiz",
-          "order": 11,
+          "order": 10,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -6466,7 +6180,7 @@
           "title": "Picking செயல்முறை",
           "description": "Picking செயல்முறை பற்றி அறிய வீடியோவை பார்க்கவும்.",
           "type": "video",
-          "order": 12,
+          "order": 11,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_7.mkv"
         },
         {
@@ -6478,7 +6192,7 @@
           "title": "Picking செயல்முறை",
           "description": "Picking செயல்முறை பற்றிய உங்கள் அறிவை சோதிக்க வினாடி வினாவை எதிர்கொள்ளுங்கள்.",
           "type": "quiz",
-          "order": 13,
+          "order": 12,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -6516,7 +6230,7 @@
           "title": "Packing செயல்முறை",
           "description": "Packing செயல்முறை பற்றி அறிய வீடியோவை பார்க்கவும்.",
           "type": "video",
-          "order": 14,
+          "order": 13,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_8.mkv"
         },
         {
@@ -6528,7 +6242,7 @@
           "title": "Packing செயல்முறை",
           "description": "Packing செயல்முறை பற்றிய உங்கள் அறிவை சோதிக்க வினாடி வினாவை எதிர்கொள்ளுங்கள்.",
           "type": "quiz",
-          "order": 15,
+          "order": 14,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -6566,7 +6280,7 @@
           "title": "SLAM: Quality Control",
           "description": "SLAM: Quality Control பற்றி அறிய வீடியோவை பார்க்கவும்.",
           "type": "video",
-          "order": 16,
+          "order": 15,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_9.mkv"
         },
         {
@@ -6578,7 +6292,7 @@
           "title": "SLAM: Quality Control",
           "description": "SLAM: Quality Control பற்றிய உங்கள் அறிவை சோதிக்க வினாடி வினாவை எதிர்கொள்ளுங்கள்.",
           "type": "quiz",
-          "order": 17,
+          "order": 16,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -6616,7 +6330,7 @@
           "title": "Quality Check பிறகு என்ன நடக்கிறது? (SLAM Labels)",
           "description": "Quality Check பிறகு என்ன நடக்கிறது? (SLAM Labels) பற்றி அறிய வீடியோவை பார்க்கவும்.",
           "type": "video",
-          "order": 18,
+          "order": 17,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_10.mkv"
         },
         {
@@ -6628,7 +6342,7 @@
           "title": "Expert-ஐ சந்திப்போம்: Erica (Research Scientist)",
           "description": "Expert-ஐ சந்திப்போம்: Erica (Research Scientist) பற்றி அறிய வீடியோவை பார்க்கவும்.",
           "type": "video",
-          "order": 19,
+          "order": 18,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_11.mkv"
         },
         {
@@ -6640,7 +6354,7 @@
           "title": "Expert-ஐ சந்திப்போம்: Erica (Research Scientist)",
           "description": "Expert-ஐ சந்திப்போம்: Erica (Research Scientist) பற்றிய உங்கள் அறிவை சோதிக்க வினாடி வினாவை எதிர்கொள்ளுங்கள்.",
           "type": "quiz",
-          "order": 20,
+          "order": 19,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -6667,7 +6381,7 @@
           "title": "Package தயார்: Shipping மற்றும் Machine Learning",
           "description": "Package தயார்: Shipping மற்றும் Machine Learning பற்றி அறிய வீடியோவை பார்க்கவும்.",
           "type": "video",
-          "order": 21,
+          "order": 20,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_12.mkv"
         },
         {
@@ -6679,7 +6393,7 @@
           "title": "Expert-ஐ சந்திப்போம்: Julie Mitchell (Solutions Design Team)",
           "description": "Expert-ஐ சந்திப்போம்: Julie Mitchell (Solutions Design Team) பற்றி அறிய வீடியோவை பார்க்கவும்.",
           "type": "video",
-          "order": 22,
+          "order": 21,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_13.mkv"
         },
         {
@@ -6691,7 +6405,7 @@
           "title": "Expert-ஐ சந்திப்போம்: Julie Mitchell (Solutions Design Team)",
           "description": "Expert-ஐ சந்திப்போம்: Julie Mitchell (Solutions Design Team) பற்றிய உங்கள் அறிவை சோதிக்க வினாடி வினாவை எதிர்கொள்ளுங்கள்.",
           "type": "quiz",
-          "order": 23,
+          "order": 22,
           "quizData": {
             "passingScore": 70,
             "questions": [
@@ -6729,7 +6443,7 @@
           "title": "Outro & Reflection",
           "description": "Outro & Reflection பற்றி அறிய வீடியோவை பார்க்கவும்.",
           "type": "video",
-          "order": 24,
+          "order": 23,
           "videoUrl": "assets/videos/RFT/Robotics_Fulfillment_Tour_Video_14.mkv",
           "isCertificateCriteria": true
         }

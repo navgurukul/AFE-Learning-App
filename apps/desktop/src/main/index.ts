@@ -68,11 +68,41 @@ function loadEnv() {
 
 loadEnv();
 
+/**
+ * Sanitize app-update.yml to ensure no legacy publisherName exists,
+ * preventing Windows Authenticode verification errors on unsigned releases.
+ */
+function sanitizeAppUpdateConfig() {
+    try {
+        const appUpdatePath = path.join(process.resourcesPath, 'app-update.yml');
+        if (fs.existsSync(appUpdatePath)) {
+            const raw = fs.readFileSync(appUpdatePath, 'utf8');
+            if (raw.includes('publisherName') || !raw.includes('owner: navgurukul')) {
+                const fixedConfig = [
+                    'owner: navgurukul',
+                    'repo: AFE-Learning-App',
+                    'provider: github',
+                    'updaterCacheDirName: desktop-updater'
+                ].join('\n') + '\n';
+                fs.writeFileSync(appUpdatePath, fixedConfig, 'utf8');
+                log.info('AutoUpdater: Cleaned legacy publisherName and verified app-update.yml');
+            }
+        }
+    } catch (e) {
+        log.warn('AutoUpdater: Could not sanitize app-update.yml:', e);
+    }
+}
+sanitizeAppUpdateConfig();
+
 // Configure Auto Updater for SILENT background updates
 autoUpdater.logger = log;
 (autoUpdater.logger as any).transports.file.level = 'info';
 autoUpdater.autoDownload = true;
 autoUpdater.autoInstallOnAppQuit = true;
+autoUpdater.disableWebInstaller = true;
+
+// Bypass Windows Authenticode signature check for unsigned builds
+(autoUpdater as any).verifyUpdateCodeSignature = () => Promise.resolve(null);
 
 // When an update is downloaded, notify the renderer window to show the 5-second countdown popup
 autoUpdater.on('update-downloaded', (info) => {

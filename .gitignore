@@ -41,8 +41,12 @@ release
 apps/desktop/C:\\ProgramData\\OfflineLearningApp/*
 
 # Videos
-installer-assets/assets/videos/*
-installer-assets/assets/videos2/*
+dev-data/assets/videos/
+installer-assets/assets/videos/
+installer-assets/assets/videos2/
+*.mkv
+*.mp4
+
 scratch
 scratch/*
 certs/*

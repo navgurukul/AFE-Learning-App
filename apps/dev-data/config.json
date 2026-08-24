@@ -9,5 +9,6 @@
   "city": "New Delhi",
   "districtCode": "DST-102",
   "schoolType": "Other",
-  "setupCompleted": true
+  "setupCompleted": true,
+  "historicalSyncCompleted": true
 }

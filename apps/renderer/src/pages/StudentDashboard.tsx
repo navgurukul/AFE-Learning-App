@@ -84,12 +84,23 @@ function StudentDashboard() {
                 setSelectedLanguage(sessionLang);
             }
 
+            // Fetch all quiz scores for modules
+            const allQuizLessons = modulesData.flatMap(m => m.lessons.filter(l => l.type === 'quiz'));
+            const quizScores = await Promise.all(
+                allQuizLessons.map(async (l) => {
+                    const score = await ipc.getBestQuizScore(studentId, l.id);
+                    return { lessonId: l.id, score };
+                })
+            );
+            const quizScoresMap = new Map(quizScores.map(q => [q.lessonId, q.score]));
+
             // Calculate per-module progress
             const progressList = computeModuleProgressList(
                 modulesData,
                 startedModulesData,
                 allVideoProgress,
-                allReadingProgress
+                allReadingProgress,
+                quizScoresMap
             );
             setModuleProgressList(progressList);
         } catch (error) {
@@ -103,7 +114,8 @@ function StudentDashboard() {
         modules: Module[],
         startedModules: StartedModule[],
         videoProgressArr: VideoProgress[],
-        readingProgressArr: ReadingProgress[]
+        readingProgressArr: ReadingProgress[],
+        quizScoresMap: Map<string, number | null>
     ): ModuleProgress[] {
         const videoMap = new Map<string, VideoProgress>();
         for (const vp of videoProgressArr) {
@@ -129,9 +141,7 @@ function StudentDashboard() {
                     const vp = videoMap.get(lesson.id);
                     if (vp) {
                         const minDuration = lesson.minVideoLength || 0;
-                        if (minDuration > 0) {
-                            if (vp.totalWatchDuration >= minDuration) completedLessons++;
-                        } else if (vp.watchedPercentage >= 90) {
+                        if (vp.completed || (minDuration > 0 && vp.totalWatchDuration >= minDuration) || vp.watchedPercentage >= 90) {
                             completedLessons++;
                         }
                     }
@@ -139,14 +149,15 @@ function StudentDashboard() {
                     const rp = readingMap.get(lesson.id);
                     if (rp) {
                         const minDuration = lesson.minReadingTime || 0;
-                        if (minDuration > 0) {
-                            if (rp.totalReadDuration >= minDuration) completedLessons++;
-                        } else if (rp.readPercentage >= 90) {
+                        if ((minDuration > 0 && rp.totalReadDuration >= minDuration) || rp.readPercentage >= 90) {
                             completedLessons++;
                         }
                     }
                 } else if (lesson.type === 'quiz') {
-                    // Quiz is "completed" if at least one attempt exists
+                    const bestScore = quizScoresMap.get(lesson.id);
+                    if (bestScore !== null && bestScore !== undefined) {
+                        completedLessons++;
+                    }
                 }
             }
 
