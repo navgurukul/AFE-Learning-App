@@ -341,6 +341,10 @@ class IPCClient {
         return await this.invoke(IPC_CHANNELS.CONFIG_VERIFY_ADMIN_PASSWORD, { password });
     }
 
+    // Auto-updater
+    async restartAndInstall(): Promise<void> {
+        return await this.invoke('updater:restart-and-install' as any, undefined);
+    }
 }
 
 export const ipc = new IPCClient();

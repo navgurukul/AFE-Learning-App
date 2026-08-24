@@ -1,4 +1,4 @@
-import { app, BrowserWindow, protocol, net, session, dialog } from 'electron';
+import { app, BrowserWindow, protocol, net, session, dialog, ipcMain } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -73,6 +73,23 @@ autoUpdater.logger = log;
 (autoUpdater.logger as any).transports.file.level = 'info';
 autoUpdater.autoDownload = true;
 autoUpdater.autoInstallOnAppQuit = true;
+
+// When an update is downloaded, notify the renderer window to show the 5-second countdown popup
+autoUpdater.on('update-downloaded', (info) => {
+    log.info('AutoUpdater: Update downloaded successfully. Version:', info?.version);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('updater:update-downloaded', {
+            version: info?.version
+        });
+    }
+});
+
+// IPC Handler to restart and install update immediately
+ipcMain.handle('updater:restart-and-install', async () => {
+    log.info('AutoUpdater: Received restart-and-install request. Quitting and installing update...');
+    (global as any).isQuitting = true;
+    autoUpdater.quitAndInstall(false, true);
+});
 
 // 1. Enforce memory limits for low RAM (4GB) laptops without GPUs
 if (isLowEndDevice()) {
@@ -485,11 +502,17 @@ app.whenReady().then(async () => {
     // Check for updates in the background
     if (app.isPackaged) {
         autoUpdater.checkForUpdates().then(() => {
-            log.info('Update check completed');
-        })
-            .catch(err => {
-                log.error('Error checking for updates:', err);
+            log.info('Initial update check completed');
+        }).catch(err => {
+            log.error('Error checking for updates:', err);
+        });
+
+        // Periodically check for updates every 60 minutes
+        setInterval(() => {
+            autoUpdater.checkForUpdates().catch(err => {
+                log.error('Error in periodic update check:', err);
             });
+        }, 60 * 60 * 1000);
     }
 
     app.on('activate', () => {

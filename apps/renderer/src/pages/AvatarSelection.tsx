@@ -17,7 +17,7 @@ const PROTOTYPE_AVATARS: Record<string, { emoji: string, bg: string }> = {
   Butterfly: { emoji: '🦋', bg: '#FBCFE8' },
 };
 
-const GRADES = [6, 7, 8, 9, 10, 11, 12];
+const GRADES = [5, 6, 7, 8, 9, 10, 11, 12];
 const LANGUAGES = [
   { code: 'en', label: 'English',  native: 'English' },
   { code: 'hi', label: 'Hindi',    native: 'हिन्दी' },

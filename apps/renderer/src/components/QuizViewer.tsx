@@ -81,11 +81,10 @@ export default function QuizViewer({ lessonId, studentId, quizData, onCompleted 
 
             // Attempt object should contain score
             if (attempt) {
-                const passed = (attempt.score / attempt.totalQuestions) * 100 >= (quizData.passingScore || 70);
                 setResult({
                     score: attempt.score,
                     total: attempt.totalQuestions,
-                    passed
+                    passed: true
                 });
 
                 if (onCompleted) {
@@ -101,30 +100,38 @@ export default function QuizViewer({ lessonId, studentId, quizData, onCompleted 
     }
 
     if (result) {
+        const isPerfect = result.score === result.total;
+        const isHigh = result.total > 0 && (result.score / result.total) >= 0.7;
+
         return (
             <div className="neo-card" style={{ padding: '60px 40px', textAlign: 'center', maxWidth: 600, margin: '0 auto' }}>
                 <h2 style={{ fontSize: 32, fontWeight: 700, margin: '0 0 16px' }}>Quiz Completed!</h2>
-                <div style={{ fontSize: '80px', margin: '32px 0' }}>
-                    {result.passed ? '🎉' : '📚'}
+                <div style={{ fontSize: '80px', margin: '24px 0' }}>
+                    {isPerfect ? '🌟' : isHigh ? '🎉' : '💪'}
                 </div>
-                <h3 style={{ fontSize: 24, fontWeight: 600, margin: '0 0 16px' }}>
+                <h3 style={{ fontSize: 24, fontWeight: 700, margin: '0 0 16px' }}>
                     You scored {result.score} / {result.total}
                 </h3>
                 <p style={{ 
                     fontSize: 18, 
-                    fontWeight: 700, 
-                    color: result.passed ? '#3FB873' : '#ef476f',
-                    marginBottom: 40
+                    fontWeight: 600, 
+                    color: '#141210',
+                    lineHeight: 1.6,
+                    marginBottom: 36
                 }}>
-                    {result.passed ? 'Congratulations! You passed.' : 'Keep practicing. You can try again!'}
+                    {isPerfect
+                        ? "Outstanding work! You got every question right. You can move forward to the next lesson or review anytime."
+                        : isHigh
+                        ? "Great job! You did really well. You may retry the quiz to aim for a perfect score or continue to the next lesson!"
+                        : "Good effort! You may retry the quiz for practice or move forward to the next lesson whenever you're ready. Keep going! 🚀"}
                 </p>
-                <div>
+                <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
                     <button className="neo-btn neo-btn--teal" onClick={() => {
                         setResult(null);
                         setAnswers({});
                         setCurrentQuestionIndex(0);
                     }}>
-                        Retry Quiz
+                        🔄 Retry Quiz
                     </button>
                 </div>
             </div>

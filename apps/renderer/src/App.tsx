@@ -9,6 +9,7 @@ import { FeedbackSurveyModal } from './components/FeedbackSurveyModal.tsx';
 import { ConfirmModal } from './components/ConfirmModal.tsx';
 import { SchoolSetupModal } from './components/SchoolSetupModal.tsx';
 import { AdminPasswordModal } from './components/AdminPasswordModal.tsx';
+import { UpdateRestartModal } from './components/UpdateRestartModal.tsx';
 import { ipc } from './lib/ipc.ts';
 import { exitPictureInPictureAndCleanup } from './lib/mediaCleanup.ts';
 
@@ -17,6 +18,7 @@ function App() {
     const location = useLocation();
     const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
     const [isExitModalOpen, setIsExitModalOpen] = useState(false);
+    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
 
     // School Setup state
     const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
@@ -133,9 +135,15 @@ function App() {
             }
         });
 
+        const unsubscribeUpdate = window.electronAPI.on('updater:update-downloaded', () => {
+            console.log('[App] Received updater:update-downloaded event from main process');
+            setIsUpdateModalOpen(true);
+        });
+
         return () => {
             if (typeof unsubscribeLogout === 'function') unsubscribeLogout();
             if (typeof unsubscribeExit === 'function') unsubscribeExit();
+            if (typeof unsubscribeUpdate === 'function') unsubscribeUpdate();
         };
     }, [location.pathname, navigate]);
 
@@ -184,6 +192,16 @@ function App() {
         await ipc.exitImmediately();
     };
 
+    const handleRestartAndInstall = async () => {
+        setIsUpdateModalOpen(false);
+        await exitPictureInPictureAndCleanup();
+        try {
+            await ipc.restartAndInstall();
+        } catch (err) {
+            console.error('[App] Failed to restart and install update:', err);
+        }
+    };
+
     return (
         <div className="app">
             <Routes>
@@ -220,6 +238,11 @@ function App() {
                 isOpen={isAdminPwdOpen}
                 onClose={() => setIsAdminPwdOpen(false)}
                 onSuccess={handleAdminPasswordSuccess}
+            />
+
+            <UpdateRestartModal
+                isOpen={isUpdateModalOpen}
+                onRestart={handleRestartAndInstall}
             />
         </div>
     );

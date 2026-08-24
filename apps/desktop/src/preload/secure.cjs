@@ -83,7 +83,11 @@ const VALID_CHANNELS = [
     // Config / School Setup
     'config:getSetupStatus',
     'config:saveSchoolDetails',
-    'config:verifyAdminPassword'
+    'config:verifyAdminPassword',
+
+    // Auto-updater
+    'updater:update-downloaded',
+    'updater:restart-and-install'
 ];
 
 contextBridge.exposeInMainWorld('electronAPI', {

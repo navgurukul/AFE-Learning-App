@@ -62,8 +62,8 @@ function ModuleDetail() {
                     completions[lesson.id] = progress ? progress.readPercentage >= 95 : false;
                 } else if (lesson.type === 'quiz') {
                     const bestScore = quizScoresMap.get(lesson.id);
-                    const passingScore = lesson.quizData?.passingScore || (lesson as any).data?.quizData?.passingScore || 70;
-                    completions[lesson.id] = bestScore !== null && bestScore !== undefined ? bestScore >= passingScore : false;
+                    // Completed as long as student submitted at least one quiz attempt
+                    completions[lesson.id] = bestScore !== null && bestScore !== undefined;
                 }
             }
 

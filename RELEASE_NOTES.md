@@ -1,5 +1,35 @@
 # Release Notes
 
+## Release Notes: v1.3.4 (First-Time School/NGO Setup Onboarding, Admin Re-edit Shortcut & Telemetry Synchronization) - August 22, 2026
+
+This release introduces **First-Time School & NGO Onboarding**, **Admin Password Protected Re-edit Shortcut (`Ctrl+Shift+A` × 5)**, **Secure Bcrypt Password Verification**, **Neo-Brutalism UI Styling**, and **Server-Side Database & Telemetry Sync for School Metadata**.
+
+### 🚀 Key Highlights & Major Features
+
+#### 1. **First-Time School / NGO Setup Onboarding**
+- **Automatic First-Run Prompt:** When the app is launched for the very first time on a laptop/PC, a setup popup automatically appears requesting the user to fill in their institution's details.
+- **Configured Metadata Fields:**
+  - **Name of School / NGO:** Stored in `schoolName`
+  - **School UDISE Code:** Stored in `schoolUdise`
+  - **Type of School:** Options include `1: Government School`, `2: Government Aided School`, `3: Private School`, `4: Central Government School (KV/JNV)`, `5: EMRS / Tribal School`, `6: KGBV`, `7: Other`
+  - **State, City, District & District Code:** Recorded in their respective location fields.
+- **One-Time Onboarding Guarantee:** Once completed or closed, `setupCompleted: true` is saved in `config.json` and the popup will **never** appear on its own on subsequent launches.
+
+#### 2. **Admin Shortcut & Secure Password-Protected Re-edit**
+- **Secret Shortcut (`Ctrl + Shift + A` × 5):** Pressing `Ctrl + Shift + A` five times consecutively anywhere in the application opens the Admin Authorization prompt.
+- **Bcrypt Encryption Security:** Password verification uses `bcrypt` hashing on the Electron main process. The password is never stored or exposed in plaintext in `.env`, config files, or application logs.
+- **Instant Metadata Editing:** Authenticated admins can view, update, and re-save the pre-filled school/NGO details at any time.
+
+#### 3. **Neo-Brutalism Design Integration**
+- **Consistent UI/UX:** Styled using the application's signature Neo-Brutalism design system with clean white cards, bold `2.5px/3px` solid black borders, hard offset drop-shadows, Space Grotesk typography, and tactile orange/teal buttons.
+
+#### 4. **End-to-End Server Database & Telemetry Synchronization**
+- **Client Sync Payload:** Updated `@backend/analytics` sync service to include `city`, `districtCode`, and user-configured `schoolType` in every synced learning session.
+- **Database Migration (`0007_sudden_penance.sql`):** Added `city` and `district_code` columns and expanded `school_type` in the server's `afe_details` PostgreSQL table.
+- **Reporting & CSV Export Updates:** Updated server API endpoints (`/api/afe/sync`, `/api/afe/overview`, `/api/afe/details`, `/api/afe/export-csv`) to index and export all new school metadata columns.
+
+---
+
 ## Release Notes: v1.3.2 (Manifest Schema Normalization, Quiz Answer Validation & System Resilience) - August 7, 2026
 
 This release introduces **Content Manifest Schema Normalization**, **Quiz Answer Index Validation Across 7 Regional Languages**, **Defensive Preprocessing in `@backend/content-engine`**, **203 Unique Multilingual Quiz Questions**, **Session PiP Isolation**, **Engagement-Based Logout Survey Triggers**, and **Windows 11 Security Enhancements**.

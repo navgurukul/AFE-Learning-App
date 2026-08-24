@@ -1,7 +1,7 @@
 // Application-wide constants
 
 export const APP_NAME = 'Offline Learning App';
-export const APP_VERSION = '1.0.0';
+export const APP_VERSION = '1.3.6';
 
 // Data paths (default root: C:\ProgramData\OfflineLearningApp\)
 // Note: Desktop app overrides this at runtime with dynamic AppData path.
@@ -31,7 +31,7 @@ export const AVATARS = [
 
 // Quiz scoring
 export const QUIZ_SCORING = {
-    PASSING_PERCENTAGE: 70,
+    PASSING_PERCENTAGE: 0,
     MAX_ATTEMPTS: 5,
 } as const;
 

@@ -57,6 +57,16 @@ function calculateUniqueWatched(segments: [number, number][], duration: number):
     return Math.min(100, Math.round((totalWatched / duration) * 100));
 }
 
+const SUPPORTED_LANGUAGES = [
+    { code: 'English', label: 'English', native: 'English' },
+    { code: 'Hindi', label: 'Hindi', native: 'हिन्दी' },
+    { code: 'Tamil', label: 'Tamil', native: 'தமிழ்' },
+    { code: 'Telugu', label: 'Telugu', native: 'తెలుగు' },
+    { code: 'Marathi', label: 'Marathi', native: 'मराठी' },
+    { code: 'Gujarati', label: 'Gujarati', native: 'ગુજરાતી' },
+    { code: 'Kannada', label: 'Kannada', native: 'ಕನ್ನಡ' },
+];
+
 export function VideoPlayer({ src, lessonId, studentId, language, initialProgress, onCompleted }: VideoPlayerProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     
@@ -68,6 +78,18 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
     const [watchTime, setWatchTime] = useState(initialProgress?.totalWatchDuration || 0);
     const [completed, setCompleted] = useState(false);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
+    const [selectedLanguage, setSelectedLanguage] = useState<string>(language || 'English');
+    const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const showToast = (message: string) => {
+        if (toastTimeoutRef.current) {
+            clearTimeout(toastTimeoutRef.current);
+        }
+        setToastMessage(message);
+        toastTimeoutRef.current = setTimeout(() => {
+            setToastMessage(null);
+        }, 3000);
+    };
 
     // Terminate any Picture-in-Picture on component unmount
     useEffect(() => {
@@ -75,22 +97,32 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
             if (typeof document !== 'undefined' && document.pictureInPictureElement) {
                 document.exitPictureInPicture().catch(() => {});
             }
+            if (toastTimeoutRef.current) {
+                clearTimeout(toastTimeoutRef.current);
+            }
         };
     }, []);
 
+    // Sync initial language prop
+    useEffect(() => {
+        if (language) {
+            setSelectedLanguage(language);
+        }
+    }, [language]);
+
     // Track selection logic
-    const selectAudioTrack = () => {
+    const selectAudioTrack = (targetLangName?: string) => {
         const video = videoRef.current;
         if (!video) return;
 
         const audioTracks = (video as any).audioTracks;
-        if (!audioTracks) {
+        if (!audioTracks || audioTracks.length === 0) {
             console.warn('[VideoPlayer] audioTracks API not supported or no tracks available');
             return;
         }
 
-        const targetLang = (language || 'English').toLowerCase();
-        console.log(`[VideoPlayer] Selecting audio track for language: ${language} (total tracks: ${audioTracks.length})`);
+        const targetLang = (targetLangName || selectedLanguage || language || 'English').toLowerCase();
+        console.log(`[VideoPlayer] Selecting audio track for language: ${targetLang} (total tracks: ${audioTracks.length})`);
 
         let matchedIndex = -1;
 
@@ -138,7 +170,7 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
 
         // Fallback default
         if (matchedIndex === -1) {
-            console.warn(`[VideoPlayer] No matching track found for ${language}. Falling back to default first track.`);
+            console.warn(`[VideoPlayer] No matching track found for ${targetLang}. Falling back to default first track.`);
             matchedIndex = 0;
         }
 
@@ -146,13 +178,22 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
         for (let i = 0; i < audioTracks.length; i++) {
             audioTracks[i].enabled = (i === matchedIndex);
         }
-        console.log(`[VideoPlayer] Enabled track index ${matchedIndex} for language ${language}`);
+        console.log(`[VideoPlayer] Enabled track index ${matchedIndex} for language ${targetLang}`);
     };
 
-    // Keep track selection active when language changes
+    // Keep track selection active when language or video duration changes
     useEffect(() => {
-        selectAudioTrack();
-    }, [language, duration]);
+        selectAudioTrack(selectedLanguage);
+    }, [selectedLanguage, duration]);
+
+    const handleLanguageChange = (newLang: string) => {
+        setSelectedLanguage(newLang);
+        selectAudioTrack(newLang);
+        ipc.updateSessionLanguage(newLang).catch(() => {});
+        const langObj = SUPPORTED_LANGUAGES.find(l => l.code.toLowerCase() === newLang.toLowerCase());
+        const langName = langObj ? `${langObj.label} (${langObj.native})` : newLang;
+        showToast(`🌐 Audio: ${langName}`);
+    };
 
     // Refs for timeline tracking and throttling
     const watchedSegmentsRef = useRef<[number, number][]>([]);
@@ -169,14 +210,6 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
     useEffect(() => { durationRef.current = duration; }, [duration]);
     useEffect(() => { completedRef.current = completed; }, [completed]);
     useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
-
-    // Toast alert helper
-    const showToast = (msg: string) => {
-        setToastMessage(msg);
-        setTimeout(() => {
-            setToastMessage(prev => prev === msg ? null : prev);
-        }, 2500);
-    };
 
     // Load initial states and metadata
     useEffect(() => {
@@ -511,30 +544,60 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
                     </span>
                 </div>
 
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: '#141210' }}>Playback Speed:</span>
-                    {[1, 1.25, 1.5, 2].map((speed) => (
-                        <button
-                            key={speed}
-                            onClick={() => handleSpeedChange(speed)}
-                            className="neo-btn"
+                <div style={{ display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap' }}>
+                    {/* In-Video Audio Language Switcher */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: '#141210' }}>🌐 Audio:</span>
+                        <select
+                            value={selectedLanguage}
+                            onChange={(e) => handleLanguageChange(e.target.value)}
                             style={{
                                 cursor: 'pointer',
-                                padding: '4px 10px',
+                                padding: '6px 12px',
                                 fontSize: '13px',
                                 fontWeight: 700,
-                                backgroundColor: playbackRate === speed ? '#FFD166' : '#FFFFFF',
+                                backgroundColor: '#FFFFFF',
                                 color: '#141210',
                                 border: '2px solid #141210',
                                 borderRadius: '8px',
-                                boxShadow: playbackRate === speed ? '2px 2px 0 #141210' : 'none',
-                                transform: playbackRate === speed ? 'translate(-1px, -1px)' : 'none',
-                                transition: 'all 0.1s ease'
+                                boxShadow: '2px 2px 0 #141210',
+                                outline: 'none',
                             }}
                         >
-                            {speed}x
-                        </button>
-                    ))}
+                            {SUPPORTED_LANGUAGES.map((lang) => (
+                                <option key={lang.code} value={lang.code}>
+                                    {lang.label} ({lang.native})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Playback Speed Controls */}
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: '#141210' }}>Speed:</span>
+                        {[1, 1.25, 1.5, 2].map((speed) => (
+                            <button
+                                key={speed}
+                                onClick={() => handleSpeedChange(speed)}
+                                className="neo-btn"
+                                style={{
+                                    cursor: 'pointer',
+                                    padding: '4px 10px',
+                                    fontSize: '13px',
+                                    fontWeight: 700,
+                                    backgroundColor: playbackRate === speed ? '#FFD166' : '#FFFFFF',
+                                    color: '#141210',
+                                    border: '2px solid #141210',
+                                    borderRadius: '8px',
+                                    boxShadow: playbackRate === speed ? '2px 2px 0 #141210' : 'none',
+                                    transform: playbackRate === speed ? 'translate(-1px, -1px)' : 'none',
+                                    transition: 'all 0.1s ease'
+                                }}
+                            >
+                                {speed}x
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>
