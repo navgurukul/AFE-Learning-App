@@ -19,6 +19,7 @@ function App() {
     const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
     const [isExitModalOpen, setIsExitModalOpen] = useState(false);
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+    const [downloadedVersion, setDownloadedVersion] = useState<string | undefined>(undefined);
 
     // School Setup state
     const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
@@ -135,8 +136,9 @@ function App() {
             }
         });
 
-        const unsubscribeUpdate = window.electronAPI.on('updater:update-downloaded', () => {
-            console.log('[App] Received updater:update-downloaded event from main process');
+        const unsubscribeUpdate = window.electronAPI.on('updater:update-downloaded', (data?: { version?: string }) => {
+            console.log('[App] Received updater:update-downloaded event from main process, version:', data?.version);
+            setDownloadedVersion(data?.version);
             setIsUpdateModalOpen(true);
         });
 
@@ -242,7 +244,9 @@ function App() {
 
             <UpdateRestartModal
                 isOpen={isUpdateModalOpen}
+                version={downloadedVersion}
                 onRestart={handleRestartAndInstall}
+                onClose={() => setIsUpdateModalOpen(false)}
             />
         </div>
     );
