@@ -17,7 +17,7 @@ interface VideoPlayerProps {
 // Utility: Merge a new interval [newStart, newEnd] into existing segments
 function mergeSegments(existing: [number, number][], newStart: number, newEnd: number): [number, number][] {
     if (newStart >= newEnd) return existing;
-    
+
     // Round to 1 decimal place to avoid float precision storage bloat
     const roundedStart = Math.round(newStart * 10) / 10;
     const roundedEnd = Math.round(newEnd * 10) / 10;
@@ -57,19 +57,9 @@ function calculateUniqueWatched(segments: [number, number][], duration: number):
     return Math.min(100, Math.round((totalWatched / duration) * 100));
 }
 
-const SUPPORTED_LANGUAGES = [
-    { code: 'English', label: 'English', native: 'English' },
-    { code: 'Hindi', label: 'Hindi', native: 'हिन्दी' },
-    { code: 'Tamil', label: 'Tamil', native: 'தமிழ்' },
-    { code: 'Telugu', label: 'Telugu', native: 'తెలుగు' },
-    { code: 'Marathi', label: 'Marathi', native: 'मराठी' },
-    { code: 'Gujarati', label: 'Gujarati', native: 'ગુજરાતી' },
-    { code: 'Kannada', label: 'Kannada', native: 'ಕನ್ನಡ' },
-];
-
 export function VideoPlayer({ src, lessonId, studentId, language, initialProgress, onCompleted }: VideoPlayerProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
-    
+
     // Core states
     const [isPlaying, setIsPlaying] = useState(false);
     const [playbackRate, setPlaybackRate] = useState(1);
@@ -78,7 +68,6 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
     const [watchTime, setWatchTime] = useState(initialProgress?.totalWatchDuration || 0);
     const [completed, setCompleted] = useState(false);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
-    const [selectedLanguage, setSelectedLanguage] = useState<string>(language || 'English');
     const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const showToast = (message: string) => {
@@ -95,7 +84,7 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
     useEffect(() => {
         return () => {
             if (typeof document !== 'undefined' && document.pictureInPictureElement) {
-                document.exitPictureInPicture().catch(() => {});
+                document.exitPictureInPicture().catch(() => { });
             }
             if (toastTimeoutRef.current) {
                 clearTimeout(toastTimeoutRef.current);
@@ -103,15 +92,8 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
         };
     }, []);
 
-    // Sync initial language prop
-    useEffect(() => {
-        if (language) {
-            setSelectedLanguage(language);
-        }
-    }, [language]);
-
     // Track selection logic
-    const selectAudioTrack = (targetLangName?: string) => {
+    const selectAudioTrack = () => {
         const video = videoRef.current;
         if (!video) return;
 
@@ -121,8 +103,8 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
             return;
         }
 
-        const targetLang = (targetLangName || selectedLanguage || language || 'English').toLowerCase();
-        console.log(`[VideoPlayer] Selecting audio track for language: ${targetLang} (total tracks: ${audioTracks.length})`);
+        const targetLang = (language || 'English').toLowerCase();
+        console.log(`[VideoPlayer] Selecting audio track for language: ${language} (total tracks: ${audioTracks.length})`);
 
         let matchedIndex = -1;
 
@@ -157,9 +139,9 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
                 const prefix = targetLang.substring(0, 3);
                 const shortPrefix = targetLang.substring(0, 2);
                 if (
-                    trackLang.includes(prefix) || 
-                    trackLang.includes(shortPrefix) || 
-                    trackLabel.includes(prefix) || 
+                    trackLang.includes(prefix) ||
+                    trackLang.includes(shortPrefix) ||
+                    trackLabel.includes(prefix) ||
                     trackLabel.includes(shortPrefix)
                 ) {
                     matchedIndex = i;
@@ -170,7 +152,7 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
 
         // Fallback default
         if (matchedIndex === -1) {
-            console.warn(`[VideoPlayer] No matching track found for ${targetLang}. Falling back to default first track.`);
+            console.warn(`[VideoPlayer] No matching track found for ${language}. Falling back to default first track.`);
             matchedIndex = 0;
         }
 
@@ -178,22 +160,13 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
         for (let i = 0; i < audioTracks.length; i++) {
             audioTracks[i].enabled = (i === matchedIndex);
         }
-        console.log(`[VideoPlayer] Enabled track index ${matchedIndex} for language ${targetLang}`);
+        console.log(`[VideoPlayer] Enabled track index ${matchedIndex} for language ${language}`);
     };
 
     // Keep track selection active when language or video duration changes
     useEffect(() => {
-        selectAudioTrack(selectedLanguage);
-    }, [selectedLanguage, duration]);
-
-    const handleLanguageChange = (newLang: string) => {
-        setSelectedLanguage(newLang);
-        selectAudioTrack(newLang);
-        ipc.updateSessionLanguage(newLang).catch(() => {});
-        const langObj = SUPPORTED_LANGUAGES.find(l => l.code.toLowerCase() === newLang.toLowerCase());
-        const langName = langObj ? `${langObj.label} (${langObj.native})` : newLang;
-        showToast(`🌐 Audio: ${langName}`);
-    };
+        selectAudioTrack();
+    }, [language, duration]);
 
     // Refs for timeline tracking and throttling
     const watchedSegmentsRef = useRef<[number, number][]>([]);
@@ -214,34 +187,34 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
     // Load initial states and metadata
     useEffect(() => {
         let active = true;
-        
+
         async function initPlayer() {
             try {
                 // 1. Fetch metadata duration directly from file
                 const meta = await ipc.getVideoMetadata(src.replace('media://', ''));
                 if (!active) return;
-                
+
                 let resolvedDuration = meta ? meta.duration : 0;
                 if (resolvedDuration > 0) {
                     setDuration(resolvedDuration);
                 }
-                
+
                 // 2. Fetch progress from SQLite
                 const prog = await ipc.getVideoProgress(studentId, lessonId);
                 if (!active) return;
-                
+
                 if (prog) {
                     const segments = prog.watchedSegments || [];
                     watchedSegmentsRef.current = segments;
-                    
+
                     const lastPos = prog.lastPosition || 0;
                     lastTimeRef.current = lastPos;
-                    
+
                     const isCompleted = prog.completed || (prog.watchedPercentage >= 95);
                     setCompleted(isCompleted);
                     setWatchTime(prog.totalWatchDuration || 0);
                     setProgress(prog.watchedPercentage || 0);
-                    
+
                     // Resume to last position if not completed
                     if (videoRef.current) {
                         if (isCompleted) {
@@ -258,9 +231,9 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
                 console.error('[VideoPlayer] Init error:', err);
             }
         }
-        
+
         initPlayer();
-        
+
         return () => {
             active = false;
         };
@@ -270,15 +243,15 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
     const saveProgress = async (finalPosition?: number) => {
         const videoDuration = durationRef.current;
         if (videoDuration <= 0) return;
-        
+
         const currentPos = finalPosition !== undefined ? finalPosition : (videoRef.current ? videoRef.current.currentTime : lastTimeRef.current);
         const roundedPos = Math.round(currentPos * 10) / 10;
         const roundedDurationToAdd = Math.round(accumulatedDurationRef.current);
-        
+
         // Calculate final percentage and completion
         const pct = calculateUniqueWatched(watchedSegmentsRef.current, videoDuration);
         const isCompleted = completedRef.current || pct >= 95;
-        
+
         try {
             await ipc.updateVideoProgress(
                 studentId,
@@ -289,17 +262,17 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
                 roundedPos,
                 isCompleted
             );
-            
+
             // Reset accumulated duration only on successful save
             accumulatedDurationRef.current = 0;
-            
+
             if (isCompleted && !completedRef.current) {
                 setCompleted(true);
                 if (onCompleted) {
                     onCompleted();
                 }
             }
-            
+
             setWatchTime(prev => prev + roundedDurationToAdd);
             setProgress(pct);
         } catch (error) {
@@ -328,10 +301,10 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
         if (!videoRef.current) return;
         const videoDuration = videoRef.current.duration;
         setDuration(videoDuration);
-        
+
         // Switch audio track
         selectAudioTrack();
-        
+
         // Seek to last position if not completed
         if (!completedRef.current && lastTimeRef.current > 0) {
             isProgrammaticSeek.current = true;
@@ -442,7 +415,7 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
         if (videoRef.current) {
             videoRef.current.playbackRate = rate;
         }
-        ipc.recordSpeed(rate).catch(() => {});
+        ipc.recordSpeed(rate).catch(() => { });
     };
 
     const handlePause = () => {
@@ -526,8 +499,8 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
                 backgroundColor: '#FFFFFF',
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                    <span className="neo-chip" style={{ 
-                        backgroundColor: completed ? '#3FB873' : '#4ECDC4', 
+                    <span className="neo-chip" style={{
+                        backgroundColor: completed ? '#3FB873' : '#4ECDC4',
                         color: completed ? '#fff' : '#141210',
                         textTransform: 'uppercase',
                         fontSize: 14,
@@ -544,60 +517,30 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
                     </span>
                 </div>
 
-                <div style={{ display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap' }}>
-                    {/* In-Video Audio Language Switcher */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontSize: 14, fontWeight: 700, color: '#141210' }}>🌐 Audio:</span>
-                        <select
-                            value={selectedLanguage}
-                            onChange={(e) => handleLanguageChange(e.target.value)}
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: '#141210' }}>Playback Speed:</span>
+                    {[1, 1.25, 1.5, 2].map((speed) => (
+                        <button
+                            key={speed}
+                            onClick={() => handleSpeedChange(speed)}
+                            className="neo-btn"
                             style={{
                                 cursor: 'pointer',
-                                padding: '6px 12px',
+                                padding: '4px 10px',
                                 fontSize: '13px',
                                 fontWeight: 700,
-                                backgroundColor: '#FFFFFF',
+                                backgroundColor: playbackRate === speed ? '#FFD166' : '#FFFFFF',
                                 color: '#141210',
                                 border: '2px solid #141210',
                                 borderRadius: '8px',
-                                boxShadow: '2px 2px 0 #141210',
-                                outline: 'none',
+                                boxShadow: playbackRate === speed ? '2px 2px 0 #141210' : 'none',
+                                transform: playbackRate === speed ? 'translate(-1px, -1px)' : 'none',
+                                transition: 'all 0.1s ease'
                             }}
                         >
-                            {SUPPORTED_LANGUAGES.map((lang) => (
-                                <option key={lang.code} value={lang.code}>
-                                    {lang.label} ({lang.native})
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Playback Speed Controls */}
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                        <span style={{ fontSize: 14, fontWeight: 700, color: '#141210' }}>Speed:</span>
-                        {[1, 1.25, 1.5, 2].map((speed) => (
-                            <button
-                                key={speed}
-                                onClick={() => handleSpeedChange(speed)}
-                                className="neo-btn"
-                                style={{
-                                    cursor: 'pointer',
-                                    padding: '4px 10px',
-                                    fontSize: '13px',
-                                    fontWeight: 700,
-                                    backgroundColor: playbackRate === speed ? '#FFD166' : '#FFFFFF',
-                                    color: '#141210',
-                                    border: '2px solid #141210',
-                                    borderRadius: '8px',
-                                    boxShadow: playbackRate === speed ? '2px 2px 0 #141210' : 'none',
-                                    transform: playbackRate === speed ? 'translate(-1px, -1px)' : 'none',
-                                    transition: 'all 0.1s ease'
-                                }}
-                            >
-                                {speed}x
-                            </button>
-                        ))}
-                    </div>
+                            {speed}x
+                        </button>
+                    ))}
                 </div>
             </div>
         </div>
