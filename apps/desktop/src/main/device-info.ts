@@ -1,6 +1,7 @@
 import os from 'os';
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { app, dialog, BrowserWindow } from 'electron';
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -23,6 +24,7 @@ export interface Config {
     schoolType?: string;
     setupCompleted?: boolean;
     locationPermissionStatus?: 'granted' | 'denied';
+    historicalSyncCompleted?: boolean;
 }
 
 // Config file path
@@ -30,14 +32,166 @@ const CONFIG_PATH = app.isPackaged
     ? path.join(app.getPath('appData'), 'OfflineLearningApp', 'config.json')
     : path.join(process.cwd(), '../dev-data/config.json');
 
+const RMS_DEVICE_INFO_PATH = 'C:\\System.ServiceData\\device_info.json';
+
+const INVALID_SERIALS = new Set([
+    'to be filled by o.e.m.',
+    'default string',
+    'none',
+    'n/a',
+    'not specified',
+    'system serial number',
+    '',
+    'unknown',
+    '0',
+    '00000000',
+    'ffffffff',
+    'unknown-serial'
+]);
+
+function isValidSerial(s: string | null | undefined): boolean {
+    if (!s) return false;
+    const lower = s.trim().toLowerCase();
+    return !INVALID_SERIALS.has(lower) && lower.length >= 4;
+}
+
 /**
- * Get device serial number cross-platform
+ * Get device MAC address cross-platform using Node os module (Primary Source of Truth)
  */
-async function getSerialNumber(): Promise<string> {
+export async function getMacAddress(): Promise<string> {
     try {
+        // 1. Check RMS cached device_info.json first
+        if (process.platform === 'win32' && fs.existsSync(RMS_DEVICE_INFO_PATH)) {
+            try {
+                const content = fs.readFileSync(RMS_DEVICE_INFO_PATH, 'utf-8');
+                const rmsInfo = JSON.parse(content);
+                if (rmsInfo && rmsInfo.macAddress && rmsInfo.macAddress !== 'Unknown') {
+                    return rmsInfo.macAddress.replace(/-/g, ':').toLowerCase();
+                }
+            } catch (e) {}
+        }
+
+        // 2. Scan network interfaces
+        const interfaces = os.networkInterfaces();
+        for (const name of Object.keys(interfaces)) {
+            const ifaces = interfaces[name];
+            if (!ifaces) continue;
+
+            for (const iface of ifaces) {
+                // Skip internal (loopback) and virtual interfaces without MAC
+                if (!iface.internal && iface.mac && iface.mac !== '00:00:00:00:00:00') {
+                    return iface.mac.replace(/-/g, ':').toLowerCase();
+                }
+            }
+        }
+        return 'UNKNOWN-MAC';
+    } catch (error) {
+        console.error('[DeviceInfo] Failed to get MAC address:', error);
+        return 'UNKNOWN-MAC';
+    }
+}
+
+/**
+ * Get device serial number cross-platform with RMS parity & multi-tier fallbacks
+ */
+export async function getSerialNumber(): Promise<string> {
+    try {
+        // 1. Check RMS cached device_info.json on Windows first
+        if (process.platform === 'win32' && fs.existsSync(RMS_DEVICE_INFO_PATH)) {
+            try {
+                const content = fs.readFileSync(RMS_DEVICE_INFO_PATH, 'utf-8');
+                const rmsInfo = JSON.parse(content);
+                if (rmsInfo && isValidSerial(rmsInfo.serialNumber)) {
+                    console.log('[DeviceInfo] Using RMS cached serial:', rmsInfo.serialNumber);
+                    return rmsInfo.serialNumber;
+                }
+            } catch (e) {}
+        }
+
+        // 2. Platform-specific detection
         if (process.platform === 'win32') {
-            const { stdout } = await execAsync('powershell -NoProfile -Command "(Get-CimInstance -ClassName Win32_BIOS).SerialNumber"');
-            return stdout.trim() || 'UNKNOWN-SERIAL';
+            let detectedSerial: string | null = null;
+
+            // WMI via PowerShell (Win32_BIOS, Win32_BaseBoard, Win32_SystemEnclosure)
+            const wmiCmds = [
+                'Get-CimInstance -ClassName Win32_BIOS | Select-Object -ExpandProperty SerialNumber',
+                'Get-WmiObject -Class Win32_BIOS | Select-Object -ExpandProperty SerialNumber',
+                'Get-CimInstance -ClassName Win32_BaseBoard | Select-Object -ExpandProperty SerialNumber',
+                'Get-WmiObject -Class Win32_BaseBoard | Select-Object -ExpandProperty SerialNumber',
+                'Get-CimInstance -ClassName Win32_SystemEnclosure | Select-Object -ExpandProperty SerialNumber',
+            ];
+
+            for (const cmd of wmiCmds) {
+                try {
+                    const { stdout } = await execAsync(`powershell -NoProfile -ExecutionPolicy Bypass -Command "${cmd}"`, { timeout: 5000 });
+                    if (isValidSerial(stdout.trim())) {
+                        detectedSerial = stdout.trim();
+                        break;
+                    }
+                } catch (e) {}
+            }
+
+            // WMIC CLI fallback
+            if (!detectedSerial) {
+                try {
+                    const { stdout } = await execAsync('wmic bios get serialnumber /value', { timeout: 5000 });
+                    const match = stdout.match(/SerialNumber=(.+)/i);
+                    if (match && isValidSerial(match[1].trim())) {
+                        detectedSerial = match[1].trim();
+                    }
+                } catch (e) {}
+            }
+
+            // Registry BIOS fallback
+            if (!detectedSerial) {
+                const regKeys = [
+                    'HKLM\\HARDWARE\\DESCRIPTION\\System\\BIOS /v SystemSerialNumber',
+                    'HKLM\\HARDWARE\\DESCRIPTION\\System\\BIOS /v BaseBoardSerialNumber',
+                ];
+                for (const regKey of regKeys) {
+                    try {
+                        const { stdout } = await execAsync(`reg query "${regKey}"`, { timeout: 5000 });
+                        const match = stdout.match(/REG_SZ\s+(.+)/i);
+                        if (match && isValidSerial(match[1].trim())) {
+                            detectedSerial = match[1].trim();
+                            break;
+                        }
+                    } catch (e) {}
+                }
+            }
+
+            // Windows Product ID fallback
+            if (!detectedSerial) {
+                try {
+                    const { stdout } = await execAsync(
+                        'reg query "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion" /v ProductId',
+                        { timeout: 5000 }
+                    );
+                    const match = stdout.match(/ProductId\s+REG_SZ\s+(.+)/i);
+                    if (match && isValidSerial(match[1].trim())) {
+                        detectedSerial = `WIN-${match[1].trim()}`;
+                    }
+                } catch (e) {}
+            }
+
+            // Hardware hash fallback
+            if (!detectedSerial) {
+                try {
+                    const mac = await getMacAddress();
+                    if (mac && mac !== 'UNKNOWN-MAC') {
+                        const hash = crypto.createHash('sha256').update(mac).digest('hex').slice(0, 8).toUpperCase();
+                        detectedSerial = `FP-${hash}`;
+                    }
+                } catch (e) {}
+            }
+
+            // Final fallback: persist a generated UUID
+            if (!detectedSerial) {
+                const uuid = crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase();
+                detectedSerial = `NG-${uuid}`;
+            }
+
+            return detectedSerial;
         } else if (process.platform === 'darwin') {
             const { stdout } = await execAsync(
                 "ioreg -l | grep IOPlatformSerialNumber | awk '{print $4}' | sed 's/\"//g'"
@@ -59,33 +213,9 @@ async function getSerialNumber(): Promise<string> {
 }
 
 /**
- * Get MAC address cross-platform using Node os module
- */
-async function getMacAddress(): Promise<string> {
-    try {
-        const interfaces = os.networkInterfaces();
-        for (const name of Object.keys(interfaces)) {
-            const ifaces = interfaces[name];
-            if (!ifaces) continue;
-
-            for (const iface of ifaces) {
-                // Skip internal (loopback) and virtual interfaces without MAC
-                if (!iface.internal && iface.mac !== '00:00:00:00:00:00') {
-                    return iface.mac.replace(/-/g, ':');
-                }
-            }
-        }
-        return 'UNKNOWN-MAC';
-    } catch (error) {
-        console.error('[DeviceInfo] Failed to get MAC address:', error);
-        return 'UNKNOWN-MAC';
-    }
-}
-
-/**
  * Read config file
  */
-function readConfig(): Required<Config> {
+export function readConfig(): Required<Config> {
     const defaultConfig: Required<Config> = {
         ngoKey: 'D3F41T-K37',
         partnerName: 'sama',
@@ -97,7 +227,8 @@ function readConfig(): Required<Config> {
         districtCode: '',
         schoolType: 'NGO',
         setupCompleted: false,
-        locationPermissionStatus: 'granted'
+        locationPermissionStatus: 'granted',
+        historicalSyncCompleted: false
     };
 
     try {
@@ -120,7 +251,8 @@ function readConfig(): Required<Config> {
             districtCode: config.districtCode !== undefined ? config.districtCode : defaultConfig.districtCode,
             schoolType: config.schoolType || defaultConfig.schoolType,
             setupCompleted: config.setupCompleted !== undefined ? config.setupCompleted : defaultConfig.setupCompleted,
-            locationPermissionStatus: config.locationPermissionStatus || defaultConfig.locationPermissionStatus
+            locationPermissionStatus: config.locationPermissionStatus || defaultConfig.locationPermissionStatus,
+            historicalSyncCompleted: config.historicalSyncCompleted === true
         };
     } catch (error) {
         console.error('[DeviceInfo] Failed to read config:', error);

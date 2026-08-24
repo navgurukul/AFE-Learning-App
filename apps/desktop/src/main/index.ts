@@ -16,7 +16,7 @@ import { registerIPCHandlers } from '../ipc/handlers.js';
 import { syncContentToDatabase } from './content-sync.js';
 import { SyncService, checkAndGenerateSummaries, initializeAnalytics } from '@backend/analytics';
 import { initializeAiTutor } from '@backend/ai-tutor';
-import { getDeviceInfo, checkLocationPermissionAndPrompt, updateLocationFromIP } from './device-info.js';
+import { getDeviceInfo, checkLocationPermissionAndPrompt, updateLocationFromIP, readConfig, writeConfig } from './device-info.js';
 import { SessionManager } from './session-manager.js';
 import { init as initSTT } from '@backend/stt-engine';
 import { init as initTTS } from '@backend/tts-engine';
@@ -333,7 +333,7 @@ async function initialize() {
                 return true; // Fallback to true so net.fetch can attempt request
             };
 
-            // Setup offline-first periodic session synchronization
+            // Setup offline-first periodic session synchronization & one-time historical backfill
             const startSyncEngine = () => {
                 const attemptSync = async () => {
                     try {
@@ -342,11 +342,6 @@ async function initialize() {
                         if (isOnline) {
                             // Try to resolve location from IP if allowed and unset
                             await updateLocationFromIP(net.fetch);
-                        }
-
-                        const unsynced = await getUnsyncedSessions();
-                        if (unsynced.length === 0) {
-                            return;
                         }
 
                         if (!isOnline) {
@@ -359,7 +354,26 @@ async function initialize() {
                         const serverUrl = rawServerUrl.replace(/\/+$/, '');
                         const syncService = new SyncService(serverUrl, net.fetch);
 
-                        console.log(`[SyncEngine] Online - attempting to sync ${unsynced.length} sessions to ${serverUrl}...`);
+                        // 1. One-time historical backfill (Runs once per laptop to link legacy/orphaned sessions in RMS DB)
+                        const config = readConfig();
+                        if (config.historicalSyncCompleted !== true) {
+                            console.log('[SyncEngine] Initiating one-time historical backfill...');
+                            const backfillRes = await syncService.backfillHistoricalSessions(deviceInfo);
+                            if (backfillRes.success) {
+                                writeConfig({ historicalSyncCompleted: true });
+                                console.log('[SyncEngine] Historical backfill complete and marked in config.');
+                            } else {
+                                console.warn('[SyncEngine] Historical backfill failed, will retry next online cycle.');
+                            }
+                        }
+
+                        // 2. Routine sync for newly recorded unsynced sessions
+                        const unsynced = await getUnsyncedSessions();
+                        if (unsynced.length === 0) {
+                            return;
+                        }
+
+                        console.log(`[SyncEngine] Online - attempting to sync ${unsynced.length} unsynced sessions to ${serverUrl}...`);
                         try {
                             const validation = await syncService.validateNGOKey(deviceInfo.ngoKey);
                             if (!validation.valid) {
@@ -383,7 +397,7 @@ async function initialize() {
                 // Run immediately
                 attemptSync();
 
-                // Periodic check every 30 seconds
+                // Periodic check
                 setInterval(attemptSync, 30000);
             };
 

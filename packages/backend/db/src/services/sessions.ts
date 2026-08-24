@@ -38,3 +38,21 @@ export async function getSessionCountForDate(studentId: string, dateStr: string)
     );
     return result.length;
 }
+
+/**
+ * Get all recorded session IDs (for historical backfill)
+ */
+export async function getAllSessionIds(): Promise<string[]> {
+    const db = getDatabase();
+    const result = await db.select({ id: afeSessions.id }).from(afeSessions);
+    return result.map(r => r.id);
+}
+
+/**
+ * Get all recorded sessions
+ */
+export async function getAllSessions(): Promise<AFESession[]> {
+    const db = getDatabase();
+    return await db.select().from(afeSessions);
+}
+

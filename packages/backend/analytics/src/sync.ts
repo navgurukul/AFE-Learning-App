@@ -1,4 +1,4 @@
-import { getDatabase, getUnsyncedSessions, markSessionsAsSynced, students, eq } from '@backend/db';
+import { getDatabase, getUnsyncedSessions, getAllSessionIds, markSessionsAsSynced, students, eq } from '@backend/db';
 import type { DeviceInfo, SyncSessionPayload, SyncPayload } from '@afe/shared';
 import os from 'os';
 
@@ -30,6 +30,53 @@ export class SyncService {
         } catch (error) {
             console.error('[SyncService] NGO key validation failed:', error);
             return { valid: false, error: String(error) };
+        }
+    }
+
+    /**
+     * One-time historical backfill of existing session IDs to link device_id & NGO in RMS
+     */
+    async backfillHistoricalSessions(deviceInfo: DeviceInfo): Promise<{ success: boolean; updatedCount?: number }> {
+        try {
+            const allSessionIds = await getAllSessionIds();
+            if (allSessionIds.length === 0) {
+                console.log('[SyncService Backfill] No local sessions found to backfill.');
+                return { success: true, updatedCount: 0 };
+            }
+
+            console.log(`[SyncService Backfill] Initiating one-time backfill for ${allSessionIds.length} session IDs...`);
+
+            const payload = {
+                macAddress: deviceInfo.macAddress,
+                serialNumber: deviceInfo.serialNumber,
+                sessionIds: allSessionIds,
+                schoolName: deviceInfo.schoolName,
+                schoolUdise: deviceInfo.schoolUdise,
+                state: deviceInfo.state,
+                city: deviceInfo.city,
+                district: deviceInfo.district,
+                districtCode: deviceInfo.districtCode,
+                schoolType: deviceInfo.schoolType,
+                platformOs: os.platform() === 'win32' ? 'Windows' : os.platform() === 'darwin' ? 'macOS' : 'Linux'
+            };
+
+            const response = await this.fetchFn(`${this.serverUrl}/backfill-historical`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                console.error(`[SyncService Backfill] Server responded with ${response.status}`);
+                return { success: false };
+            }
+
+            const data = await response.json();
+            console.log(`[SyncService Backfill] Successfully backfilled ${data.updatedCount || 0} historical sessions`);
+            return { success: true, updatedCount: data.updatedCount || 0 };
+        } catch (error) {
+            console.error('[SyncService Backfill] Error during historical backfill:', error);
+            return { success: false };
         }
     }
 
