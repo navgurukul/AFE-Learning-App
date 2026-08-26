@@ -1,6 +1,22 @@
 import { getDatabase, getUnsyncedSessions, getAllSessionIds, markSessionsAsSynced, students, eq } from '@backend/db';
 import type { DeviceInfo, SyncSessionPayload, SyncPayload } from '@afe/shared';
 import os from 'os';
+import crypto from 'crypto';
+
+const RMS_API_KEY = process.env.RMS_API_KEY || 'rms_secure_api_key_2026';
+
+function generateAuthHeaders(apiKey: string = RMS_API_KEY): Record<string, string> {
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const signature = crypto
+        .createHmac('sha256', apiKey)
+        .update(timestamp)
+        .digest('hex');
+
+    return {
+        'X-API-Signature': signature,
+        'X-Timestamp': timestamp
+    };
+}
 
 export class SyncService {
     private serverUrl: string;
@@ -16,9 +32,13 @@ export class SyncService {
      */
     async validateNGOKey(ngoKey: string): Promise<{ valid: boolean; ngoId?: number; ngoName?: string; error?: string }> {
         try {
+            const authHeaders = generateAuthHeaders();
             const response = await this.fetchFn(`${this.serverUrl}/validate-key`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    ...authHeaders
+                },
                 body: JSON.stringify({ ngoKey })
             });
 
@@ -60,9 +80,13 @@ export class SyncService {
                 platformOs: os.platform() === 'win32' ? 'Windows' : os.platform() === 'darwin' ? 'macOS' : 'Linux'
             };
 
+            const authHeaders = generateAuthHeaders();
             const response = await this.fetchFn(`${this.serverUrl}/backfill-historical`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    ...authHeaders
+                },
                 body: JSON.stringify(payload)
             });
 
@@ -189,10 +213,14 @@ export class SyncService {
                 sessions: mappedSessions
             };
 
+            const authHeaders = generateAuthHeaders();
             // Send payload to POST /api/afe/sync
             const response = await this.fetchFn(`${this.serverUrl}/sync`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    ...authHeaders
+                },
                 body: JSON.stringify(payload)
             });
 
