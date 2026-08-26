@@ -201,7 +201,7 @@ function ModuleDetail() {
     return (
         <div className="neo-root" style={{ display: 'flex', flexDirection: 'column', padding: '44px 24px 0' }}>
             <div style={{ maxWidth: 940, margin: '0 auto', width: '100%', flex: 1 }}>
-                
+
                 <div style={{ marginBottom: 32 }}>
                     <button className="neo-btn neo-btn--teal" onClick={handleBackToModules}>
                         ← Back to Modules
@@ -279,7 +279,7 @@ function ModuleDetail() {
                                     const showSeparator = isUnlocked && !isCompleted && idx < sortedLessons.length - 1;
                                     return (
                                         <React.Fragment key={lesson.id}>
-                                            <div 
+                                            <div
                                                 className={`neo-card ${isUnlocked ? 'neo-tap' : ''}`}
                                                 onClick={() => {
                                                     if (isUnlocked) {
@@ -287,8 +287,8 @@ function ModuleDetail() {
                                                     } else {
                                                         alert("🔒 This lesson is locked. Please complete the previous lessons first!");
                                                     }
-                                                }} 
-                                                style={{ 
+                                                }}
+                                                style={{
                                                     cursor: isUnlocked ? 'pointer' : 'not-allowed',
                                                     opacity: isUnlocked ? 1 : 0.6,
                                                     backgroundColor: isUnlocked ? '#FFFFFF' : '#EAEAE6',
@@ -303,7 +303,7 @@ function ModuleDetail() {
                                                         {isUnlocked ? getLessonIcon(lesson) : '🔒'}
                                                     </div>
                                                     <div style={{ flex: 1 }}>
-                                                        <h3 style={{ 
+                                                        <h3 style={{
                                                             fontSize: 22,
                                                             fontWeight: 700,
                                                             margin: '0 0 8px'

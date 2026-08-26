@@ -4,11 +4,11 @@
   "schoolName": "School of Programming, Navgurukul",
   "schoolUdise": "9019902899",
   "state": "Delhi",
-  "district": "New Delhi",
+  "district": "Delhi",
   "locationPermissionStatus": "granted",
   "city": "New Delhi",
   "districtCode": "DST-102",
-  "schoolType": "Other",
+  "schoolType": "Government School",
   "setupCompleted": true,
   "historicalSyncCompleted": true
 }

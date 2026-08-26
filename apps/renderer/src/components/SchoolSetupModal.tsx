@@ -2,6 +2,93 @@ import React, { useState, useEffect } from 'react';
 import { ipc } from '../lib/ipc.ts';
 import './SchoolSetupModal.css';
 
+const PRESET_SCHOOLS = [
+    {
+        name: 'KGBV, Vanchanagiri, Warangal',
+        district: 'Warangal',
+        state: 'Telangana',
+        schoolType: 'KGBV',
+    },
+    {
+        name: 'TGMS, Vanchanagiri, Warangal',
+        district: 'Warangal',
+        state: 'Telangana',
+        schoolType: 'Government School',
+    },
+    {
+        name: 'ZPHS Somdi, Hanamkonda',
+        district: 'Hanamkonda',
+        state: 'Telangana',
+        schoolType: 'Government School',
+    },
+    {
+        name: 'ZPHS Markazi, Hanamkonda',
+        district: 'Hanamkonda',
+        state: 'Telangana',
+        schoolType: 'Government School',
+    },
+    {
+        name: 'ZPHS Shayampet, Hanamkonda',
+        district: 'Hanamkonda',
+        state: 'Telangana',
+        schoolType: 'Government School',
+    },
+    {
+        name: 'ZPHS, Mulugu',
+        district: 'Mulugu',
+        state: 'Telangana',
+        schoolType: 'Government School',
+    },
+    {
+        name: 'GGB, Mulugu',
+        district: 'Mulugu',
+        state: 'Telangana',
+        schoolType: 'Government School',
+    },
+    {
+        name: 'ZPHS, Tharapally, Warangal',
+        district: 'Warangal',
+        state: 'Telangana',
+        schoolType: 'Government School',
+    },
+    {
+        name: 'ZPHS Indiranagar, Siddipet',
+        district: 'Siddipet',
+        state: 'Telangana',
+        schoolType: 'Government School',
+    },
+    {
+        name: 'GHS Sapthagiri Colony, Karimnagar',
+        district: 'Karimnagar',
+        state: 'Telangana',
+        schoolType: 'Government School',
+    },
+    {
+        name: 'Sarswathi Shishumandir, Karimnagar',
+        district: 'Karimnagar',
+        state: 'Telangana',
+        schoolType: 'Private School',
+    },
+    {
+        name: 'ZPHS, Manthani',
+        district: 'Peddapalli',
+        state: 'Telangana',
+        schoolType: 'Government School',
+    },
+    {
+        name: 'ZPHS, Armur, Manthani',
+        district: 'Peddapalli',
+        state: 'Telangana',
+        schoolType: 'Government School',
+    },
+    {
+        name: 'ZPHS Perkakondaram, Nalgonda',
+        district: 'Nalgonda',
+        state: 'Telangana',
+        schoolType: 'Government School',
+    },
+];
+
 const SCHOOL_TYPE_OPTIONS = [
     { value: 'Government School', label: '1. Government School' },
     { value: 'Government Aided School', label: '2. Government Aided School' },
@@ -28,6 +115,8 @@ interface SchoolSetupModalProps {
 }
 
 export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupModalProps) {
+    const [selectedDropdown, setSelectedDropdown] = useState('');
+    const [customSchoolName, setCustomSchoolName] = useState('');
     const [schoolName, setSchoolName] = useState('');
     const [schoolUdise, setSchoolUdise] = useState('');
     const [state, setState] = useState('');
@@ -39,7 +128,21 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
 
     useEffect(() => {
         if (initialData) {
-            setSchoolName(initialData.schoolName || '');
+            const rawName = initialData.schoolName || '';
+            const matchingPreset = PRESET_SCHOOLS.find((s) => s.name === rawName);
+
+            if (matchingPreset) {
+                setSelectedDropdown(matchingPreset.name);
+                setCustomSchoolName('');
+            } else if (rawName) {
+                setSelectedDropdown('__OTHER__');
+                setCustomSchoolName(rawName);
+            } else {
+                setSelectedDropdown('');
+                setCustomSchoolName('');
+            }
+
+            setSchoolName(rawName);
             setSchoolUdise(initialData.schoolUdise || '');
             setState(initialData.state || '');
             setCity(initialData.city || '');
@@ -50,6 +153,33 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
     }, [initialData]);
 
     if (!isOpen) return null;
+
+    const handleDropdownChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const val = e.target.value;
+        setSelectedDropdown(val);
+
+        if (val === '__OTHER__') {
+            setSchoolName(customSchoolName);
+        } else if (val) {
+            const preset = PRESET_SCHOOLS.find((s) => s.name === val);
+            if (preset) {
+                setSchoolName(preset.name);
+                if (preset.district) setDistrict(preset.district);
+                if (preset.state) setState(preset.state);
+                if (preset.schoolType) setSchoolType(preset.schoolType);
+            } else {
+                setSchoolName(val);
+            }
+        } else {
+            setSchoolName('');
+        }
+    };
+
+    const handleCustomNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        setCustomSchoolName(val);
+        setSchoolName(val);
+    };
 
     const isFormValid = schoolName.trim() && state.trim() && district.trim();
 
@@ -79,22 +209,43 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
             <div className="school-setup-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="school-setup-header">
                     <h2>🏫 School / NGO Setup</h2>
-                    <p>Enter your school or NGO details. This information will be used for reporting.</p>
+                    <p>Select your school or NGO details. This information will be used for session reporting.</p>
                 </div>
 
                 <div className="school-setup-form">
                     <div className="school-setup-field">
                         <label>
-                            Name of School / NGO <span className="required">*</span>
+                            Select School / NGO <span className="required">*</span>
                         </label>
-                        <input
-                            type="text"
-                            placeholder="e.g., Kendriya Vidyalaya No. 1"
-                            value={schoolName}
-                            onChange={(e) => setSchoolName(e.target.value)}
+                        <select
+                            value={selectedDropdown}
+                            onChange={handleDropdownChange}
                             autoFocus
-                        />
+                        >
+                            <option value="">-- Select School --</option>
+                            {PRESET_SCHOOLS.map((school) => (
+                                <option key={school.name} value={school.name}>
+                                    {school.name}
+                                </option>
+                            ))}
+                            <option value="__OTHER__">➕ Other (Enter manually)</option>
+                        </select>
                     </div>
+
+                    {selectedDropdown === '__OTHER__' && (
+                        <div className="school-setup-field">
+                            <label>
+                                Custom School / NGO Name <span className="required">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="Enter school name..."
+                                value={customSchoolName}
+                                onChange={handleCustomNameChange}
+                                autoFocus
+                            />
+                        </div>
+                    )}
 
                     <div className="school-setup-field">
                         <label>School UDISE Code</label>
@@ -129,7 +280,7 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                             </label>
                             <input
                                 type="text"
-                                placeholder="e.g., Delhi"
+                                placeholder="e.g., Telangana"
                                 value={state}
                                 onChange={(e) => setState(e.target.value)}
                             />
@@ -138,7 +289,7 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                             <label>City</label>
                             <input
                                 type="text"
-                                placeholder="e.g., New Delhi"
+                                placeholder="e.g., Warangal"
                                 value={city}
                                 onChange={(e) => setCity(e.target.value)}
                             />
@@ -152,7 +303,7 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                             </label>
                             <input
                                 type="text"
-                                placeholder="e.g., South Delhi"
+                                placeholder="e.g., Hanamkonda"
                                 value={district}
                                 onChange={(e) => setDistrict(e.target.value)}
                             />
