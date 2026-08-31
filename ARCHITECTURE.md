@@ -216,12 +216,12 @@ The application provides an AI-powered tutor that works 100% offline.
     *   **Idempotency:** The sync uses an upsert mechanism to ensure data consistency on the central server even if retried multiple times.
     *   **Persistence:** A `sync_queue` table ensures no offline data is lost before it's successfully pushed to the cloud.
 
-### 🎙️ Voice Interaction Bridge
-The application features a unique, streaming-first voice interaction loop designed for low-latency feedback:
-1. **Streaming STT**: Raw PCM chunks (16kHz) are streamed from the UI to the `stt-engine` using a push-to-talk model.
-2. **LLM Generation**: Transcripts are sent to Ollama, which generates responses token-by-token.
-3. **Sentence-Boundary TTS**: Instead of waiting for the full response, the system identifies sentence boundaries and immediately starts synthesis via the `tts-engine` (Piper).
-4. **Overlapping Playback**: The UI plays synthesized sentences in sequence while the backend simultaneously synthesizes subsequent sentences, creating a "live" conversation feel.
+### 🌐 Multilingual Course Architecture & Sibling Resolution Engine
+The application models courses as **multilingual parent entities** rather than isolated language silos.
+*   **Canonical Course Entity**: Each course has a canonical `courseId` (e.g., `dct`, `rft`, `music`).
+*   **Dynamic Manifest Introspection**: The content engine (`@backend/content-engine`) dynamically determines course metadata, total distinct video orders, and quiz orders via `getCourseMetadata(manifest, courseId)`. Denominators and completion rates are never hardcoded.
+*   **Order-Based Sibling Mapping**: Lessons across languages are linked by `(courseId, order, type)`. When a student watches Chapter 1 in English, the IPC layer (`getSiblingLessonIds`) dynamically propagates progress to Hindi, Tamil, Telugu, Marathi, Gujarati, and Kannada variants. Switching languages never resets or fragments student progress.
+*   **Telemetry Normalization**: Session metrics in `SessionManager` and RMS synchronization (`SyncService`) aggregate telemetry at the canonical course level (`moduleId: courseId`, `tourName: canonicalTitle`) while recording the student's active interaction language.
 
 ---
 
@@ -235,3 +235,4 @@ Think of this application like a **High-Security Restaurant**.
 *   **The Database** is the **Pantry/Fridge**. The Chef walks into the pantry, grabs the ingredients (Data), cooks the meal (Business Logic), and hands the finished plate back to the Waiter.
 
 This separation ensures that even if the Customer goes crazy (a bug in the UI), they cannot burn down the kitchen (destroy the database or OS).
+

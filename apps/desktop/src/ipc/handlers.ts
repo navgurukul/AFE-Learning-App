@@ -32,7 +32,16 @@ import {
     getSessionHistory,
     clearChatHistory
 } from '@backend/ai-tutor';
-import { loadContentManifest, getModuleById, getLessonById } from '@backend/content-engine';
+import {
+    loadContentManifest,
+    getModuleById,
+    getLessonById,
+    getCourseId,
+    getCanonicalCourseTitle,
+    getCourseMetadata,
+    getSiblingLessonIds,
+    getSiblingModuleIds,
+} from '@backend/content-engine';
 
 import {
     pushAudioChunk,
@@ -189,8 +198,12 @@ export function registerIPCHandlers() {
     ipcMain.handle(IPC_CHANNELS.PROGRESS_UPDATE_VIDEO, async (_event, data) => {
         const { studentId, lessonId, watchedPercentage, watchDuration, watchedSegments, lastPosition, completed } = data;
         
-        // Track watch duration in session
-        SessionManager.recordWatchDuration(watchDuration);
+        const manifest = getManifest();
+        const lesson = getLessonById(manifest, lessonId);
+        const courseId = getCourseId(lesson?.moduleId || lessonId);
+
+        // Track watch duration in session under canonical course
+        SessionManager.recordWatchDuration(watchDuration, courseId);
 
         await updateVideoProgress(
             studentId,
@@ -205,6 +218,8 @@ export function registerIPCHandlers() {
         // Track analytics event
         await trackEvent(studentId, 'video_watched', {
             lessonId,
+            moduleId: lesson?.moduleId,
+            courseId,
             watchDuration,
             watchedPercentage,
             lastPosition,
@@ -214,27 +229,98 @@ export function registerIPCHandlers() {
 
     ipcMain.handle(IPC_CHANNELS.PROGRESS_GET_VIDEO, async (_event, data) => {
         const { studentId, lessonId } = data;
-        return await getVideoProgress(studentId, lessonId);
+        const manifest = getManifest();
+        const siblingIds = getSiblingLessonIds(manifest, lessonId);
+
+        const allProgress = await getAllVideoProgressForStudent(studentId);
+        const matching = allProgress.filter((p) => siblingIds.includes(p.lessonId));
+        if (matching.length === 0) return null;
+
+        // Choose best progress across siblings
+        matching.sort((a, b) => {
+            const aComp = a.completed || (a.watchedPercentage || 0) >= 95;
+            const bComp = b.completed || (b.watchedPercentage || 0) >= 95;
+            if (aComp !== bComp) return (bComp ? 1 : 0) - (aComp ? 1 : 0);
+            if ((a.watchedPercentage || 0) !== (b.watchedPercentage || 0)) {
+                return (b.watchedPercentage || 0) - (a.watchedPercentage || 0);
+            }
+            return (b.totalWatchDuration || 0) - (a.totalWatchDuration || 0);
+        });
+
+        return {
+            ...matching[0],
+            lessonId, // Normalize for requested lesson
+        };
     });
 
     ipcMain.handle(IPC_CHANNELS.PROGRESS_GET_ALL_FOR_STUDENT, async (_event, data) => {
         const { studentId } = data;
-        return await getAllVideoProgressForStudent(studentId);
+        const rawProgressList = await getAllVideoProgressForStudent(studentId);
+        const manifest = getManifest();
+
+        // Expand recorded progress across all sibling lesson IDs for seamless multilingual progress
+        const progressByLessonId = new Map<string, (typeof rawProgressList)[0]>();
+
+        for (const prog of rawProgressList) {
+            const siblings = getSiblingLessonIds(manifest, prog.lessonId);
+            for (const sId of siblings) {
+                const existing = progressByLessonId.get(sId);
+                if (!existing) {
+                    progressByLessonId.set(sId, { ...prog, lessonId: sId });
+                } else {
+                    const isCompleted = existing.completed || prog.completed || (prog.watchedPercentage || 0) >= 95 || (existing.watchedPercentage || 0) >= 95;
+                    const maxWatchedPercentage = Math.max(existing.watchedPercentage || 0, prog.watchedPercentage || 0);
+                    const maxDuration = Math.max(existing.totalWatchDuration || 0, prog.totalWatchDuration || 0);
+                    const useLatest = (prog.lastWatchedAt || '') >= (existing.lastWatchedAt || '');
+
+                    progressByLessonId.set(sId, {
+                        ...existing,
+                        completed: isCompleted,
+                        watchedPercentage: maxWatchedPercentage,
+                        totalWatchDuration: maxDuration,
+                        lastPosition: useLatest ? prog.lastPosition : existing.lastPosition,
+                        lastWatchedAt: useLatest ? prog.lastWatchedAt : existing.lastWatchedAt,
+                        lessonId: sId,
+                    });
+                }
+            }
+        }
+
+        return Array.from(progressByLessonId.values());
     });
 
     ipcMain.handle(IPC_CHANNELS.PROGRESS_MARK_MODULE_STARTED, async (_event, data) => {
         const { studentId, moduleId } = data;
+        const courseId = getCourseId(moduleId);
+        SessionManager.setActiveModule(courseId);
         await markModuleStarted(studentId, moduleId);
 
         // Track analytics
         await trackEvent(studentId, 'module_started', {
             moduleId,
+            courseId,
         });
     });
 
     ipcMain.handle(IPC_CHANNELS.PROGRESS_GET_STARTED_MODULES, async (_event, data) => {
         const { studentId } = data;
-        return await getStartedModules(studentId);
+        const rawStartedList = await getStartedModules(studentId);
+        const manifest = getManifest();
+
+        const startedModuleIds = new Set<string>();
+        for (const sm of rawStartedList) {
+            const siblings = getSiblingModuleIds(manifest, sm.moduleId);
+            for (const sId of siblings) {
+                startedModuleIds.add(sId);
+            }
+        }
+
+        return Array.from(startedModuleIds).map((moduleId) => ({
+            id: `started_${studentId}_${moduleId}`,
+            studentId,
+            moduleId,
+            startedAt: rawStartedList[0]?.startedAt || new Date().toISOString(),
+        }));
     });
 
     ipcMain.handle(IPC_CHANNELS.PROGRESS_UPDATE_READING, async (_event, data) => {
@@ -309,12 +395,33 @@ export function registerIPCHandlers() {
 
     ipcMain.handle(IPC_CHANNELS.QUIZ_GET_ATTEMPTS, async (_event, data) => {
         const { studentId, lessonId } = data;
-        return await getQuizAttempts(studentId, lessonId);
+        const manifest = getManifest();
+        const siblingIds = getSiblingLessonIds(manifest, lessonId);
+
+        let allAttempts: any[] = [];
+        for (const sId of siblingIds) {
+            const attempts = await getQuizAttempts(studentId, sId);
+            allAttempts = allAttempts.concat(attempts);
+        }
+        allAttempts.sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
+        return allAttempts;
     });
 
     ipcMain.handle(IPC_CHANNELS.QUIZ_GET_BEST_SCORE, async (_event, data) => {
         const { studentId, lessonId } = data;
-        return await getBestQuizScore(studentId, lessonId);
+        const manifest = getManifest();
+        const siblingIds = getSiblingLessonIds(manifest, lessonId);
+
+        let bestScore: number | null = null;
+        for (const sId of siblingIds) {
+            const score = await getBestQuizScore(studentId, sId);
+            if (score !== null && score !== undefined) {
+                if (bestScore === null || score > bestScore) {
+                    bestScore = score;
+                }
+            }
+        }
+        return bestScore;
     });
 
     // ========== Analytics ==========
@@ -342,17 +449,22 @@ export function registerIPCHandlers() {
         await SessionManager.endSession(csat ?? null, itp ?? null, overallRating ?? null, exploreCareerRating ?? null, seeMoreToursRating ?? null);
     });
 
-    ipcMain.handle('session:pause', async () => {
-        SessionManager.recordPause();
+    ipcMain.handle('session:pause', async (_event, data) => {
+        const { lessonId, moduleId } = data || {};
+        const courseId = getCourseId(moduleId || lessonId);
+        SessionManager.recordPause(courseId);
     });
 
-    ipcMain.handle('session:seek', async () => {
-        SessionManager.recordSeek();
+    ipcMain.handle('session:seek', async (_event, data) => {
+        const { lessonId, moduleId } = data || {};
+        const courseId = getCourseId(moduleId || lessonId);
+        SessionManager.recordSeek(courseId);
     });
 
     ipcMain.handle('session:speed', async (_event, data) => {
-        const { speed } = data;
-        SessionManager.recordPlaybackSpeed(speed);
+        const { speed, lessonId, moduleId } = data || {};
+        const courseId = getCourseId(moduleId || lessonId);
+        SessionManager.recordPlaybackSpeed(speed, courseId);
     });
 
 

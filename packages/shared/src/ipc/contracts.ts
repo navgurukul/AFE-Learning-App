@@ -394,15 +394,15 @@ export interface IPCContract {
         response: void;
     };
     [IPC_CHANNELS.SESSION_PAUSE]: {
-        request: void;
+        request: { lessonId?: string; moduleId?: string } | void;
         response: void;
     };
     [IPC_CHANNELS.SESSION_SEEK]: {
-        request: void;
+        request: { lessonId?: string; moduleId?: string } | void;
         response: void;
     };
     [IPC_CHANNELS.SESSION_SPEED]: {
-        request: { speed: number };
+        request: { speed: number; lessonId?: string; moduleId?: string };
         response: void;
     };
     [IPC_CHANNELS.SESSION_UPDATE_LANGUAGE]: {

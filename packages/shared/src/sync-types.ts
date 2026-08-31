@@ -35,6 +35,8 @@ export interface SyncSessionPayload {
     classSection: string | null;
     unitType: string;
     tourType: string;
+    moduleId?: string | null;
+    moduleName?: string | null;
     language: string;
     deliveryModel: string;
     sessionDurationMinutes: number;

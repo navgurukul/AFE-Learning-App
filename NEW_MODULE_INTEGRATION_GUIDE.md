@@ -128,12 +128,28 @@ New modules are registered inside `installer-assets/content/manifest.json` under
 
 ---
 
-## 🌐 3. Multilingual Integration Standard
+## 🌐 3. Multilingual Integration Standard & Dynamic Course Rules
 
-To ensure seamless language switching on the Student Dashboard:
-1. Create separate module entries in `manifest.json` for each language (e.g., `music-english-001`, `music-hindi-001`, `music-tamil-001`).
-2. Translate all `title`, `description`, and `quizData` fields into the respective target language.
-3. Ensure the `"language"` property matches the profile language dropdown string exactly.
+The application uses an **extensible, dynamic multilingual course architecture**. A single course (e.g., *AWS Data Center Tour*, *Robotics Fulfillment Center Tour*, or *Music & Sound Technology Tour*) is authored across multiple languages, but treated as **one canonical course** with shared progress.
+
+### A. Course & Lesson Naming Conventions
+1. **Module ID**: `<course_slug>-<language>-<version>`
+   - Examples: `music-english-001`, `music-hindi-001`, `music-tamil-001`, `dct-english-001`.
+   - The base slug before the first `-` (`music`, `dct`, `rft`) is automatically parsed as the canonical `courseId`.
+2. **Lesson ID**: `<course_slug>-<lang_code>-ch<XX>-<type>`
+   - Examples: `music-en-ch01-video`, `music-hi-ch01-video`, `music-en-ch01-quiz`.
+
+### B. Strict Lesson Order Matching Across Languages
+> [!IMPORTANT]
+> Within a course, every localized version of a lesson MUST have the exact same `order` and `type`.
+> - `order: 1` in `music-english-001` (`music-en-ch01-video`) ↔ `order: 1` in `music-hindi-001` (`music-hi-ch01-video`).
+> - `order: 2` in `music-english-001` (`music-en-ch01-quiz`) ↔ `order: 2` in `music-hindi-001` (`music-hi-ch01-quiz`).
+> 
+> **Why?** The runtime's dynamic sibling resolution (`getSiblingLessonIds`) matches lessons by `(courseId, order, type)`. When a student completes a chapter in English, the app automatically reflects 100% completion in Hindi, Tamil, Telugu, Marathi, Gujarati, and Kannada without resetting progress upon switching languages.
+
+### C. Dynamic Course Metadata & Telemetry
+1. **Dynamic Denominators**: The system calls `getCourseMetadata(manifest, courseId)` to compute the total distinct video orders and quiz orders dynamically. Never hardcode lesson counts.
+2. **Canonical Telemetry**: Sessions saved to SQLite (`afe_sessions`) and synced to RMS server use the canonical `moduleId: '<course_slug>'` (e.g. `'music'`, `'dct'`) and `tourName: '<English Course Title>'` (e.g. `'Music & Sound Technology Tour'`), while `language` records the student's active interaction language.
 
 ---
 

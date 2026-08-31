@@ -820,6 +820,18 @@ On every app start, `content-sync.ts` upserts manifest data into the SQLite `mod
 - `loadContentManifest(basePath)` → Read + Zod validate → return typed `ContentManifest`
 - `getModuleById(manifest, id)` → Find module in manifest
 - `getLessonById(manifest, id)` → Find lesson across all modules
+- `getCourseId(moduleIdOrLessonId)` → Dynamically extract canonical course slug (e.g. `'dct'`, `'rft'`, `'music'`)
+- `getCanonicalCourseTitle(manifest, courseId)` → Resolves canonical course title from English/primary module
+- `getCourseMetadata(manifest, courseId)` → Computes dynamic course denominators: `totalVideos`, `totalQuizzes`, `totalReadings`, `totalItems`, and distinct order sets
+- `getSiblingLessonIds(manifest, lessonId)` → Dynamically resolves all sibling lesson IDs across 7 languages for the same `(courseId, order, type)`
+- `getSiblingModuleIds(manifest, moduleId)` → Dynamically resolves all localized module IDs for the course
+
+### Multilingual Course Model & Progress Sharing
+Courses are defined as **multilingual entities**. When a student completes a chapter/quiz in any language:
+1. `getSiblingLessonIds()` links the progress across all 7 language variants by `(courseId, order, type)`.
+2. The IPC handlers (`PROGRESS_GET_ALL_FOR_STUDENT`, `QUIZ_GET_BEST_SCORE`, etc.) propagate progress to all sibling lesson IDs.
+3. Switching languages on the Student Dashboard or in Module Detail preserves full course and lesson progress seamlessly without data loss.
+4. `SessionManager` computes course completion against dynamic `getCourseMetadata()` denominators and records canonical `moduleId: '<course_slug>'` and `tourName: '<English Title>'`.
 
 ---
 

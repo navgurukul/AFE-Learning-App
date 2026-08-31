@@ -367,7 +367,7 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
             return;
         }
 
-        ipc.recordSeek();
+        ipc.recordSeek(lessonId);
 
         const targetTime = videoRef.current.currentTime;
         const isSeekingForward = targetTime > lastTimeRef.current;
@@ -415,13 +415,13 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
         if (videoRef.current) {
             videoRef.current.playbackRate = rate;
         }
-        ipc.recordSpeed(rate).catch(() => { });
+        ipc.recordSpeed(rate, lessonId).catch(() => { });
     };
 
     const handlePause = () => {
         setIsPlaying(false);
         saveProgress();
-        ipc.recordPause();
+        ipc.recordPause(lessonId);
     };
 
     const handleEnded = async () => {

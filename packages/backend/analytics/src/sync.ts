@@ -169,6 +169,8 @@ export class SyncService {
                     classSection: null,
                     unitType: 'Modular AFE',
                     tourType: 'Virtual',
+                    moduleId: (session as any).moduleId || null,
+                    moduleName: (session as any).tourName || null,
                     language: session.language || 'English',
                     deliveryModel: 'Self-paced',
                     sessionDurationMinutes: session.durationMinutes,

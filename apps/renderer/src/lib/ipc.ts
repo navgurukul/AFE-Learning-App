@@ -288,16 +288,16 @@ class IPCClient {
         await this.invoke(IPC_CHANNELS.SESSION_END, { csat, itp, overallRating, exploreCareerRating, seeMoreToursRating });
     }
 
-    async recordPause(): Promise<void> {
-        await this.invoke(IPC_CHANNELS.SESSION_PAUSE, undefined);
+    async recordPause(lessonId?: string, moduleId?: string): Promise<void> {
+        await this.invoke(IPC_CHANNELS.SESSION_PAUSE, { lessonId, moduleId });
     }
 
-    async recordSeek(): Promise<void> {
-        await this.invoke(IPC_CHANNELS.SESSION_SEEK, undefined);
+    async recordSeek(lessonId?: string, moduleId?: string): Promise<void> {
+        await this.invoke(IPC_CHANNELS.SESSION_SEEK, { lessonId, moduleId });
     }
 
-    async recordSpeed(speed: number): Promise<void> {
-        await this.invoke(IPC_CHANNELS.SESSION_SPEED, { speed });
+    async recordSpeed(speed: number, lessonId?: string, moduleId?: string): Promise<void> {
+        await this.invoke(IPC_CHANNELS.SESSION_SPEED, { speed, lessonId, moduleId });
     }
 
     async updateSessionLanguage(language: string): Promise<void> {

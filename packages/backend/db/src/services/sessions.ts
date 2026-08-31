@@ -11,6 +11,19 @@ export async function saveAFESession(session: NewAFESession): Promise<void> {
 }
 
 /**
+ * Save multiple completed AFE Sessions in a transaction
+ */
+export async function saveAFESessions(sessions: NewAFESession[]): Promise<void> {
+    if (!sessions || sessions.length === 0) return;
+    const db = getDatabase();
+    await db.transaction(async (tx) => {
+        for (const s of sessions) {
+            await tx.insert(afeSessions).values(s);
+        }
+    });
+}
+
+/**
  * Get all unsynced AFE Sessions
  */
 export async function getUnsyncedSessions(): Promise<AFESession[]> {
