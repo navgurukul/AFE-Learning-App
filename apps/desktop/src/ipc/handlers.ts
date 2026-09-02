@@ -762,6 +762,7 @@ export function registerIPCHandlers() {
                 city: config.city || '',
                 district: config.district || '',
                 districtCode: config.districtCode || '',
+                zipcodePostalCode: config.zipcodePostalCode || '110001',
                 schoolType: config.schoolType || 'Government School',
                 countryCode: config.countryCode || 'IN',
                 partnerName: config.partnerName || 'Sama Digital Foundation – 1',
@@ -777,6 +778,7 @@ export function registerIPCHandlers() {
                 city: '',
                 district: '',
                 districtCode: '',
+                zipcodePostalCode: '110001',
                 schoolType: 'Government School',
                 countryCode: 'IN',
                 partnerName: 'Sama Digital Foundation – 1',
@@ -787,7 +789,7 @@ export function registerIPCHandlers() {
 
     ipcMain.handle(IPC_CHANNELS.CONFIG_SAVE_SCHOOL_DETAILS, async (_event, data) => {
         try {
-            const { schoolName, schoolUdise, state, city, district, districtCode, schoolType, countryCode, partnerName, distributionChannelHostId } = data;
+            const { schoolName, schoolUdise, state, city, district, districtCode, zipcodePostalCode, schoolType, countryCode, partnerName, distributionChannelHostId } = data;
             writeConfig({
                 schoolName,
                 schoolUdise,
@@ -795,6 +797,7 @@ export function registerIPCHandlers() {
                 city,
                 district,
                 districtCode,
+                zipcodePostalCode: zipcodePostalCode || '110001',
                 schoolType,
                 countryCode: countryCode || 'IN',
                 partnerName: partnerName || 'Sama Digital Foundation – 1',

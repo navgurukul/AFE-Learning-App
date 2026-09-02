@@ -31,6 +31,7 @@ function App() {
         city: string;
         district: string;
         districtCode: string;
+        zipcodePostalCode?: string;
         schoolType: string;
     } | undefined>(undefined);
 
@@ -47,6 +48,7 @@ function App() {
                         city: status.city,
                         district: status.district,
                         districtCode: status.districtCode,
+                        zipcodePostalCode: status.zipcodePostalCode || '110001',
                         schoolType: status.schoolType,
                     });
                     setIsSetupModalOpen(true);
@@ -98,6 +100,7 @@ function App() {
                 city: status.city,
                 district: status.district,
                 districtCode: status.districtCode,
+                zipcodePostalCode: status.zipcodePostalCode || '110001',
                 schoolType: status.schoolType,
             });
             setIsSetupModalOpen(true);

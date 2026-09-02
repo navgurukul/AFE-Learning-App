@@ -11,6 +11,7 @@ export interface DeviceInfo {
     district: string;
     districtCode: string;
     schoolType: string;
+    zipcodePostalCode?: string | null;
     countryCode?: string;
     distributionChannelHostId?: string;
     appVersion?: string;
@@ -24,12 +25,17 @@ export interface SyncSessionPayload {
     dataCollectionMethod: string;
     partnerName: string;
     sessionDate: string;
+    sessionStartDate?: string | null;
+    sessionEndDate?: string | null;
+    sessionStartTime?: string | null;
+    sessionStopTime?: string | null;
     academicYear: string;
     monthName: string;
     state: string;
     city: string;
     district: string;
     districtCode: string;
+    zipcodePostalCode?: string | null;
     schoolUdise: string | null;
     schoolName: string;
     schoolType: string;

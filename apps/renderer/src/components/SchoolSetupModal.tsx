@@ -8,84 +8,98 @@ const PRESET_SCHOOLS = [
         district: 'Warangal',
         state: 'Telangana',
         schoolType: 'KGBV',
+        zipcodePostalCode: '506001',
     },
     {
         name: 'TGMS, Vanchanagiri, Warangal',
         district: 'Warangal',
         state: 'Telangana',
         schoolType: 'Government School',
+        zipcodePostalCode: '506001',
     },
     {
         name: 'ZPHS Somdi, Hanamkonda',
         district: 'Hanamkonda',
         state: 'Telangana',
         schoolType: 'Government School',
+        zipcodePostalCode: '506001',
     },
     {
         name: 'ZPHS Markazi, Hanamkonda',
         district: 'Hanamkonda',
         state: 'Telangana',
         schoolType: 'Government School',
+        zipcodePostalCode: '506001',
     },
     {
         name: 'ZPHS Shayampet, Hanamkonda',
         district: 'Hanamkonda',
         state: 'Telangana',
         schoolType: 'Government School',
+        zipcodePostalCode: '506001',
     },
     {
         name: 'ZPHS, Mulugu',
         district: 'Mulugu',
         state: 'Telangana',
         schoolType: 'Government School',
+        zipcodePostalCode: '506343',
     },
     {
         name: 'GGB, Mulugu',
         district: 'Mulugu',
         state: 'Telangana',
         schoolType: 'Government School',
+        zipcodePostalCode: '506343',
     },
     {
         name: 'ZPHS, Tharapally, Warangal',
         district: 'Warangal',
         state: 'Telangana',
         schoolType: 'Government School',
+        zipcodePostalCode: '506001',
     },
     {
         name: 'ZPHS Indiranagar, Siddipet',
         district: 'Siddipet',
         state: 'Telangana',
         schoolType: 'Government School',
+        zipcodePostalCode: '502103',
     },
     {
         name: 'GHS Sapthagiri Colony, Karimnagar',
         district: 'Karimnagar',
         state: 'Telangana',
         schoolType: 'Government School',
+        zipcodePostalCode: '505001',
     },
     {
         name: 'Sarswathi Shishumandir, Karimnagar',
         district: 'Karimnagar',
         state: 'Telangana',
         schoolType: 'Private School',
+        zipcodePostalCode: '505001',
     },
     {
         name: 'ZPHS, Manthani',
         district: 'Peddapalli',
         state: 'Telangana',
         schoolType: 'Government School',
+        zipcodePostalCode: '505184',
     },
     {
         name: 'ZPHS, Armur, Manthani',
         district: 'Peddapalli',
         state: 'Telangana',
         schoolType: 'Government School',
+        zipcodePostalCode: '505184',
     },
     {
         name: 'ZPHS Perkakondaram, Nalgonda',
         district: 'Nalgonda',
         state: 'Telangana',
         schoolType: 'Government School',
+        zipcodePostalCode: '508001',
     },
 ];
 
@@ -110,6 +124,7 @@ interface SchoolSetupModalProps {
         city: string;
         district: string;
         districtCode: string;
+        zipcodePostalCode?: string;
         schoolType: string;
         countryCode?: string;
         partnerName?: string;
@@ -126,6 +141,7 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
     const [city, setCity] = useState('');
     const [district, setDistrict] = useState('');
     const [districtCode, setDistrictCode] = useState('');
+    const [zipcodePostalCode, setZipcodePostalCode] = useState('110001');
     const [schoolType, setSchoolType] = useState('Government School');
     const [countryCode, setCountryCode] = useState('IN');
     const [partnerName, setPartnerName] = useState('Sama Digital Foundation – 1');
@@ -154,6 +170,7 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
             setCity(initialData.city || '');
             setDistrict(initialData.district || '');
             setDistrictCode(initialData.districtCode || '');
+            setZipcodePostalCode(initialData.zipcodePostalCode || '110001');
             setSchoolType(initialData.schoolType || 'Government School');
             setCountryCode(initialData.countryCode || 'IN');
             setPartnerName(initialData.partnerName || 'Sama Digital Foundation – 1');
@@ -176,6 +193,7 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                 if (preset.district) setDistrict(preset.district);
                 if (preset.state) setState(preset.state);
                 if (preset.schoolType) setSchoolType(preset.schoolType);
+                if ((preset as any).zipcodePostalCode) setZipcodePostalCode((preset as any).zipcodePostalCode);
             } else {
                 setSchoolName(val);
             }
@@ -203,6 +221,7 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                 city: city.trim(),
                 district: district.trim(),
                 districtCode: districtCode.trim(),
+                zipcodePostalCode: zipcodePostalCode.trim() || '110001',
                 schoolType,
                 countryCode: countryCode.trim() || 'IN',
                 partnerName: partnerName.trim() || 'Sama Digital Foundation – 1',
@@ -360,6 +379,18 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                                 onChange={(e) => setDistrictCode(e.target.value)}
                             />
                         </div>
+                    </div>
+
+                    <div className="school-setup-field">
+                        <label>
+                            Zipcode / Postal Code (Pincode) <span className="required">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            placeholder="e.g., 110001"
+                            value={zipcodePostalCode}
+                            onChange={(e) => setZipcodePostalCode(e.target.value)}
+                        />
                     </div>
 
                     <div className="school-setup-actions">

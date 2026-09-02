@@ -6,6 +6,7 @@ import VideoPlayer from '../components/VideoPlayer.tsx';
 import PDFViewer from '../components/PDFViewer.tsx';
 import QuizViewer from '../components/QuizViewer.tsx';
 import { FeedbackSurveyModal } from '../components/FeedbackSurveyModal.tsx';
+import { NoticeModal, type NoticeModalVariant } from '../components/NoticeModal.tsx';
 import { exitPictureInPictureAndCleanup } from '../lib/mediaCleanup.ts';
 
 function ModuleDetail() {
@@ -17,6 +18,18 @@ function ModuleDetail() {
     const [videoProgress, setVideoProgress] = useState<VideoProgress | null>(null);
     const [lessonCompletionStates, setLessonCompletionStates] = useState<Record<string, boolean>>({});
     const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+    const [noticeModal, setNoticeModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        variant: NoticeModalVariant;
+        buttonText?: string;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        variant: 'info',
+    });
     const savedScrollPositionRef = useRef<number>(0);
 
     useEffect(() => {
@@ -131,7 +144,13 @@ function ModuleDetail() {
 
             if (isComplete) {
                 await ipc.trackEvent(studentId, 'module_completed', { moduleId: module.id });
-                alert('🎉 Congratulations! You have completed this module!');
+                setNoticeModal({
+                    isOpen: true,
+                    title: 'Module Completed! 🎉',
+                    message: 'Congratulations! You have completed all lessons in this module.',
+                    variant: 'success',
+                    buttonText: 'Awesome! 🚀',
+                });
             }
         } catch (e) {
             console.error('Error checking module completion', e);
@@ -285,7 +304,13 @@ function ModuleDetail() {
                                                     if (isUnlocked) {
                                                         handleSelectLesson(lesson);
                                                     } else {
-                                                        alert("🔒 This lesson is locked. Please complete the previous lessons first!");
+                                                        setNoticeModal({
+                                                            isOpen: true,
+                                                            title: 'Lesson Locked 🔒',
+                                                            message: 'Please complete the previous lessons first to unlock this lesson!',
+                                                            variant: 'locked',
+                                                            buttonText: 'Got It 👍',
+                                                        });
                                                     }
                                                 }}
                                                 style={{
@@ -383,6 +408,15 @@ function ModuleDetail() {
                     setIsFeedbackOpen(false);
                     navigate('/');
                 }}
+            />
+
+            <NoticeModal
+                isOpen={noticeModal.isOpen}
+                title={noticeModal.title}
+                message={noticeModal.message}
+                variant={noticeModal.variant}
+                buttonText={noticeModal.buttonText}
+                onClose={() => setNoticeModal(prev => ({ ...prev, isOpen: false }))}
             />
         </div>
     );

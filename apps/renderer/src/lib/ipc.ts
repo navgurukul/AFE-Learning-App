@@ -332,6 +332,7 @@ class IPCClient {
         city: string;
         district: string;
         districtCode: string;
+        zipcodePostalCode?: string;
         schoolType: string;
         countryCode?: string;
         partnerName?: string;

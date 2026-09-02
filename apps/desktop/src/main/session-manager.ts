@@ -442,6 +442,7 @@ export class SessionManager {
                     language: session.language,
                     moduleId: courseId,
                     tourName,
+                    zipcodePostalCode: deviceInfo.zipcodePostalCode || '110001',
                     synced: false,
                     createdAt: new Date().toISOString()
                 };

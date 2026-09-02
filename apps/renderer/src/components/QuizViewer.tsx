@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ipc } from '../lib/ipc.ts'; // Fixing .js to .ts as it seems to be ts
 import { ConfirmModal } from './ConfirmModal.tsx';
+import { NoticeModal } from './NoticeModal.tsx';
 
 interface QuizQuestion {
     id: string;
@@ -28,6 +29,7 @@ export default function QuizViewer({ lessonId, studentId, quizData, onCompleted 
     const [submitting, setSubmitting] = useState(false);
     const [result, setResult] = useState<{ score: number; total: number; passed: boolean } | null>(null);
     const [isConfirmSubmitOpen, setIsConfirmSubmitOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const totalQuestions = quizData?.questions?.length || 0;
     const currentQuestion = totalQuestions > 0 ? quizData.questions[currentQuestionIndex] : null;
@@ -93,7 +95,7 @@ export default function QuizViewer({ lessonId, studentId, quizData, onCompleted 
             }
         } catch (error) {
             console.error('Failed to submit quiz:', error);
-            alert('Failed to submit quiz. Please try again.');
+            setErrorMessage('Failed to submit quiz. Please try again.');
         } finally {
             setSubmitting(false);
         }
@@ -248,6 +250,15 @@ export default function QuizViewer({ lessonId, studentId, quizData, onCompleted 
                 cancelText="No, wait"
                 onConfirm={handleConfirmSubmit}
                 onCancel={() => setIsConfirmSubmitOpen(false)}
+            />
+
+            <NoticeModal
+                isOpen={Boolean(errorMessage)}
+                title="Quiz Submission Error ⚠️"
+                message={errorMessage || ''}
+                variant="warning"
+                buttonText="Close"
+                onClose={() => setErrorMessage(null)}
             />
         </div>
     );

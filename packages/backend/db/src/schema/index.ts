@@ -226,6 +226,7 @@ export const afeSessions = sqliteTable('afe_sessions', {
     language: text('language').notNull().default('English'),
     moduleId: text('module_id'),
     tourName: text('tour_name'),
+    zipcodePostalCode: text('zipcode_postal_code').default('110001'),
     synced: integer('synced', { mode: 'boolean' }).notNull().default(false),
     createdAt: text('created_at').notNull(),
 });

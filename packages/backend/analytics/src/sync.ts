@@ -132,6 +132,13 @@ export class SyncService {
             const mappedSessions: SyncSessionPayload[] = unsyncedSessions.map(session => {
                 const student = studentMap.get(session.studentId);
                 const startDate = new Date(session.startTime);
+                const endDate = session.endTime ? new Date(session.endTime) : new Date(startDate.getTime() + (session.durationMinutes || 1) * 60000);
+
+                const pad = (n: number) => String(n).padStart(2, '0');
+                const sessionStartDate = startDate.toISOString().split('T')[0];
+                const sessionEndDate = endDate.toISOString().split('T')[0];
+                const sessionStartTime = `${pad(startDate.getHours())}:${pad(startDate.getMinutes())}:${pad(startDate.getSeconds())}`;
+                const sessionStopTime = `${pad(endDate.getHours())}:${pad(endDate.getMinutes())}:${pad(endDate.getSeconds())}`;
 
                 // Calculate academic year (Apr - Mar boundary)
                 const year = startDate.getFullYear();
@@ -156,12 +163,17 @@ export class SyncService {
                     dataCollectionMethod: 'Method 2 - Individual Tracking',
                     partnerName: (session as any).partnerName || deviceInfo.partnerName || 'Sama Digital Foundation – 1',
                     sessionDate: session.sessionDate,
+                    sessionStartDate,
+                    sessionEndDate,
+                    sessionStartTime,
+                    sessionStopTime,
                     academicYear,
                     monthName,
                     state: deviceInfo.state,
                     city: deviceInfo.city || '',
                     district: deviceInfo.district,
                     districtCode: deviceInfo.districtCode || '',
+                    zipcodePostalCode: (session as any).zipcodePostalCode || deviceInfo.zipcodePostalCode || '110001',
                     schoolUdise: deviceInfo.schoolUdise || null,
                     schoolName: deviceInfo.schoolName,
                     schoolType: deviceInfo.schoolType || 'Government School',

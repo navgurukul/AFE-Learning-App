@@ -419,6 +419,7 @@ export interface IPCContract {
             city: string;
             district: string;
             districtCode: string;
+            zipcodePostalCode?: string;
             schoolType: string;
         };
     };
@@ -430,7 +431,11 @@ export interface IPCContract {
             city: string;
             district: string;
             districtCode: string;
+            zipcodePostalCode?: string;
             schoolType: string;
+            countryCode?: string;
+            partnerName?: string;
+            distributionChannelHostId?: string;
         };
         response: { success: boolean };
     };

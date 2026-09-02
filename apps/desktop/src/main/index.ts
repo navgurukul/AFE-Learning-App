@@ -1,10 +1,13 @@
-import { app, BrowserWindow, protocol, net, session, dialog, ipcMain } from 'electron';
+import { app, BrowserWindow, protocol, net, session, dialog, ipcMain, Menu } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import pkg from 'electron-updater';
 const { autoUpdater } = pkg;
 import log from 'electron-log';
+
+// Remove the default application menu header (File, Edit, View, etc.)
+Menu.setApplicationMenu(null);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -67,6 +70,13 @@ function loadEnv() {
 }
 
 loadEnv();
+
+/**
+ * Check if developer mode is enabled strictly via IS_DEV environment variable
+ */
+const isDevMode = (): boolean => {
+    return process.env.IS_DEV === 'true' || process.env.IS_DEV === '1';
+};
 
 /**
  * Sanitize app-update.yml to ensure no legacy publisherName exists,
@@ -165,6 +175,7 @@ function createWindow() {
         minHeight: 768,
         title: 'Amazon Future Engineer',
         icon: path.join(__dirname, '../../build/icon.png'),
+        autoHideMenuBar: true,
         webPreferences: {
             // CRITICAL SECURITY: Disable Node integration in renderer
             nodeIntegration: false,
@@ -172,9 +183,12 @@ function createWindow() {
             contextIsolation: true,
             // Preload script for secure IPC bridge
             preload: path.join(__dirname, '../preload/secure.cjs'),
+            devTools: isDevMode(),
         },
     });
 
+    mainWindow.setMenuBarVisibility(false);
+    mainWindow.removeMenu();
     mainWindow.maximize();
 
     // Load renderer UI
@@ -184,8 +198,34 @@ function createWindow() {
     } else {
         // Development: load from Vite dev server
         mainWindow.loadURL('http://localhost:5173');
+    }
+
+    if (isDevMode()) {
         mainWindow.webContents.openDevTools();
     }
+
+    // Intercept keyboard shortcuts to protect production / student sessions
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+        if (!isDevMode()) {
+            // Block Reload: Ctrl+R, Ctrl+Shift+R, F5
+            if (
+                (input.control && input.key.toLowerCase() === 'r') ||
+                input.key === 'F5'
+            ) {
+                event.preventDefault();
+            }
+
+            // Block DevTools & Source View: Ctrl+Shift+I, Ctrl+Shift+J, F12, Ctrl+U
+            if (
+                (input.control && input.shift && input.key.toLowerCase() === 'i') ||
+                (input.control && input.shift && input.key.toLowerCase() === 'j') ||
+                (input.control && input.key.toLowerCase() === 'u') ||
+                input.key === 'F12'
+            ) {
+                event.preventDefault();
+            }
+        }
+    });
 
     // Check location permission once on install/first run, non-blocking
     setTimeout(() => {

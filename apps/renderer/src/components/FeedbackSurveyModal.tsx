@@ -245,7 +245,7 @@ export function FeedbackSurveyModal({ isOpen, language = 'English', onClose, onS
             zIndex: 10000,
             backdropFilter: 'blur(4px)',
         }}>
-            <div className="card" style={{
+            <div className="card feedback-modal-card" style={{
                 backgroundColor: 'var(--color-surface, #fff)',
                 border: 'var(--border-width) solid var(--color-border)',
                 borderRadius: 'var(--border-radius)',
@@ -255,6 +255,8 @@ export function FeedbackSurveyModal({ isOpen, language = 'English', onClose, onS
                 maxWidth: '540px',
                 maxHeight: '90vh',
                 overflowY: 'auto',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
                 textAlign: 'center',
                 animation: 'modalSlideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
             }}>
@@ -293,6 +295,15 @@ export function FeedbackSurveyModal({ isOpen, language = 'English', onClose, onS
                 </form>
             </div>
             <style>{`
+                .feedback-modal-card {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+                .feedback-modal-card::-webkit-scrollbar {
+                    display: none;
+                    width: 0px;
+                    height: 0px;
+                }
                 @keyframes modalSlideIn {
                     from { transform: translateY(50px) scale(0.95); opacity: 0; }
                     to { transform: translateY(0) scale(1); opacity: 1; }

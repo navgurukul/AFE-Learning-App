@@ -21,6 +21,7 @@ export interface Config {
     city?: string;
     district?: string;
     districtCode?: string;
+    zipcodePostalCode?: string;
     schoolType?: string;
     countryCode?: string;
     distributionChannelHostId?: string;
@@ -227,6 +228,7 @@ export function readConfig(): Required<Config> {
         city: '',
         district: '',
         districtCode: '',
+        zipcodePostalCode: '110001',
         schoolType: 'Government School',
         countryCode: 'IN',
         distributionChannelHostId: 'Sama Platform 1',
@@ -253,6 +255,7 @@ export function readConfig(): Required<Config> {
             city: config.city !== undefined ? config.city : defaultConfig.city,
             district: config.district !== undefined ? config.district : defaultConfig.district,
             districtCode: config.districtCode !== undefined ? config.districtCode : defaultConfig.districtCode,
+            zipcodePostalCode: config.zipcodePostalCode !== undefined ? config.zipcodePostalCode : defaultConfig.zipcodePostalCode,
             schoolType: config.schoolType || defaultConfig.schoolType,
             countryCode: config.countryCode || defaultConfig.countryCode,
             distributionChannelHostId: config.distributionChannelHostId || defaultConfig.distributionChannelHostId,
@@ -323,6 +326,7 @@ export async function getDeviceInfo(): Promise<DeviceInfo> {
         city: config.city,
         district: config.district,
         districtCode: config.districtCode,
+        zipcodePostalCode: config.zipcodePostalCode || '110001',
         schoolType: config.schoolType || 'Government School'
     };
 
