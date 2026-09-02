@@ -333,6 +333,9 @@ class IPCClient {
         district: string;
         districtCode: string;
         schoolType: string;
+        countryCode?: string;
+        partnerName?: string;
+        distributionChannelHostId?: string;
     }) {
         return await this.invoke(IPC_CHANNELS.CONFIG_SAVE_SCHOOL_DETAILS, data);
     }

@@ -197,6 +197,9 @@ export const afeSessions = sqliteTable('afe_sessions', {
         .notNull()
         .references(() => students.id, { onDelete: 'cascade' }),
     avatarName: text('avatar_name'),
+    countryCode: text('country_code').notNull().default('IN'),
+    distributionChannelHostId: text('distribution_channel_host_id').notNull().default('Sama Platform 1'),
+    partnerName: text('partner_name').notNull().default('Sama Digital Foundation – 1'),
     sessionDate: text('session_date').notNull(), // YYYY-MM-DD
     startTime: text('start_time').notNull(),
     endTime: text('end_time'),

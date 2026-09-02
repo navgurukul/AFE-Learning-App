@@ -762,7 +762,10 @@ export function registerIPCHandlers() {
                 city: config.city || '',
                 district: config.district || '',
                 districtCode: config.districtCode || '',
-                schoolType: config.schoolType || 'NGO',
+                schoolType: config.schoolType || 'Government School',
+                countryCode: config.countryCode || 'IN',
+                partnerName: config.partnerName || 'Sama Digital Foundation – 1',
+                distributionChannelHostId: config.distributionChannelHostId || 'Sama Platform 1',
             };
         } catch (error) {
             console.error('[IPC] Failed to get setup status:', error);
@@ -774,14 +777,17 @@ export function registerIPCHandlers() {
                 city: '',
                 district: '',
                 districtCode: '',
-                schoolType: 'NGO',
+                schoolType: 'Government School',
+                countryCode: 'IN',
+                partnerName: 'Sama Digital Foundation – 1',
+                distributionChannelHostId: 'Sama Platform 1',
             };
         }
     });
 
     ipcMain.handle(IPC_CHANNELS.CONFIG_SAVE_SCHOOL_DETAILS, async (_event, data) => {
         try {
-            const { schoolName, schoolUdise, state, city, district, districtCode, schoolType } = data;
+            const { schoolName, schoolUdise, state, city, district, districtCode, schoolType, countryCode, partnerName, distributionChannelHostId } = data;
             writeConfig({
                 schoolName,
                 schoolUdise,
@@ -790,6 +796,9 @@ export function registerIPCHandlers() {
                 district,
                 districtCode,
                 schoolType,
+                countryCode: countryCode || 'IN',
+                partnerName: partnerName || 'Sama Digital Foundation – 1',
+                distributionChannelHostId: distributionChannelHostId || 'Sama Platform 1',
                 setupCompleted: true,
             });
             console.log('[IPC] School details saved successfully');

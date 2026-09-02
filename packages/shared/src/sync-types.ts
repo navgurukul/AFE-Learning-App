@@ -11,12 +11,16 @@ export interface DeviceInfo {
     district: string;
     districtCode: string;
     schoolType: string;
+    countryCode?: string;
+    distributionChannelHostId?: string;
     appVersion?: string;
 }
 
 export interface SyncSessionPayload {
     sessionId: string;
     avatarName?: string | null;
+    countryCode?: string;
+    distributionChannelHostId?: string;
     dataCollectionMethod: string;
     partnerName: string;
     sessionDate: string;

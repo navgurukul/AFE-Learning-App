@@ -22,6 +22,8 @@ export interface Config {
     district?: string;
     districtCode?: string;
     schoolType?: string;
+    countryCode?: string;
+    distributionChannelHostId?: string;
     setupCompleted?: boolean;
     locationPermissionStatus?: 'granted' | 'denied';
     historicalSyncCompleted?: boolean;
@@ -218,14 +220,16 @@ export async function getSerialNumber(): Promise<string> {
 export function readConfig(): Required<Config> {
     const defaultConfig: Required<Config> = {
         ngoKey: 'D3F41T-K37',
-        partnerName: 'sama',
+        partnerName: 'Sama Digital Foundation – 1',
         schoolName: 'sama',
         schoolUdise: null,
         state: '',
         city: '',
         district: '',
         districtCode: '',
-        schoolType: 'NGO',
+        schoolType: 'Government School',
+        countryCode: 'IN',
+        distributionChannelHostId: 'Sama Platform 1',
         setupCompleted: false,
         locationPermissionStatus: 'granted',
         historicalSyncCompleted: false
@@ -250,6 +254,8 @@ export function readConfig(): Required<Config> {
             district: config.district !== undefined ? config.district : defaultConfig.district,
             districtCode: config.districtCode !== undefined ? config.districtCode : defaultConfig.districtCode,
             schoolType: config.schoolType || defaultConfig.schoolType,
+            countryCode: config.countryCode || defaultConfig.countryCode,
+            distributionChannelHostId: config.distributionChannelHostId || defaultConfig.distributionChannelHostId,
             setupCompleted: config.setupCompleted !== undefined ? config.setupCompleted : defaultConfig.setupCompleted,
             locationPermissionStatus: config.locationPermissionStatus || defaultConfig.locationPermissionStatus,
             historicalSyncCompleted: config.historicalSyncCompleted === true
@@ -307,7 +313,9 @@ export async function getDeviceInfo(): Promise<DeviceInfo> {
         serialNumber,
         macAddress,
         appVersion: app.getVersion(),
-        partnerName: 'sama',
+        partnerName: config.partnerName || 'Sama Digital Foundation – 1',
+        countryCode: config.countryCode || 'IN',
+        distributionChannelHostId: config.distributionChannelHostId || 'Sama Platform 1',
         ngoKey: config.ngoKey,
         schoolName: config.schoolName || 'sama',
         schoolUdise: config.schoolUdise || null,
@@ -315,7 +323,7 @@ export async function getDeviceInfo(): Promise<DeviceInfo> {
         city: config.city,
         district: config.district,
         districtCode: config.districtCode,
-        schoolType: config.schoolType || 'NGO'
+        schoolType: config.schoolType || 'Government School'
     };
 
     console.log('[DeviceInfo] Device fingerprint:', deviceInfo);

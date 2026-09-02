@@ -182,14 +182,21 @@ export class SessionManager {
     /**
      * Determine if the active session meets the engagement threshold to display feedback survey.
      * Criteria:
-     * - Active video watch time >= 60 seconds OR
-     * - Total session duration >= 120 seconds (2 minutes)
+     * - Active video watch time >= 30 seconds (globally or in any course) OR
+     * - Total session duration >= 60 seconds (1 minute)
      */
     static hasMetEngagementThreshold(): boolean {
         if (!this.activeSession) return false;
         const durationSeconds = (Date.now() - this.activeSession.startTime.getTime()) / 1000;
-        const watchTime = this.activeSession.globalWatchTimeSeconds || 0;
-        return watchTime >= 60 || durationSeconds >= 120;
+        const globalWatchTime = this.activeSession.globalWatchTimeSeconds || 0;
+        
+        if (globalWatchTime >= 30) return true;
+        
+        for (const metrics of this.activeSession.courses.values()) {
+            if ((metrics.watchTimeSeconds || 0) >= 30) return true;
+        }
+
+        return durationSeconds >= 60;
     }
 
     /**
@@ -406,6 +413,9 @@ export class SessionManager {
                     id: sessionId,
                     studentId: student.id,
                     avatarName: student.name,
+                    countryCode: deviceInfo.countryCode || 'IN',
+                    distributionChannelHostId: deviceInfo.distributionChannelHostId || 'Sama Platform 1',
+                    partnerName: deviceInfo.partnerName || 'Sama Digital Foundation – 1',
                     sessionDate,
                     startTime: startISO,
                     endTime: endISO,

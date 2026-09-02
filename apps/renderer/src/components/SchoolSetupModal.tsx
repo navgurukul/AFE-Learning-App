@@ -111,6 +111,9 @@ interface SchoolSetupModalProps {
         district: string;
         districtCode: string;
         schoolType: string;
+        countryCode?: string;
+        partnerName?: string;
+        distributionChannelHostId?: string;
     };
 }
 
@@ -124,6 +127,9 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
     const [district, setDistrict] = useState('');
     const [districtCode, setDistrictCode] = useState('');
     const [schoolType, setSchoolType] = useState('Government School');
+    const [countryCode, setCountryCode] = useState('IN');
+    const [partnerName, setPartnerName] = useState('Sama Digital Foundation – 1');
+    const [distributionChannelHostId, setDistributionChannelHostId] = useState('Sama Platform 1');
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
@@ -149,6 +155,9 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
             setDistrict(initialData.district || '');
             setDistrictCode(initialData.districtCode || '');
             setSchoolType(initialData.schoolType || 'Government School');
+            setCountryCode(initialData.countryCode || 'IN');
+            setPartnerName(initialData.partnerName || 'Sama Digital Foundation – 1');
+            setDistributionChannelHostId(initialData.distributionChannelHostId || 'Sama Platform 1');
         }
     }, [initialData]);
 
@@ -195,6 +204,9 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                 district: district.trim(),
                 districtCode: districtCode.trim(),
                 schoolType,
+                countryCode: countryCode.trim() || 'IN',
+                partnerName: partnerName.trim() || 'Sama Digital Foundation – 1',
+                distributionChannelHostId: distributionChannelHostId.trim() || 'Sama Platform 1',
             });
             onClose();
         } catch (error) {
@@ -254,6 +266,37 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                             placeholder="e.g., 09010100101"
                             value={schoolUdise}
                             onChange={(e) => setSchoolUdise(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="school-setup-row">
+                        <div className="school-setup-field">
+                            <label>Country Code <span className="required">*</span></label>
+                            <input
+                                type="text"
+                                placeholder="e.g., IN"
+                                value={countryCode}
+                                onChange={(e) => setCountryCode(e.target.value)}
+                            />
+                        </div>
+                        <div className="school-setup-field">
+                            <label>Distribution Host ID <span className="required">*</span></label>
+                            <input
+                                type="text"
+                                placeholder="e.g., Sama Platform 1"
+                                value={distributionChannelHostId}
+                                onChange={(e) => setDistributionChannelHostId(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="school-setup-field">
+                        <label>Partner Name <span className="required">*</span></label>
+                        <input
+                            type="text"
+                            placeholder="e.g., Sama Digital Foundation – 1"
+                            value={partnerName}
+                            onChange={(e) => setPartnerName(e.target.value)}
                         />
                     </div>
 

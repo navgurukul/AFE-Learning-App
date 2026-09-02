@@ -1,6 +1,6 @@
 {
   "ngoKey": "D3F41T-K37",
-  "partnerName": "sama",
+  "partnerName": "Sama Digital Foundation – 1",
   "schoolName": "School of Programming, Navgurukul",
   "schoolUdise": "9019902899",
   "state": "Delhi",
@@ -10,5 +10,7 @@
   "districtCode": "DST-102",
   "schoolType": "Government School",
   "setupCompleted": true,
-  "historicalSyncCompleted": true
+  "historicalSyncCompleted": true,
+  "countryCode": "IN",
+  "distributionChannelHostId": "Sama Platform 1"
 }
