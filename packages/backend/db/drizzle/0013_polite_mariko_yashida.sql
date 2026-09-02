@@ -1,0 +1,1 @@
+ALTER TABLE afe_sessions ADD `zipcode_postal_code` text DEFAULT '110001';
