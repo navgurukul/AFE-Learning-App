@@ -700,6 +700,86 @@ p {
   align-items: center;
 }
 
+/* ===================================================
+   Custom Neo-Brutalism Scrollbars (Global & Local)
+   Replaces all generic browser/OS scrollbars
+   =================================================== */
+
+/* Standard properties for Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #141210 #F4ECE1;
+}
+
+/* Chrome, Edge, Safari, Electron WebKit Scrollbars */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F4ECE1;
+  border-left: 2px solid #141210;
+}
+
+::-webkit-scrollbar-track:horizontal {
+  border-left: none;
+  border-top: 2px solid #141210;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #141210;
+  border-radius: 6px;
+  border: 2px solid #F4ECE1;
+  min-height: 36px;
+  transition: background-color 0.15s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #FF7A3D; /* Vibrant orange hover on scrollbar thumb */
+  border-color: #F4ECE1;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #FF6620;
+}
+
+::-webkit-scrollbar-corner {
+  background: #F4ECE1;
+  border-left: 2px solid #141210;
+  border-top: 2px solid #141210;
+}
+
+/* Scrollbars inside Cards, Modals, and Light Containers */
+.neo-card *::-webkit-scrollbar-track,
+.card *::-webkit-scrollbar-track,
+.school-setup-modal *::-webkit-scrollbar-track,
+.feedback-modal-card *::-webkit-scrollbar-track,
+.admin-pwd-modal *::-webkit-scrollbar-track,
+.modal-body::-webkit-scrollbar-track {
+  background: #FDF3E7;
+  border-left: 2px solid #141210;
+}
+
+.neo-card *::-webkit-scrollbar-thumb,
+.card *::-webkit-scrollbar-thumb,
+.school-setup-modal *::-webkit-scrollbar-thumb,
+.feedback-modal-card *::-webkit-scrollbar-thumb,
+.admin-pwd-modal *::-webkit-scrollbar-thumb,
+.modal-body::-webkit-scrollbar-thumb {
+  background: #141210;
+  border: 2px solid #FDF3E7;
+}
+
+.neo-card *::-webkit-scrollbar-thumb:hover,
+.card *::-webkit-scrollbar-thumb:hover,
+.school-setup-modal *::-webkit-scrollbar-thumb:hover,
+.feedback-modal-card *::-webkit-scrollbar-thumb:hover,
+.admin-pwd-modal *::-webkit-scrollbar-thumb:hover,
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: #FF7A3D;
+}
+
 .scrollbar-thin::-webkit-scrollbar {
   width: 10px;
 }

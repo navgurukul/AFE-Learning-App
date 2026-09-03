@@ -238,7 +238,7 @@ export function FeedbackSurveyModal({ isOpen, language = 'English', onClose, onS
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
+            backgroundColor: 'rgba(20, 18, 16, 0.6)',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -249,31 +249,35 @@ export function FeedbackSurveyModal({ isOpen, language = 'English', onClose, onS
                 backgroundColor: 'var(--color-surface, #fff)',
                 border: 'var(--border-width) solid var(--color-border)',
                 borderRadius: 'var(--border-radius)',
-                padding: 'var(--spacing-lg)',
+                padding: 0,
                 boxShadow: 'var(--shadow-offset) var(--shadow-offset) 0 var(--shadow-color)',
                 width: '95%',
                 maxWidth: '540px',
-                maxHeight: '90vh',
-                overflowY: 'auto',
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none',
+                maxHeight: '88vh',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
                 textAlign: 'center',
                 animation: 'modalSlideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
             }}>
-                <h2 style={{ fontSize: '1.6rem', marginBottom: 'var(--spacing-xs)' }}>{t.title}</h2>
-                <p style={{ color: 'var(--color-text-light)', marginBottom: 'var(--spacing-md)', fontSize: '0.95rem' }}>
-                    {t.subtitle}
-                </p>
+                <div style={{ padding: '24px 28px 16px', borderBottom: '2.5px solid var(--color-border)', flexShrink: 0, backgroundColor: '#fff' }}>
+                    <h2 style={{ fontSize: '1.6rem', marginBottom: '4px' }}>{t.title}</h2>
+                    <p style={{ color: 'var(--color-text-light)', margin: 0, fontSize: '0.95rem' }}>
+                        {t.subtitle}
+                    </p>
+                </div>
 
-                <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
-                    {renderRatingGroup(t.q1, csat, setCsat, t.q1Labels, '⭐', 'var(--color-accent)')}
-                    {renderRatingGroup(t.q2, itp, setItp, t.q2Labels, '🚀', 'var(--color-secondary)')}
-                    {renderRatingGroup(t.q3, overallRating, setOverallRating, t.q3Labels, '🎯', '#FFD166')}
-                    {renderRatingGroup(t.q4, exploreCareerRating, setExploreCareerRating, t.q4Labels, '💡', '#06D6A0')}
-                    {renderRatingGroup(t.q5, seeMoreToursRating, setSeeMoreToursRating, t.q5Labels, '👍', '#118AB2')}
+                <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', flex: '1 1 auto', overflow: 'hidden' }}>
+                    <div style={{ flex: '1 1 auto', overflowY: 'auto', padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
+                        {renderRatingGroup(t.q1, csat, setCsat, t.q1Labels, '⭐', 'var(--color-accent)')}
+                        {renderRatingGroup(t.q2, itp, setItp, t.q2Labels, '🚀', 'var(--color-secondary)')}
+                        {renderRatingGroup(t.q3, overallRating, setOverallRating, t.q3Labels, '🎯', '#FFD166')}
+                        {renderRatingGroup(t.q4, exploreCareerRating, setExploreCareerRating, t.q4Labels, '💡', '#06D6A0')}
+                        {renderRatingGroup(t.q5, seeMoreToursRating, setSeeMoreToursRating, t.q5Labels, '👍', '#118AB2')}
+                    </div>
 
-                    {/* Buttons */}
-                    <div style={{ display: 'flex', gap: '12px', marginTop: 'var(--spacing-md)', position: 'sticky', bottom: 0, backgroundColor: 'var(--color-surface, #fff)', paddingTop: '8px' }}>
+                    {/* Buttons Footer */}
+                    <div style={{ display: 'flex', gap: '12px', padding: '16px 28px 18px', borderTop: '2.5px solid var(--color-border)', backgroundColor: '#FAF8F5', flexShrink: 0 }}>
                         <button
                             type="button"
                             className="btn"
@@ -295,15 +299,6 @@ export function FeedbackSurveyModal({ isOpen, language = 'English', onClose, onS
                 </form>
             </div>
             <style>{`
-                .feedback-modal-card {
-                    -ms-overflow-style: none;
-                    scrollbar-width: none;
-                }
-                .feedback-modal-card::-webkit-scrollbar {
-                    display: none;
-                    width: 0px;
-                    height: 0px;
-                }
                 @keyframes modalSlideIn {
                     from { transform: translateY(50px) scale(0.95); opacity: 0; }
                     to { transform: translateY(0) scale(1); opacity: 1; }

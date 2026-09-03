@@ -243,173 +243,175 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                     <p>Select your school or NGO details. This information will be used for session reporting.</p>
                 </div>
 
-                <div className="school-setup-form">
-                    <div className="school-setup-field">
-                        <label>
-                            Select School / NGO <span className="required">*</span>
-                        </label>
-                        <select
-                            value={selectedDropdown}
-                            onChange={handleDropdownChange}
-                            autoFocus
-                        >
-                            <option value="">-- Select School --</option>
-                            {PRESET_SCHOOLS.map((school) => (
-                                <option key={school.name} value={school.name}>
-                                    {school.name}
-                                </option>
-                            ))}
-                            <option value="__OTHER__">➕ Other (Enter manually)</option>
-                        </select>
-                    </div>
-
-                    {selectedDropdown === '__OTHER__' && (
+                <div className="school-setup-body">
+                    <div className="school-setup-form">
                         <div className="school-setup-field">
                             <label>
-                                Custom School / NGO Name <span className="required">*</span>
+                                Select School / NGO <span className="required">*</span>
                             </label>
-                            <input
-                                type="text"
-                                placeholder="Enter school name..."
-                                value={customSchoolName}
-                                onChange={handleCustomNameChange}
+                            <select
+                                value={selectedDropdown}
+                                onChange={handleDropdownChange}
                                 autoFocus
-                            />
+                            >
+                                <option value="">-- Select School --</option>
+                                {PRESET_SCHOOLS.map((school) => (
+                                    <option key={school.name} value={school.name}>
+                                        {school.name}
+                                    </option>
+                                ))}
+                                <option value="__OTHER__">➕ Other (Enter manually)</option>
+                            </select>
                         </div>
-                    )}
 
-                    <div className="school-setup-field">
-                        <label>School UDISE Code</label>
-                        <input
-                            type="text"
-                            placeholder="e.g., 09010100101"
-                            value={schoolUdise}
-                            onChange={(e) => setSchoolUdise(e.target.value)}
-                        />
-                    </div>
+                        {selectedDropdown === '__OTHER__' && (
+                            <div className="school-setup-field">
+                                <label>
+                                    Custom School / NGO Name <span className="required">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="Enter school name..."
+                                    value={customSchoolName}
+                                    onChange={handleCustomNameChange}
+                                    autoFocus
+                                />
+                            </div>
+                        )}
 
-                    <div className="school-setup-row">
                         <div className="school-setup-field">
-                            <label>Country Code <span className="required">*</span></label>
+                            <label>School UDISE Code</label>
                             <input
                                 type="text"
-                                placeholder="e.g., IN"
-                                value={countryCode}
-                                onChange={(e) => setCountryCode(e.target.value)}
+                                placeholder="e.g., 09010100101"
+                                value={schoolUdise}
+                                onChange={(e) => setSchoolUdise(e.target.value)}
                             />
                         </div>
+
+                        <div className="school-setup-row">
+                            <div className="school-setup-field">
+                                <label>Country Code <span className="required">*</span></label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g., IN"
+                                    value={countryCode}
+                                    onChange={(e) => setCountryCode(e.target.value)}
+                                />
+                            </div>
+                            <div className="school-setup-field">
+                                <label>Distribution Host ID <span className="required">*</span></label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g., Sama Platform 1"
+                                    value={distributionChannelHostId}
+                                    onChange={(e) => setDistributionChannelHostId(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
                         <div className="school-setup-field">
-                            <label>Distribution Host ID <span className="required">*</span></label>
+                            <label>Partner Name <span className="required">*</span></label>
                             <input
                                 type="text"
-                                placeholder="e.g., Sama Platform 1"
-                                value={distributionChannelHostId}
-                                onChange={(e) => setDistributionChannelHostId(e.target.value)}
+                                placeholder="e.g., Sama Digital Foundation – 1"
+                                value={partnerName}
+                                onChange={(e) => setPartnerName(e.target.value)}
                             />
                         </div>
-                    </div>
 
-                    <div className="school-setup-field">
-                        <label>Partner Name <span className="required">*</span></label>
-                        <input
-                            type="text"
-                            placeholder="e.g., Sama Digital Foundation – 1"
-                            value={partnerName}
-                            onChange={(e) => setPartnerName(e.target.value)}
-                        />
-                    </div>
-
-                    <div className="school-setup-field">
-                        <label>
-                            Type of School <span className="required">*</span>
-                        </label>
-                        <select
-                            value={schoolType}
-                            onChange={(e) => setSchoolType(e.target.value)}
-                        >
-                            {SCHOOL_TYPE_OPTIONS.map((opt) => (
-                                <option key={opt.value} value={opt.value}>
-                                    {opt.label}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="school-setup-row">
                         <div className="school-setup-field">
                             <label>
-                                State <span className="required">*</span>
+                                Type of School <span className="required">*</span>
+                            </label>
+                            <select
+                                value={schoolType}
+                                onChange={(e) => setSchoolType(e.target.value)}
+                            >
+                                {SCHOOL_TYPE_OPTIONS.map((opt) => (
+                                    <option key={opt.value} value={opt.value}>
+                                        {opt.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="school-setup-row">
+                            <div className="school-setup-field">
+                                <label>
+                                    State <span className="required">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g., Telangana"
+                                    value={state}
+                                    onChange={(e) => setState(e.target.value)}
+                                />
+                            </div>
+                            <div className="school-setup-field">
+                                <label>City</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g., Warangal"
+                                    value={city}
+                                    onChange={(e) => setCity(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="school-setup-row">
+                            <div className="school-setup-field">
+                                <label>
+                                    District <span className="required">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g., Hanamkonda"
+                                    value={district}
+                                    onChange={(e) => setDistrict(e.target.value)}
+                                />
+                            </div>
+                            <div className="school-setup-field">
+                                <label>District Code</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g., 0712"
+                                    value={districtCode}
+                                    onChange={(e) => setDistrictCode(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="school-setup-field">
+                            <label>
+                                Zipcode / Postal Code (Pincode) <span className="required">*</span>
                             </label>
                             <input
                                 type="text"
-                                placeholder="e.g., Telangana"
-                                value={state}
-                                onChange={(e) => setState(e.target.value)}
-                            />
-                        </div>
-                        <div className="school-setup-field">
-                            <label>City</label>
-                            <input
-                                type="text"
-                                placeholder="e.g., Warangal"
-                                value={city}
-                                onChange={(e) => setCity(e.target.value)}
+                                placeholder="e.g., 110001"
+                                value={zipcodePostalCode}
+                                onChange={(e) => setZipcodePostalCode(e.target.value)}
                             />
                         </div>
                     </div>
+                </div>
 
-                    <div className="school-setup-row">
-                        <div className="school-setup-field">
-                            <label>
-                                District <span className="required">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                placeholder="e.g., Hanamkonda"
-                                value={district}
-                                onChange={(e) => setDistrict(e.target.value)}
-                            />
-                        </div>
-                        <div className="school-setup-field">
-                            <label>District Code</label>
-                            <input
-                                type="text"
-                                placeholder="e.g., 0712"
-                                value={districtCode}
-                                onChange={(e) => setDistrictCode(e.target.value)}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="school-setup-field">
-                        <label>
-                            Zipcode / Postal Code (Pincode) <span className="required">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            placeholder="e.g., 110001"
-                            value={zipcodePostalCode}
-                            onChange={(e) => setZipcodePostalCode(e.target.value)}
-                        />
-                    </div>
-
-                    <div className="school-setup-actions">
-                        <button
-                            className="school-setup-btn school-setup-btn-cancel"
-                            onClick={onClose}
-                            type="button"
-                        >
-                            Close
-                        </button>
-                        <button
-                            className="school-setup-btn school-setup-btn-save"
-                            onClick={handleSave}
-                            disabled={!isFormValid || saving}
-                            type="button"
-                        >
-                            {saving ? 'Saving...' : 'Save Details ✓'}
-                        </button>
-                    </div>
+                <div className="school-setup-footer">
+                    <button
+                        className="school-setup-btn school-setup-btn-cancel"
+                        onClick={onClose}
+                        type="button"
+                    >
+                        Close
+                    </button>
+                    <button
+                        className="school-setup-btn school-setup-btn-save"
+                        onClick={handleSave}
+                        disabled={!isFormValid || saving}
+                        type="button"
+                    >
+                        {saving ? 'Saving...' : 'Save Details ✓'}
+                    </button>
                 </div>
             </div>
         </div>
