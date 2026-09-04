@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ipc } from '../lib/ipc.ts';
 import type { Module, Lesson, VideoProgress } from '@afe/shared';
@@ -7,6 +7,8 @@ import PDFViewer from '../components/PDFViewer.tsx';
 import QuizViewer from '../components/QuizViewer.tsx';
 import { FeedbackSurveyModal } from '../components/FeedbackSurveyModal.tsx';
 import { NoticeModal, type NoticeModalVariant } from '../components/NoticeModal.tsx';
+import { LessonNavigationBar } from '../components/LessonNavigationBar.tsx';
+import { QuizGateModal } from '../components/QuizGateModal.tsx';
 import { exitPictureInPictureAndCleanup } from '../lib/mediaCleanup.ts';
 
 function ModuleDetail() {
@@ -31,6 +33,31 @@ function ModuleDetail() {
         variant: 'info',
     });
     const savedScrollPositionRef = useRef<number>(0);
+    const [currentWatchPercentage, setCurrentWatchPercentage] = useState(0);
+    const [quizGateState, setQuizGateState] = useState<{
+        isOpen: boolean;
+        quizLesson: Lesson | null;
+        isAlreadySubmitted: boolean;
+        targetLessonAfterQuiz: Lesson | null;
+    }>({
+        isOpen: false,
+        quizLesson: null,
+        isAlreadySubmitted: false,
+        targetLessonAfterQuiz: null,
+    });
+
+    // Derive sorted lessons and current index
+    const sortedLessons = useMemo(() => {
+        if (!module) return [];
+        return [...module.lessons].sort((a, b) => a.order - b.order);
+    }, [module]);
+
+    const currentLessonIndex = useMemo(() => {
+        if (!selectedLesson) return -1;
+        return sortedLessons.findIndex(l => l.id === selectedLesson.id);
+    }, [selectedLesson, sortedLessons]);
+
+    const isCurrentLessonCompleted = selectedLesson ? !!lessonCompletionStates[selectedLesson.id] : false;
 
     useEffect(() => {
         if (moduleId) {
@@ -112,9 +139,12 @@ function ModuleDetail() {
     }
 
     async function handleSelectLesson(lesson: Lesson) {
-        // Save current scroll position before viewing lesson
-        savedScrollPositionRef.current = window.scrollY;
+        // Save current scroll position before viewing lesson (only when opening from module lesson list)
+        if (!selectedLesson) {
+            savedScrollPositionRef.current = window.scrollY;
+        }
         setSelectedLesson(lesson);
+        setCurrentWatchPercentage(0);
         // Dispatch event for global AI Tutor
         window.dispatchEvent(new CustomEvent('set-ai-lesson', { detail: { lessonId: lesson.id } }));
 
@@ -124,6 +154,9 @@ function ModuleDetail() {
                     // Fetch existing video progress
                     const progress = await ipc.getVideoProgress(studentId, lesson.id);
                     setVideoProgress(progress);
+                    if (progress) {
+                        setCurrentWatchPercentage(progress.watchedPercentage || 0);
+                    }
                 } else if (lesson.type === 'reading') {
                     // Fetch existing reading progress
                     const progress = await ipc.getReadingProgress(studentId, lesson.id);
@@ -179,6 +212,7 @@ function ModuleDetail() {
         await exitPictureInPictureAndCleanup();
         setSelectedLesson(null);
         setVideoProgress(null);
+        setCurrentWatchPercentage(0);
         // Reset global AI Tutor context
         window.dispatchEvent(new CustomEvent('set-ai-lesson', { detail: { lessonId: undefined } }));
         // Refresh completions
@@ -188,6 +222,91 @@ function ModuleDetail() {
             window.scrollTo({ top: savedScrollPositionRef.current, behavior: 'instant' });
         });
     }
+
+    // --- Navigation Handlers ---
+
+    const handleNavigateNext = useCallback(async () => {
+        if (currentLessonIndex < 0 || currentLessonIndex >= sortedLessons.length - 1) return;
+
+        const nextLesson = sortedLessons[currentLessonIndex + 1];
+        if (!nextLesson) return;
+
+        // If next lesson is a quiz, check if it has been submitted
+        if (nextLesson.type === 'quiz') {
+            const isAlreadySubmitted = !!lessonCompletionStates[nextLesson.id];
+
+            // Find the lesson after the quiz (for skip navigation)
+            const lessonAfterQuiz = currentLessonIndex + 2 < sortedLessons.length
+                ? sortedLessons[currentLessonIndex + 2]
+                : null;
+
+            setQuizGateState({
+                isOpen: true,
+                quizLesson: nextLesson,
+                isAlreadySubmitted,
+                targetLessonAfterQuiz: lessonAfterQuiz,
+            });
+            return;
+        }
+
+        // Navigate directly if not a quiz
+        await exitPictureInPictureAndCleanup();
+        handleSelectLesson(nextLesson);
+    }, [currentLessonIndex, sortedLessons, lessonCompletionStates]);
+
+    const handleNavigatePrevious = useCallback(async () => {
+        if (currentLessonIndex <= 0) return;
+
+        // Walk backwards, skipping quiz lessons
+        let targetIndex = currentLessonIndex - 1;
+        while (targetIndex >= 0 && sortedLessons[targetIndex].type === 'quiz') {
+            targetIndex--;
+        }
+
+        if (targetIndex < 0) return;
+
+        const prevLesson = sortedLessons[targetIndex];
+        await exitPictureInPictureAndCleanup();
+        handleSelectLesson(prevLesson);
+    }, [currentLessonIndex, sortedLessons]);
+
+    const handleQuizGateOpenFullScreen = useCallback(async () => {
+        if (!quizGateState.quizLesson) return;
+        setQuizGateState(prev => ({ ...prev, isOpen: false }));
+        await exitPictureInPictureAndCleanup();
+        handleSelectLesson(quizGateState.quizLesson);
+    }, [quizGateState.quizLesson]);
+
+    const handleQuizGateSkip = useCallback(async () => {
+        const target = quizGateState.targetLessonAfterQuiz;
+        setQuizGateState(prev => ({ ...prev, isOpen: false }));
+        if (target) {
+            await exitPictureInPictureAndCleanup();
+            handleSelectLesson(target);
+        }
+    }, [quizGateState.targetLessonAfterQuiz]);
+
+    const handleQuizGateCompleted = useCallback(async () => {
+        // Refresh completion states after inline quiz submission
+        await loadCompletionStates();
+        await checkModuleCompletion();
+    }, []);
+
+    const handleQuizGateNavigateNext = useCallback(async () => {
+        // After inline quiz submission, navigate to the lesson after the quiz
+        const target = quizGateState.targetLessonAfterQuiz;
+        setQuizGateState(prev => ({ ...prev, isOpen: false }));
+        if (target) {
+            await exitPictureInPictureAndCleanup();
+            handleSelectLesson(target);
+        }
+    }, [quizGateState.targetLessonAfterQuiz]);
+
+    const handleQuizGateNavigatePrevious = useCallback(async () => {
+        // Go back to the current lesson (the one before the quiz)
+        setQuizGateState(prev => ({ ...prev, isOpen: false }));
+        // Already on the correct lesson, just close the modal
+    }, []);
 
     function getLessonIcon(lesson: Lesson): string {
         switch (lesson.type) {
@@ -255,6 +374,7 @@ function ModuleDetail() {
                                     lastWatchedAt: videoProgress.lastWatchedAt
                                 } : undefined}
                                 onCompleted={handleLessonCompleted}
+                                onProgressUpdate={setCurrentWatchPercentage}
                             />
                         )}
                         {selectedLesson.type === 'reading' && studentId && (
@@ -278,11 +398,26 @@ function ModuleDetail() {
                                 studentId={studentId}
                                 quizData={selectedLesson.quizData || (selectedLesson as any).data?.quizData}
                                 onCompleted={handleLessonCompleted}
+                                onNavigateNext={currentLessonIndex < sortedLessons.length - 1 ? handleNavigateNext : undefined}
+                                onNavigatePrevious={currentLessonIndex > 0 ? handleNavigatePrevious : undefined}
                             />
                         )}
                         {/* Placeholder for other types */}
                         {selectedLesson.type !== 'video' && selectedLesson.type !== 'reading' && selectedLesson.type !== 'quiz' && (
                             <div className="neo-card" style={{ padding: 24, textAlign: 'center', color: '#6E6A64', fontWeight: 600 }}>Content type {selectedLesson.type} viewer coming soon.</div>
+                        )}
+
+                        {/* Lesson Navigation Bar — shown for video and reading lessons */}
+                        {selectedLesson.type !== 'quiz' && currentLessonIndex >= 0 && (
+                            <LessonNavigationBar
+                                sortedLessons={sortedLessons}
+                                currentLessonIndex={currentLessonIndex}
+                                lessonCompletionStates={lessonCompletionStates}
+                                currentWatchPercentage={currentWatchPercentage}
+                                isCurrentLessonCompleted={isCurrentLessonCompleted}
+                                onNavigateNext={handleNavigateNext}
+                                onNavigatePrevious={handleNavigatePrevious}
+                            />
                         )}
                     </div>
                 ) : (
@@ -417,6 +552,20 @@ function ModuleDetail() {
                 variant={noticeModal.variant}
                 buttonText={noticeModal.buttonText}
                 onClose={() => setNoticeModal(prev => ({ ...prev, isOpen: false }))}
+            />
+
+            {/* Quiz Gate Modal for lesson navigation */}
+            <QuizGateModal
+                isOpen={quizGateState.isOpen}
+                quizLesson={quizGateState.quizLesson}
+                studentId={studentId || ''}
+                isQuizAlreadySubmitted={quizGateState.isAlreadySubmitted}
+                onQuizCompleted={handleQuizGateCompleted}
+                onOpenFullScreen={handleQuizGateOpenFullScreen}
+                onSkipQuiz={handleQuizGateSkip}
+                onClose={() => setQuizGateState(prev => ({ ...prev, isOpen: false }))}
+                onNavigateNext={handleQuizGateNavigateNext}
+                onNavigatePrevious={handleQuizGateNavigatePrevious}
             />
         </div>
     );

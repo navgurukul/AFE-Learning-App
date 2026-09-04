@@ -12,6 +12,7 @@ interface VideoPlayerProps {
         lastWatchedAt: string;
     };
     onCompleted?: () => void;
+    onProgressUpdate?: (percentage: number) => void;
 }
 
 // Utility: Merge a new interval [newStart, newEnd] into existing segments
@@ -57,7 +58,7 @@ function calculateUniqueWatched(segments: [number, number][], duration: number):
     return Math.min(100, Math.round((totalWatched / duration) * 100));
 }
 
-export function VideoPlayer({ src, lessonId, studentId, language, initialProgress, onCompleted }: VideoPlayerProps) {
+export function VideoPlayer({ src, lessonId, studentId, language, initialProgress, onCompleted, onProgressUpdate }: VideoPlayerProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
 
     // Core states
@@ -275,6 +276,7 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
 
             setWatchTime(prev => prev + roundedDurationToAdd);
             setProgress(pct);
+            if (onProgressUpdate) onProgressUpdate(pct);
         } catch (error) {
             console.error('[VideoPlayer] Failed to save progress:', error);
         }
@@ -331,6 +333,7 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
 
             const pct = calculateUniqueWatched(newSegments, videoDuration);
             setProgress(pct);
+            if (onProgressUpdate) onProgressUpdate(pct);
 
             // Accumulate real-watch seconds (scaled for real play)
             const now = Date.now();

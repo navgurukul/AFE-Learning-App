@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ipc } from '../lib/ipc.ts'; // Fixing .js to .ts as it seems to be ts
+import { Trophy, Sparkles, Zap, ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
+import { ipc } from '../lib/ipc.ts';
 import { ConfirmModal } from './ConfirmModal.tsx';
 import { NoticeModal } from './NoticeModal.tsx';
 
@@ -21,9 +22,11 @@ interface QuizViewerProps {
     // In a real app, this might come from lesson.data or lesson.quizData
     quizData: QuizData;
     onCompleted?: () => void;
+    onNavigateNext?: () => void;
+    onNavigatePrevious?: () => void;
 }
 
-export default function QuizViewer({ lessonId, studentId, quizData, onCompleted }: QuizViewerProps) {
+export default function QuizViewer({ lessonId, studentId, quizData, onCompleted, onNavigateNext, onNavigatePrevious }: QuizViewerProps) {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState<Record<string, number>>({});
     const [submitting, setSubmitting] = useState(false);
@@ -62,7 +65,6 @@ export default function QuizViewer({ lessonId, studentId, quizData, onCompleted 
     async function handleConfirmSubmit() {
         setIsConfirmSubmitOpen(false);
         setSubmitting(true);
-        const startTime = Date.now(); // We ideally track start time properly, this is a placeholder
         // TODO: Pass actual time taken. For now using a dummy or calculating diff if we had mount time.
 
         const formattedAnswers = Object.entries(answers).map(([qId, index]) => ({
@@ -108,8 +110,22 @@ export default function QuizViewer({ lessonId, studentId, quizData, onCompleted 
         return (
             <div className="neo-card" style={{ padding: '60px 40px', textAlign: 'center', maxWidth: 600, margin: '0 auto' }}>
                 <h2 style={{ fontSize: 32, fontWeight: 700, margin: '0 0 16px' }}>Quiz Completed!</h2>
-                <div style={{ fontSize: '80px', margin: '24px 0' }}>
-                    {isPerfect ? '🌟' : isHigh ? '🎉' : '💪'}
+                {/* Icon Badge */}
+                <div style={{
+                    width: '80px',
+                    height: '80px',
+                    borderRadius: '50%',
+                    backgroundColor: isPerfect ? '#3FB873' : isHigh ? '#FFD166' : '#FF7F50',
+                    border: '3px solid #141210',
+                    boxShadow: '3px 3px 0 0 #141210',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '24px auto',
+                }}>
+                    {isPerfect ? <Trophy size={40} strokeWidth={2.5} color="#141210" /> :
+                     isHigh ? <Sparkles size={40} strokeWidth={2.5} color="#141210" /> :
+                     <Zap size={40} strokeWidth={2.5} color="#141210" />}
                 </div>
                 <h3 style={{ fontSize: 24, fontWeight: 700, margin: '0 0 16px' }}>
                     You scored {result.score} / {result.total}
@@ -125,16 +141,39 @@ export default function QuizViewer({ lessonId, studentId, quizData, onCompleted 
                         ? "Outstanding work! You got every question right. You can move forward to the next lesson or review anytime."
                         : isHigh
                         ? "Great job! You did really well. You may retry the quiz to aim for a perfect score or continue to the next lesson!"
-                        : "Good effort! You may retry the quiz for practice or move forward to the next lesson whenever you're ready. Keep going! 🚀"}
+                        : "Good effort! You may retry the quiz for practice or move forward to the next lesson whenever you're ready. Keep going!"}
+                    {(onNavigateNext || onNavigatePrevious) && (
+                        <><br /><span style={{ color: '#6E6A64', fontSize: 16 }}>Want to rewatch the previous lesson or continue your learning journey?</span></>
+                    )}
                 </p>
-                <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
-                    <button className="neo-btn neo-btn--teal" onClick={() => {
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    {onNavigatePrevious && (
+                        <button className="neo-btn" onClick={onNavigatePrevious} style={{
+                            display: 'flex', alignItems: 'center', gap: 6,
+                            backgroundColor: '#FFD166',
+                        }}>
+                            <ArrowLeft size={16} strokeWidth={2.5} />
+                            Previous Lesson
+                        </button>
+                    )}
+                    <button className="neo-btn" onClick={() => {
                         setResult(null);
                         setAnswers({});
                         setCurrentQuestionIndex(0);
+                    }} style={{
+                        display: 'flex', alignItems: 'center', gap: 6,
                     }}>
-                        🔄 Retry Quiz
+                        <RotateCcw size={16} strokeWidth={2.5} />
+                        Retry Quiz
                     </button>
+                    {onNavigateNext && (
+                        <button className="neo-btn neo-btn--teal" onClick={onNavigateNext} style={{
+                            display: 'flex', alignItems: 'center', gap: 6,
+                        }}>
+                            Next Lesson
+                            <ArrowRight size={16} strokeWidth={2.5} />
+                        </button>
+                    )}
                 </div>
             </div>
         );
@@ -216,9 +255,13 @@ export default function QuizViewer({ lessonId, studentId, quizData, onCompleted 
                     className="neo-btn"
                     onClick={handlePrevious}
                     disabled={currentQuestionIndex === 0}
-                    style={{ opacity: currentQuestionIndex === 0 ? 0.5 : 1 }}
+                    style={{
+                        opacity: currentQuestionIndex === 0 ? 0.5 : 1,
+                        display: 'flex', alignItems: 'center', gap: 6,
+                    }}
                 >
-                    ← Previous
+                    <ArrowLeft size={16} strokeWidth={2.5} />
+                    Previous
                 </button>
 
                 {isLastQuestion ? (
@@ -228,16 +271,20 @@ export default function QuizViewer({ lessonId, studentId, quizData, onCompleted 
                         disabled={submitting || Object.keys(answers).length < totalQuestions}
                         style={{ opacity: (submitting || Object.keys(answers).length < totalQuestions) ? 0.5 : 1 }}
                     >
-                        {submitting ? 'Submitting...' : 'Submit Quiz 🎉'}
+                        {submitting ? 'Submitting...' : 'Submit Quiz'}
                     </button>
                 ) : (
                     <button
                         className="neo-btn neo-btn--teal"
                         onClick={handleNext}
                         disabled={answers[currentQuestion.id] === undefined}
-                        style={{ opacity: answers[currentQuestion.id] === undefined ? 0.5 : 1 }}
+                        style={{
+                            opacity: answers[currentQuestion.id] === undefined ? 0.5 : 1,
+                            display: 'flex', alignItems: 'center', gap: 6,
+                        }}
                     >
-                        Next →
+                        Next
+                        <ArrowRight size={16} strokeWidth={2.5} />
                     </button>
                 )}
             </div>
@@ -254,7 +301,7 @@ export default function QuizViewer({ lessonId, studentId, quizData, onCompleted 
 
             <NoticeModal
                 isOpen={Boolean(errorMessage)}
-                title="Quiz Submission Error ⚠️"
+                title="Quiz Submission Error"
                 message={errorMessage || ''}
                 variant="warning"
                 buttonText="Close"
