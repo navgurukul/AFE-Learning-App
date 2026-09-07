@@ -337,12 +337,25 @@ class IPCClient {
         countryCode?: string;
         partnerName?: string;
         distributionChannelHostId?: string;
+        ngoKey?: string;
     }) {
         return await this.invoke(IPC_CHANNELS.CONFIG_SAVE_SCHOOL_DETAILS, data);
     }
 
     async verifyAdminPassword(password: string) {
         return await this.invoke(IPC_CHANNELS.CONFIG_VERIFY_ADMIN_PASSWORD, { password });
+    }
+
+    async getDeviceInfo() {
+        return await this.invoke(IPC_CHANNELS.CONFIG_GET_DEVICE_INFO, undefined);
+    }
+
+    async redetectDeviceInfo() {
+        return await this.invoke(IPC_CHANNELS.CONFIG_REDETECT_DEVICE_INFO, undefined);
+    }
+
+    async updateDeviceInfo(data: { serialNumber?: string; macAddress?: string }) {
+        return await this.invoke(IPC_CHANNELS.CONFIG_UPDATE_DEVICE_INFO, data);
     }
 
     // Auto-updater

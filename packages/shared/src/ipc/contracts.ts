@@ -85,7 +85,10 @@ export const IPC_CHANNELS = {
     // Config / School Setup
     CONFIG_GET_SETUP_STATUS: 'config:getSetupStatus',
     CONFIG_SAVE_SCHOOL_DETAILS: 'config:saveSchoolDetails',
-    CONFIG_VERIFY_ADMIN_PASSWORD: 'config:verifyAdminPassword'
+    CONFIG_VERIFY_ADMIN_PASSWORD: 'config:verifyAdminPassword',
+    CONFIG_GET_DEVICE_INFO: 'config:getDeviceInfo',
+    CONFIG_REDETECT_DEVICE_INFO: 'config:redetectDeviceInfo',
+    CONFIG_UPDATE_DEVICE_INFO: 'config:updateDeviceInfo',
 } as const;
 
 // Request/Response type definitions
@@ -436,12 +439,41 @@ export interface IPCContract {
             countryCode?: string;
             partnerName?: string;
             distributionChannelHostId?: string;
+            ngoKey?: string;
         };
-        response: { success: boolean };
+        response: {
+            success: boolean;
+            serialNumber?: string;
+            macAddress?: string;
+            error?: string;
+        };
     };
     [IPC_CHANNELS.CONFIG_VERIFY_ADMIN_PASSWORD]: {
         request: { password: string };
         response: { valid: boolean };
+    };
+    [IPC_CHANNELS.CONFIG_GET_DEVICE_INFO]: {
+        request: void;
+        response: {
+            serialNumber: string;
+            macAddress: string;
+        };
+    };
+    [IPC_CHANNELS.CONFIG_REDETECT_DEVICE_INFO]: {
+        request: void;
+        response: {
+            serialNumber: string;
+            macAddress: string;
+        };
+    };
+    [IPC_CHANNELS.CONFIG_UPDATE_DEVICE_INFO]: {
+        request: {
+            serialNumber?: string;
+            macAddress?: string;
+        };
+        response: {
+            success: boolean;
+        };
     };
 }
 

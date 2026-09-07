@@ -84,6 +84,9 @@ const VALID_CHANNELS = [
     'config:getSetupStatus',
     'config:saveSchoolDetails',
     'config:verifyAdminPassword',
+    'config:getDeviceInfo',
+    'config:redetectDeviceInfo',
+    'config:updateDeviceInfo',
 
     // Auto-updater
     'updater:update-downloaded',

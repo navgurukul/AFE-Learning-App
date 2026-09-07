@@ -1,17 +1,19 @@
 {
-  "ngoKey": "D3F41T-K37",
-  "partnerName": "Sama Digital Foundation",
-  "schoolName": "School of Programming, Navgurukul",
-  "schoolUdise": "9019902899",
-  "state": "Delhi",
-  "district": "Delhi",
+  "ngoKey": "SAM-87",
+  "partnerName": "sama demo",
+  "schoolName": "samatest",
+  "schoolUdise": "1234556",
+  "state": "Maharashtra",
+  "district": "Pune",
   "locationPermissionStatus": "granted",
-  "city": "New Delhi",
-  "districtCode": "DST-102",
+  "city": "Pune",
+  "districtCode": "MH12",
   "schoolType": "Government School",
   "setupCompleted": true,
   "historicalSyncCompleted": true,
   "countryCode": "IN",
   "distributionChannelHostId": "Sama Platform 1",
-  "zipcodePostalCode": "110019"
+  "zipcodePostalCode": "234353",
+  "customSerialNumber": "5CG0210RKW",
+  "customMacAddress": "74:d8:3e:7f:9a:86"
 }

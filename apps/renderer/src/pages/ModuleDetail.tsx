@@ -337,23 +337,27 @@ function ModuleDetail() {
     }
 
     return (
-        <div className="neo-root" style={{ display: 'flex', flexDirection: 'column', padding: '44px 24px 0' }}>
+        <div className="neo-root" style={{ display: 'flex', flexDirection: 'column', padding: selectedLesson ? '28px 24px 0' : '44px 24px 0' }}>
             <div style={{ maxWidth: 940, margin: '0 auto', width: '100%', flex: 1 }}>
 
-                <div style={{ marginBottom: 32 }}>
-                    <button className="neo-btn neo-btn--teal" onClick={handleBackToModules}>
-                        ← Back to Modules
-                    </button>
-                </div>
+                {!selectedLesson && (
+                    <>
+                        <div style={{ marginBottom: 32 }}>
+                            <button className="neo-btn neo-btn--teal" onClick={handleBackToModules}>
+                                ← Back to Modules
+                            </button>
+                        </div>
 
-                <div style={{ textAlign: 'center', marginBottom: 48, padding: '40px 0' }}>
-                    <h1 className="h-hero" style={{ fontSize: 'clamp(32px,5vw,48px)', margin: '0 0 16px' }}>{module.title}</h1>
-                    <p style={{ fontSize: 18, color: '#6E6A64', fontWeight: 500, margin: 0, maxWidth: 800, marginInline: 'auto' }}>
-                        {module.description}
-                    </p>
-                </div>
+                        <div style={{ textAlign: 'center', marginBottom: 48, padding: '40px 0' }}>
+                            <h1 className="h-hero" style={{ fontSize: 'clamp(32px,5vw,48px)', margin: '0 0 16px' }}>{module.title}</h1>
+                            <p style={{ fontSize: 18, color: '#6E6A64', fontWeight: 500, margin: 0, maxWidth: 800, marginInline: 'auto' }}>
+                                {module.description}
+                            </p>
+                        </div>
 
-                <div style={{ height: 4, background: '#141210', width: '100%', marginBottom: 40 }} />
+                        <div style={{ height: 4, background: '#141210', width: '100%', marginBottom: 40 }} />
+                    </>
+                )}
 
                 {selectedLesson ? (
                     <div style={{ marginBottom: 60 }}>

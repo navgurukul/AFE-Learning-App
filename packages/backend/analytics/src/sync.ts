@@ -54,6 +54,33 @@ export class SyncService {
     }
 
     /**
+     * Reconcile/sync selected NGO with RMS server
+     */
+    async syncNGOWithRMS(ngoName: string, ngoKey?: string): Promise<{ success: boolean; ngo?: any }> {
+        try {
+            const authHeaders = generateAuthHeaders();
+            const response = await this.fetchFn(`${this.serverUrl}/sync-ngo`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...authHeaders
+                },
+                body: JSON.stringify({ ngoName, ngoKey })
+            });
+
+            if (!response.ok) {
+                console.warn(`[SyncService] RMS sync-ngo responded with ${response.status}`);
+                return { success: false };
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.warn('[SyncService] NGO sync with RMS failed:', error);
+            return { success: false };
+        }
+    }
+
+    /**
      * One-time historical backfill of existing session IDs to link device_id & NGO in RMS
      */
     async backfillHistoricalSessions(deviceInfo: DeviceInfo): Promise<{ success: boolean; updatedCount?: number }> {

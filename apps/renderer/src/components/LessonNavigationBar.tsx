@@ -70,10 +70,11 @@ export function LessonNavigationBar({
             display: 'flex',
             gap: 16,
             width: '100%',
+            alignItems: 'stretch',
         }}>
             {/* Previous Button */}
             <div
-                style={{ flex: 1, position: 'relative' }}
+                style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}
                 onMouseEnter={() => setHoveredButton('prev')}
                 onMouseLeave={() => setHoveredButton(null)}
             >
@@ -110,38 +111,46 @@ export function LessonNavigationBar({
                     disabled={isPrevDisabled}
                     style={{
                         width: '100%',
+                        height: '100%',
+                        minHeight: 74,
+                        boxSizing: 'border-box',
                         position: 'relative',
                         overflow: 'hidden',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        gap: 12,
-                        padding: '16px 20px',
+                        gap: 10,
+                        padding: '14px 20px',
                         border: '2.5px solid #141210',
                         borderRadius: '14px',
                         cursor: isPrevClickable ? 'pointer' : 'not-allowed',
                         backgroundColor: isPrevDisabled ? '#EAEAE6' : '#FFD166',
                         color: isPrevDisabled ? '#A0A0A0' : '#141210',
                         fontWeight: 800,
-                        fontSize: 16,
-                        boxShadow: isPrevClickable ? '4px 4px 0 #141210' : 'none',
-                        opacity: isPrevDisabled ? 0.5 : 1,
+                        boxShadow: '4px 4px 0 #141210',
+                        opacity: isPrevDisabled ? 0.6 : 1,
                         transition: 'all 0.2s ease',
                         transform: isPrevClickable ? 'translate(0, 0)' : 'none',
                     }}
                     className={isPrevClickable ? 'neo-tap' : ''}
                 >
                     {isPrevDisabled ? (
-                        <Lock size={20} strokeWidth={2.5} />
+                        <Lock size={19} strokeWidth={2.5} style={{ flexShrink: 0 }} />
                     ) : (
-                        <ChevronLeft size={22} strokeWidth={2.5} />
+                        <ChevronLeft size={22} strokeWidth={2.5} style={{ flexShrink: 0 }} />
                     )}
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                        <span style={{ fontSize: 14, fontWeight: 600, opacity: 0.7 }}>Previous</span>
-                        {prevLesson && (
+                    {prevLesson ? (
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'flex-start',
+                            justifyContent: 'center',
+                        }}>
+                            <span style={{ fontSize: 13, fontWeight: 700, opacity: 0.8, lineHeight: 1.2 }}>Previous</span>
                             <span style={{
                                 fontSize: 13,
                                 fontWeight: 600,
+                                lineHeight: 1.2,
                                 maxWidth: 180,
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
@@ -149,14 +158,16 @@ export function LessonNavigationBar({
                             }}>
                                 {prevLesson.title}
                             </span>
-                        )}
-                    </div>
+                        </div>
+                    ) : (
+                        <span style={{ fontSize: 15, fontWeight: 700, lineHeight: 1 }}>Previous</span>
+                    )}
                 </button>
             </div>
 
             {/* Next Button */}
             <div
-                style={{ flex: 1, position: 'relative' }}
+                style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}
                 onMouseEnter={() => setHoveredButton('next')}
                 onMouseLeave={() => setHoveredButton(null)}
             >
@@ -193,22 +204,24 @@ export function LessonNavigationBar({
                     disabled={!isNextActive}
                     style={{
                         width: '100%',
+                        height: '100%',
+                        minHeight: 74,
+                        boxSizing: 'border-box',
                         position: 'relative',
                         overflow: 'hidden',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        gap: 12,
-                        padding: '16px 20px',
+                        gap: 10,
+                        padding: '14px 20px',
                         border: '2.5px solid #141210',
                         borderRadius: '14px',
                         cursor: isNextActive ? 'pointer' : 'not-allowed',
                         backgroundColor: isNextPermanentlyDisabled ? '#EAEAE6' : (isNextActive ? '#4ECDC4' : '#EAEAE6'),
                         color: isNextActive ? '#141210' : '#A0A0A0',
                         fontWeight: 800,
-                        fontSize: 16,
-                        boxShadow: isNextActive ? '4px 4px 0 #141210' : 'none',
-                        opacity: isNextPermanentlyDisabled ? 0.5 : 1,
+                        boxShadow: '4px 4px 0 #141210',
+                        opacity: isNextPermanentlyDisabled ? 0.6 : 1,
                         transition: 'all 0.3s ease',
                         transform: isNextActive ? 'translate(0, 0)' : 'none',
                     }}
@@ -228,18 +241,20 @@ export function LessonNavigationBar({
                             borderRadius: '12px 0 0 12px',
                         }} />
                     )}
-                    <div style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'flex-end',
-                        position: 'relative',
-                        zIndex: 1,
-                    }}>
-                        <span style={{ fontSize: 14, fontWeight: 600, opacity: 0.7 }}>Next</span>
-                        {nextLesson && (
+                    {nextLesson ? (
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'flex-end',
+                            justifyContent: 'center',
+                            position: 'relative',
+                            zIndex: 1,
+                        }}>
+                            <span style={{ fontSize: 13, fontWeight: 700, opacity: 0.8, lineHeight: 1.2 }}>Next</span>
                             <span style={{
                                 fontSize: 13,
                                 fontWeight: 600,
+                                lineHeight: 1.2,
                                 maxWidth: 180,
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
@@ -247,12 +262,14 @@ export function LessonNavigationBar({
                             }}>
                                 {nextLesson.title}
                             </span>
-                        )}
-                    </div>
-                    {isNextPermanentlyDisabled ? (
-                        <Lock size={20} strokeWidth={2.5} style={{ position: 'relative', zIndex: 1 }} />
+                        </div>
                     ) : (
-                        <ChevronRight size={22} strokeWidth={2.5} style={{ position: 'relative', zIndex: 1 }} />
+                        <span style={{ fontSize: 15, fontWeight: 700, lineHeight: 1, position: 'relative', zIndex: 1 }}>Next</span>
+                    )}
+                    {isNextPermanentlyDisabled ? (
+                        <Lock size={19} strokeWidth={2.5} style={{ flexShrink: 0, position: 'relative', zIndex: 1 }} />
+                    ) : (
+                        <ChevronRight size={22} strokeWidth={2.5} style={{ flexShrink: 0, position: 'relative', zIndex: 1 }} />
                     )}
                 </button>
             </div>

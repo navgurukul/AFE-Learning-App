@@ -28,6 +28,8 @@ export interface Config {
     setupCompleted?: boolean;
     locationPermissionStatus?: 'granted' | 'denied';
     historicalSyncCompleted?: boolean;
+    customSerialNumber?: string;
+    customMacAddress?: string;
 }
 
 // Config file path
@@ -61,8 +63,15 @@ function isValidSerial(s: string | null | undefined): boolean {
 /**
  * Get device MAC address cross-platform using Node os module (Primary Source of Truth)
  */
-export async function getMacAddress(): Promise<string> {
+export async function getMacAddress(forceHardware = false): Promise<string> {
     try {
+        if (!forceHardware) {
+            const config = readConfig();
+            if (config.customMacAddress && config.customMacAddress.trim().length >= 10) {
+                return config.customMacAddress.trim().toLowerCase();
+            }
+        }
+
         // 1. Check RMS cached device_info.json first
         if (process.platform === 'win32' && fs.existsSync(RMS_DEVICE_INFO_PATH)) {
             try {
@@ -97,8 +106,15 @@ export async function getMacAddress(): Promise<string> {
 /**
  * Get device serial number cross-platform with RMS parity & multi-tier fallbacks
  */
-export async function getSerialNumber(): Promise<string> {
+export async function getSerialNumber(forceHardware = false): Promise<string> {
     try {
+        if (!forceHardware) {
+            const config = readConfig();
+            if (config.customSerialNumber && isValidSerial(config.customSerialNumber)) {
+                return config.customSerialNumber.trim();
+            }
+        }
+
         // 1. Check RMS cached device_info.json on Windows first
         if (process.platform === 'win32' && fs.existsSync(RMS_DEVICE_INFO_PATH)) {
             try {
@@ -234,7 +250,9 @@ export function readConfig(): Required<Config> {
         distributionChannelHostId: 'Sama Platform 1',
         setupCompleted: false,
         locationPermissionStatus: 'granted',
-        historicalSyncCompleted: false
+        historicalSyncCompleted: false,
+        customSerialNumber: '',
+        customMacAddress: ''
     };
 
     try {
@@ -261,12 +279,24 @@ export function readConfig(): Required<Config> {
             distributionChannelHostId: config.distributionChannelHostId || defaultConfig.distributionChannelHostId,
             setupCompleted: config.setupCompleted !== undefined ? config.setupCompleted : defaultConfig.setupCompleted,
             locationPermissionStatus: config.locationPermissionStatus || defaultConfig.locationPermissionStatus,
-            historicalSyncCompleted: config.historicalSyncCompleted === true
+            historicalSyncCompleted: config.historicalSyncCompleted === true,
+            customSerialNumber: config.customSerialNumber || defaultConfig.customSerialNumber,
+            customMacAddress: config.customMacAddress || defaultConfig.customMacAddress
         };
     } catch (error) {
         console.error('[DeviceInfo] Failed to read config:', error);
         return defaultConfig;
     }
+}
+
+/**
+ * Update custom hardware identifiers override in config
+ */
+export function updateCustomDeviceInfo(serialNumber?: string, macAddress?: string): void {
+    const updates: Partial<Config> = {};
+    if (serialNumber !== undefined) updates.customSerialNumber = serialNumber.trim();
+    if (macAddress !== undefined) updates.customMacAddress = macAddress.trim();
+    writeConfig(updates);
 }
 
 /**

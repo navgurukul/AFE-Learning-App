@@ -1,4 +1,4 @@
-import { ipcMain, app } from 'electron';
+import { ipcMain, app, net } from 'electron';
 import { IPC_CHANNELS } from '@afe/shared';
 import bcrypt from 'bcryptjs';
 
@@ -22,7 +22,7 @@ import {
     getReadingProgress,
     getAllReadingProgressForStudent,
 } from '@backend/db';
-import { trackEvent, getAnalyticsSummary } from '@backend/analytics';
+import { trackEvent, getAnalyticsSummary, SyncService } from '@backend/analytics';
 import {
     sendMessage,
     sendVoiceMessage,
@@ -63,7 +63,7 @@ import { PATHS, APP_DATA_ROOT } from '../main/paths.js';
 import { getMp4Duration } from '../main/mp4-parser.js';
 import { getMkvDuration } from '../main/mkv-parser.js';
 import { SessionManager } from '../main/session-manager.js';
-import { writeConfig } from '../main/device-info.js';
+import { writeConfig, getSerialNumber, getMacAddress, updateCustomDeviceInfo } from '../main/device-info.js';
 
 // Admin password hash (bcrypt, 10 rounds) — raw password is never stored
 const ADMIN_PWD_HASH = '$2b$10$TnoAwkgzB/PuqDdXW50v4.552E/D/uudKE8OVxiGj5V1LXQC13Koa';
@@ -789,8 +789,8 @@ export function registerIPCHandlers() {
 
     ipcMain.handle(IPC_CHANNELS.CONFIG_SAVE_SCHOOL_DETAILS, async (_event, data) => {
         try {
-            const { schoolName, schoolUdise, state, city, district, districtCode, zipcodePostalCode, schoolType, countryCode, partnerName, distributionChannelHostId } = data;
-            writeConfig({
+            const { schoolName, schoolUdise, state, city, district, districtCode, zipcodePostalCode, schoolType, countryCode, partnerName, distributionChannelHostId, ngoKey } = data;
+            const configUpdates: any = {
                 schoolName,
                 schoolUdise,
                 state,
@@ -803,12 +803,36 @@ export function registerIPCHandlers() {
                 partnerName: partnerName || 'Sama Digital Foundation – 1',
                 distributionChannelHostId: distributionChannelHostId || 'Sama Platform 1',
                 setupCompleted: true,
-            });
+            };
+            if (ngoKey) {
+                configUpdates.ngoKey = ngoKey.trim();
+            }
+            writeConfig(configUpdates);
             console.log('[IPC] School details saved successfully');
-            return { success: true };
+
+            // Background attempt to sync/reconcile NGO with RMS server
+            if (partnerName) {
+                (async () => {
+                    try {
+                        const rawServerUrl = process.env.CENTRALIZED_SERVER_URL || 'https://rms-api.thesama.in/api/afe';
+                        const serverUrl = rawServerUrl.replace(/\/+$/, '');
+                        const syncService = new SyncService(serverUrl, net.fetch);
+                        await syncService.syncNGOWithRMS(partnerName, ngoKey);
+                    } catch (e) {
+                        console.warn('[IPC] RMS sync-ngo background call error:', e);
+                    }
+                })();
+            }
+
+            const [serialNumber, macAddress] = await Promise.all([
+                getSerialNumber(),
+                getMacAddress(),
+            ]);
+
+            return { success: true, serialNumber, macAddress };
         } catch (error) {
             console.error('[IPC] Failed to save school details:', error);
-            return { success: false };
+            return { success: false, error: String(error) };
         }
     });
 
@@ -820,6 +844,44 @@ export function registerIPCHandlers() {
         } catch (error) {
             console.error('[IPC] Failed to verify admin password:', error);
             return { valid: false };
+        }
+    });
+
+    ipcMain.handle(IPC_CHANNELS.CONFIG_GET_DEVICE_INFO, async () => {
+        try {
+            const [serialNumber, macAddress] = await Promise.all([
+                getSerialNumber(),
+                getMacAddress(),
+            ]);
+            return { serialNumber, macAddress };
+        } catch (error) {
+            console.error('[IPC] Failed to get device info:', error);
+            return { serialNumber: 'UNKNOWN-SERIAL', macAddress: 'UNKNOWN-MAC' };
+        }
+    });
+
+    ipcMain.handle(IPC_CHANNELS.CONFIG_REDETECT_DEVICE_INFO, async () => {
+        try {
+            const [serialNumber, macAddress] = await Promise.all([
+                getSerialNumber(true),
+                getMacAddress(true),
+            ]);
+            return { serialNumber, macAddress };
+        } catch (error) {
+            console.error('[IPC] Failed to redetect device info:', error);
+            return { serialNumber: 'UNKNOWN-SERIAL', macAddress: 'UNKNOWN-MAC' };
+        }
+    });
+
+    ipcMain.handle(IPC_CHANNELS.CONFIG_UPDATE_DEVICE_INFO, async (_event, data) => {
+        try {
+            const { serialNumber, macAddress } = data;
+            updateCustomDeviceInfo(serialNumber, macAddress);
+            console.log('[IPC] Device info updated successfully:', { serialNumber, macAddress });
+            return { success: true };
+        } catch (error) {
+            console.error('[IPC] Failed to update device info:', error);
+            return { success: false };
         }
     });
 
