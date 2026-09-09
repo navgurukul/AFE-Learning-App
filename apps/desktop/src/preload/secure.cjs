@@ -87,6 +87,8 @@ const VALID_CHANNELS = [
     'config:getDeviceInfo',
     'config:redetectDeviceInfo',
     'config:updateDeviceInfo',
+    'config:checkDeviceStatus',
+    'config:reconcileDevice',
 
     // Auto-updater
     'updater:update-downloaded',

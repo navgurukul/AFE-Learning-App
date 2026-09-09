@@ -63,7 +63,7 @@ import { PATHS, APP_DATA_ROOT } from '../main/paths.js';
 import { getMp4Duration } from '../main/mp4-parser.js';
 import { getMkvDuration } from '../main/mkv-parser.js';
 import { SessionManager } from '../main/session-manager.js';
-import { writeConfig, getSerialNumber, getMacAddress, updateCustomDeviceInfo } from '../main/device-info.js';
+import { writeConfig, getSerialNumber, getMacAddress, updateCustomDeviceInfo, setPendingServerReconciliation } from '../main/device-info.js';
 
 // Admin password hash (bcrypt, 10 rounds) — raw password is never stored
 const ADMIN_PWD_HASH = '$2b$10$TnoAwkgzB/PuqDdXW50v4.552E/D/uudKE8OVxiGj5V1LXQC13Koa';
@@ -882,6 +882,61 @@ export function registerIPCHandlers() {
         } catch (error) {
             console.error('[IPC] Failed to update device info:', error);
             return { success: false };
+        }
+    });
+
+    ipcMain.handle(IPC_CHANNELS.CONFIG_CHECK_DEVICE_STATUS, async (_event, data) => {
+        try {
+            const rawServerUrl = process.env.CENTRALIZED_SERVER_URL || 'https://rms-api.thesama.in/api/afe';
+            const serverUrl = rawServerUrl.replace(/\/+$/, '');
+            const syncService = new SyncService(serverUrl, net.fetch);
+            const { macAddress, serialNumber } = data;
+            return await syncService.checkDeviceStatus(macAddress, serialNumber);
+        } catch (error) {
+            console.error('[IPC] Failed to check device status:', error);
+            return {
+                success: false,
+                registeredInRMS: false,
+                registeredInAFE: false,
+                isMismatch: false,
+                error: String(error)
+            };
+        }
+    });
+
+    ipcMain.handle(IPC_CHANNELS.CONFIG_RECONCILE_DEVICE, async (_event, data) => {
+        try {
+            const { serialNumber, macAddress, oldSerialNumber } = data;
+            // 1. Immediately update local config, RMS device_info.json, daily.json, history.json
+            updateCustomDeviceInfo(serialNumber, macAddress, true);
+            console.log('[IPC] Reconcile: Updated local config & ServiceData with serial:', serialNumber);
+
+            // 2. Trigger non-blocking background server reconciliation
+            (async () => {
+                try {
+                    const rawServerUrl = process.env.CENTRALIZED_SERVER_URL || 'https://rms-api.thesama.in/api/afe';
+                    const serverUrl = rawServerUrl.replace(/\/+$/, '');
+                    const syncService = new SyncService(serverUrl, net.fetch);
+                    const res = await syncService.reconcileDeviceWithRMS({
+                        macAddress,
+                        serialNumber,
+                        oldSerialNumber
+                    });
+                    if (res.success) {
+                        setPendingServerReconciliation(false);
+                        console.log('[IPC] Server reconciliation completed successfully');
+                    } else {
+                        console.warn('[IPC] Server reconciliation deferred (server returned false):', res.error);
+                    }
+                } catch (e) {
+                    console.warn('[IPC] Server reconciliation deferred (offline/error):', e);
+                }
+            })();
+
+            return { success: true };
+        } catch (error) {
+            console.error('[IPC] Failed to reconcile device info:', error);
+            return { success: false, error: String(error) };
         }
     });
 

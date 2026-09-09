@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ipc } from '../lib/ipc.ts';
 import './SchoolSetupModal.css';
 
@@ -9,6 +9,14 @@ interface DeviceDetailsModalProps {
     initialMac: string;
     schoolName?: string;
     partnerName?: string;
+}
+
+interface RMSStatus {
+    registeredInRMS: boolean;
+    rmsDevice?: { id: number; serial_number: string; mac_address: string; system_id?: string };
+    registeredInAFE?: boolean;
+    isMismatch: boolean;
+    suggestedSerialNumber?: string;
 }
 
 export function DeviceDetailsModal({
@@ -25,12 +33,41 @@ export function DeviceDetailsModal({
     const [isSaving, setIsSaving] = useState(false);
     const [copiedField, setCopiedField] = useState<'serial' | 'mac' | null>(null);
     const [statusMessage, setStatusMessage] = useState<string | null>(null);
+    const [rmsStatus, setRmsStatus] = useState<RMSStatus | null>(null);
+    const [isCheckingRMS, setIsCheckingRMS] = useState(false);
+
+    const checkStatus = useCallback(async (mac: string, serial: string) => {
+        if (!mac || mac === 'UNKNOWN-MAC') return;
+        setIsCheckingRMS(true);
+        try {
+            const res = await ipc.checkDeviceStatus({ macAddress: mac, serialNumber: serial });
+            if (res && res.success) {
+                setRmsStatus({
+                    registeredInRMS: Boolean(res.registeredInRMS ?? (res as any).isRegisteredInRms),
+                    rmsDevice: res.rmsDevice as any,
+                    registeredInAFE: Boolean(res.registeredInAFE ?? (res as any).isRegisteredInAfe),
+                    isMismatch: Boolean(res.isMismatch),
+                    suggestedSerialNumber: res.suggestedSerialNumber,
+                });
+            } else {
+                setRmsStatus(null);
+            }
+        } catch (e) {
+            console.warn('[DeviceDetailsModal] Live RMS check error:', e);
+            setRmsStatus(null);
+        } finally {
+            setIsCheckingRMS(false);
+        }
+    }, []);
 
     useEffect(() => {
         setSerialNumber(initialSerial);
         setMacAddress(initialMac);
         setStatusMessage(null);
-    }, [initialSerial, initialMac, isOpen]);
+        if (isOpen) {
+            checkStatus(initialMac, initialSerial);
+        }
+    }, [initialSerial, initialMac, isOpen, checkStatus]);
 
     if (!isOpen) return null;
 
@@ -50,10 +87,14 @@ export function DeviceDetailsModal({
         try {
             const detected = await ipc.redetectDeviceInfo();
             if (detected) {
-                setSerialNumber(detected.serialNumber || 'UNKNOWN-SERIAL');
-                setMacAddress(detected.macAddress || 'UNKNOWN-MAC');
+                const detectedSerial = detected.serialNumber || 'UNKNOWN-SERIAL';
+                const detectedMac = detected.macAddress || 'UNKNOWN-MAC';
+                setSerialNumber(detectedSerial);
+                setMacAddress(detectedMac);
                 setStatusMessage('Redetected ✓');
                 setTimeout(() => setStatusMessage(null), 3000);
+                // Re-check live status with redetected identifiers
+                checkStatus(detectedMac, detectedSerial);
             }
         } catch (error) {
             console.error('Failed to redetect device info:', error);
@@ -67,14 +108,15 @@ export function DeviceDetailsModal({
     const handleConfirmAndClose = async () => {
         setIsSaving(true);
         try {
-            // Persist edited / confirmed values to config
-            await ipc.updateDeviceInfo({
+            // Reconcile locally immediately & initiate non-blocking background server sync
+            await ipc.reconcileDevice({
                 serialNumber: serialNumber.trim(),
                 macAddress: macAddress.trim(),
+                oldSerialNumber: initialSerial
             });
             onClose();
         } catch (error) {
-            console.error('Failed to save updated device info:', error);
+            console.error('Failed to reconcile device info:', error);
             onClose();
         } finally {
             setIsSaving(false);
@@ -90,14 +132,51 @@ export function DeviceDetailsModal({
                         <span className="header-icon">💻</span>
                         <h3 className="header-heading">Device Identifiers</h3>
                     </div>
-                    {(partnerName || schoolName) && (
-                        <div className="header-meta-pill" title={`${partnerName || ''} • ${schoolName || ''}`}>
-                            📍 {[partnerName, schoolName].filter(Boolean).join(' • ')}
-                        </div>
-                    )}
+
+                    <div className="header-badges-wrap">
+                        {isCheckingRMS ? (
+                            <span className="device-status-pill checking">⚡ Checking RMS...</span>
+                        ) : rmsStatus?.registeredInRMS ? (
+                            <span className="device-status-pill registered" title={`RMS Device ID: ${rmsStatus.rmsDevice?.id || 'Active'}`}>
+                                ✓ RMS Linked
+                            </span>
+                        ) : (
+                            <span className="device-status-pill pending" title="Device will register automatically upon RMS sync">
+                                ℹ️ Unregistered on RMS
+                            </span>
+                        )}
+
+                        {(partnerName || schoolName) && (
+                            <div className="header-meta-pill" title={`${partnerName || ''} • ${schoolName || ''}`}>
+                                📍 {[partnerName, schoolName].filter(Boolean).join(' • ')}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 <div className="device-details-body-compact">
+                    {/* Mismatch Resolution Banner if RMS has a different serial */}
+                    {rmsStatus?.isMismatch && rmsStatus.suggestedSerialNumber && (
+                        <div className="device-mismatch-banner">
+                            <div className="mismatch-text">
+                                <span className="mismatch-icon">⚠️</span>
+                                <span>
+                                    RMS Database registers this device as: <strong>{rmsStatus.suggestedSerialNumber}</strong>
+                                </span>
+                            </div>
+                            <button
+                                type="button"
+                                className="btn-use-rms-serial"
+                                onClick={() => {
+                                    setSerialNumber(rmsStatus.suggestedSerialNumber!);
+                                    setRmsStatus(prev => prev ? { ...prev, isMismatch: false } : null);
+                                }}
+                            >
+                                Use RMS Serial
+                            </button>
+                        </div>
+                    )}
+
                     {/* Minimalist Alert: Instruction, Warning, Repercussion */}
                     <div className="device-details-alert-box">
                         <span className="alert-icon">⚠️</span>

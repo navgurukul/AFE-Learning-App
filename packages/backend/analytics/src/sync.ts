@@ -81,6 +81,101 @@ export class SyncService {
     }
 
     /**
+     * Check device registration status in RMS devices table and AFE afe_devices table
+     */
+    async checkDeviceStatus(macAddress: string, serialNumber?: string): Promise<{
+        success: boolean;
+        registeredInRMS: boolean;
+        rmsDevice?: { id: number; serial_number: string; mac_address: string; system_id?: string };
+        registeredInAFE: boolean;
+        afeDevice?: { id: number; serial_number: string; mac_address: string; device_id?: number | null };
+        isMismatch: boolean;
+        suggestedSerialNumber?: string;
+        error?: string;
+    }> {
+        try {
+            const authHeaders = generateAuthHeaders();
+            const response = await this.fetchFn(`${this.serverUrl}/check-device`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...authHeaders
+                },
+                body: JSON.stringify({ macAddress, serialNumber })
+            });
+
+            if (!response.ok) {
+                console.warn(`[SyncService] RMS check-device responded with ${response.status}`);
+                return {
+                    success: false,
+                    registeredInRMS: false,
+                    registeredInAFE: false,
+                    isMismatch: false,
+                    error: `Server responded with ${response.status}`
+                };
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.warn('[SyncService] checkDeviceStatus failed:', error);
+            return {
+                success: false,
+                registeredInRMS: false,
+                registeredInAFE: false,
+                isMismatch: false,
+                error: String(error)
+            };
+        }
+    }
+
+    /**
+     * Reconcile device serial number and link RMS device_id with AFE tables
+     */
+    async reconcileDeviceWithRMS(data: {
+        macAddress: string;
+        serialNumber: string;
+        oldSerialNumber?: string;
+    }): Promise<{
+        success: boolean;
+        linkedRMS: boolean;
+        deviceId?: number;
+        serialNumber?: string;
+        macAddress?: string;
+        message?: string;
+        error?: string;
+    }> {
+        try {
+            const authHeaders = generateAuthHeaders();
+            const response = await this.fetchFn(`${this.serverUrl}/reconcile-device`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...authHeaders
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                console.warn(`[SyncService] RMS reconcile-device responded with ${response.status}`);
+                return {
+                    success: false,
+                    linkedRMS: false,
+                    error: `Server responded with ${response.status}`
+                };
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.warn('[SyncService] reconcileDeviceWithRMS failed:', error);
+            return {
+                success: false,
+                linkedRMS: false,
+                error: String(error)
+            };
+        }
+    }
+
+    /**
      * One-time historical backfill of existing session IDs to link device_id & NGO in RMS
      */
     async backfillHistoricalSessions(deviceInfo: DeviceInfo): Promise<{ success: boolean; updatedCount?: number }> {

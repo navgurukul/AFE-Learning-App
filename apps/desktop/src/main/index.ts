@@ -437,7 +437,26 @@ async function initialize() {
                             }
                         }
 
-                        // 2. Routine sync for newly recorded unsynced sessions
+                        // 2. Flush pending server reconciliation if marked offline/deferred previously
+                        if (config.pendingServerReconciliation === true) {
+                            console.log('[SyncEngine] Found pending server reconciliation, flushing to RMS server...');
+                            try {
+                                const reconRes = await syncService.reconcileDeviceWithRMS({
+                                    macAddress: deviceInfo.macAddress,
+                                    serialNumber: deviceInfo.serialNumber
+                                });
+                                if (reconRes.success) {
+                                    writeConfig({ pendingServerReconciliation: false });
+                                    console.log('[SyncEngine] Pending server reconciliation flushed successfully.');
+                                } else {
+                                    console.warn('[SyncEngine] Server reconciliation returned false, will retry next cycle.');
+                                }
+                            } catch (e) {
+                                console.warn('[SyncEngine] Failed to flush server reconciliation:', e);
+                            }
+                        }
+
+                        // 3. Routine sync for newly recorded unsynced sessions
                         const unsynced = await getUnsyncedSessions();
                         if (unsynced.length === 0) {
                             return;

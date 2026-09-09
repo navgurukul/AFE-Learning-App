@@ -30,6 +30,7 @@ export interface Config {
     historicalSyncCompleted?: boolean;
     customSerialNumber?: string;
     customMacAddress?: string;
+    pendingServerReconciliation?: boolean;
 }
 
 // Config file path
@@ -37,7 +38,10 @@ const CONFIG_PATH = app.isPackaged
     ? path.join(app.getPath('appData'), 'OfflineLearningApp', 'config.json')
     : path.join(process.cwd(), '../dev-data/config.json');
 
-const RMS_DEVICE_INFO_PATH = 'C:\\System.ServiceData\\device_info.json';
+const RMS_APP_DATA_FOLDER = 'C:\\System.ServiceData';
+const RMS_DEVICE_INFO_PATH = path.join(RMS_APP_DATA_FOLDER, 'device_info.json');
+const RMS_DAILY_JSON_PATH = path.join(RMS_APP_DATA_FOLDER, 'daily.json');
+const RMS_HISTORY_JSON_PATH = path.join(RMS_APP_DATA_FOLDER, 'history.json');
 
 const INVALID_SERIALS = new Set([
     'to be filled by o.e.m.',
@@ -252,7 +256,8 @@ export function readConfig(): Required<Config> {
         locationPermissionStatus: 'granted',
         historicalSyncCompleted: false,
         customSerialNumber: '',
-        customMacAddress: ''
+        customMacAddress: '',
+        pendingServerReconciliation: false
     };
 
     try {
@@ -281,7 +286,8 @@ export function readConfig(): Required<Config> {
             locationPermissionStatus: config.locationPermissionStatus || defaultConfig.locationPermissionStatus,
             historicalSyncCompleted: config.historicalSyncCompleted === true,
             customSerialNumber: config.customSerialNumber || defaultConfig.customSerialNumber,
-            customMacAddress: config.customMacAddress || defaultConfig.customMacAddress
+            customMacAddress: config.customMacAddress || defaultConfig.customMacAddress,
+            pendingServerReconciliation: config.pendingServerReconciliation === true
         };
     } catch (error) {
         console.error('[DeviceInfo] Failed to read config:', error);
@@ -290,13 +296,83 @@ export function readConfig(): Required<Config> {
 }
 
 /**
- * Update custom hardware identifiers override in config
+ * Update custom hardware identifiers override in config, and sync to RMS ServiceData if present
  */
-export function updateCustomDeviceInfo(serialNumber?: string, macAddress?: string): void {
+export function updateCustomDeviceInfo(serialNumber?: string, macAddress?: string, markPending = true): void {
     const updates: Partial<Config> = {};
     if (serialNumber !== undefined) updates.customSerialNumber = serialNumber.trim();
     if (macAddress !== undefined) updates.customMacAddress = macAddress.trim();
+    if (markPending) updates.pendingServerReconciliation = true;
     writeConfig(updates);
+
+    // Sync to local RMS ServiceData files if on Windows
+    if (process.platform === 'win32' && serialNumber && isValidSerial(serialNumber)) {
+        try {
+            if (!fs.existsSync(RMS_APP_DATA_FOLDER)) {
+                fs.mkdirSync(RMS_APP_DATA_FOLDER, { recursive: true });
+            }
+
+            // 1. Update/create device_info.json
+            let info: any = {};
+            if (fs.existsSync(RMS_DEVICE_INFO_PATH)) {
+                try {
+                    info = JSON.parse(fs.readFileSync(RMS_DEVICE_INFO_PATH, 'utf-8'));
+                } catch (e) {}
+            }
+            info.serialNumber = serialNumber.trim();
+            if (macAddress) info.macAddress = macAddress.trim();
+            info.lastUpdated = new Date().toISOString();
+            info.updateMethod = 'afe-reconcile';
+            fs.writeFileSync(RMS_DEVICE_INFO_PATH, JSON.stringify(info, null, 2), 'utf-8');
+            console.log('[DeviceInfo] Reconciled serial number to RMS device_info.json:', serialNumber.trim());
+
+            // 2. Update daily.json if present
+            if (fs.existsSync(RMS_DAILY_JSON_PATH)) {
+                try {
+                    const dailyData = JSON.parse(fs.readFileSync(RMS_DAILY_JSON_PATH, 'utf-8'));
+                    if (dailyData && dailyData.serial_number !== serialNumber.trim()) {
+                        dailyData.serial_number = serialNumber.trim();
+                        dailyData.last_updated = new Date().toISOString();
+                        fs.writeFileSync(RMS_DAILY_JSON_PATH, JSON.stringify(dailyData, null, 2), 'utf-8');
+                        console.log('[DeviceInfo] Reconciled serial number to RMS daily.json');
+                    }
+                } catch (e) {
+                    console.warn('[DeviceInfo] Could not update RMS daily.json:', e);
+                }
+            }
+
+            // 3. Update history.json if present
+            if (fs.existsSync(RMS_HISTORY_JSON_PATH)) {
+                try {
+                    const historyData = JSON.parse(fs.readFileSync(RMS_HISTORY_JSON_PATH, 'utf-8'));
+                    if (historyData && Array.isArray(historyData.records)) {
+                        let updated = false;
+                        for (const record of historyData.records) {
+                            if (record && record.serial_number !== serialNumber.trim()) {
+                                record.serial_number = serialNumber.trim();
+                                updated = true;
+                            }
+                        }
+                        if (updated) {
+                            fs.writeFileSync(RMS_HISTORY_JSON_PATH, JSON.stringify(historyData, null, 2), 'utf-8');
+                            console.log('[DeviceInfo] Reconciled serial numbers to RMS history.json');
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[DeviceInfo] Could not update RMS history.json:', e);
+                }
+            }
+        } catch (err) {
+            console.warn('[DeviceInfo] Failed to sync to RMS ServiceData folder:', err);
+        }
+    }
+}
+
+/**
+ * Set or clear pendingServerReconciliation flag
+ */
+export function setPendingServerReconciliation(pending: boolean): void {
+    writeConfig({ pendingServerReconciliation: pending });
 }
 
 /**

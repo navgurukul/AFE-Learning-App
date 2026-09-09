@@ -446,6 +446,97 @@
     box-shadow: 1.5px 1.5px 0 0 #141210;
 }
 
+.header-badges-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.device-status-pill {
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1.5px solid #141210;
+    box-shadow: 1.5px 1.5px 0 0 #141210;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.device-status-pill.registered {
+    background: #DCFCE7;
+    color: #15803D;
+    border-color: #15803D;
+    box-shadow: 1.5px 1.5px 0 0 #15803D;
+}
+
+.device-status-pill.pending {
+    background: #F3F4F6;
+    color: #4B5563;
+    border-color: #6B7280;
+    box-shadow: 1.5px 1.5px 0 0 #6B7280;
+}
+
+.device-status-pill.checking {
+    background: #FEF3C7;
+    color: #B45309;
+    border-color: #D97706;
+    box-shadow: 1.5px 1.5px 0 0 #D97706;
+}
+
+/* Mismatch Resolution Banner */
+.device-mismatch-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: #EFF6FF;
+    border: 2px solid #2563EB;
+    border-radius: 10px;
+    padding: 8px 12px;
+    box-shadow: 2px 2px 0 0 #141210;
+    animation: neoModalFadeIn 0.2s ease-out;
+}
+
+.mismatch-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: #1E3A8A;
+    line-height: 1.3;
+}
+
+.mismatch-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.btn-use-rms-serial {
+    font-family: inherit;
+    font-size: 0.74rem;
+    font-weight: 800;
+    background: #2563EB;
+    color: #FFFFFF;
+    border: 1.5px solid #141210;
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+    box-shadow: 1.5px 1.5px 0 0 #141210;
+    white-space: nowrap;
+    transition: transform 0.05s ease, box-shadow 0.05s ease;
+}
+
+.btn-use-rms-serial:hover {
+    background: #1D4ED8;
+    transform: translate(1px, 1px);
+    box-shadow: 0.5px 0.5px 0 0 #141210;
+}
+
 .device-details-body-compact {
     padding: 14px 18px;
     display: flex;

@@ -89,6 +89,8 @@ export const IPC_CHANNELS = {
     CONFIG_GET_DEVICE_INFO: 'config:getDeviceInfo',
     CONFIG_REDETECT_DEVICE_INFO: 'config:redetectDeviceInfo',
     CONFIG_UPDATE_DEVICE_INFO: 'config:updateDeviceInfo',
+    CONFIG_CHECK_DEVICE_STATUS: 'config:checkDeviceStatus',
+    CONFIG_RECONCILE_DEVICE: 'config:reconcileDevice',
 } as const;
 
 // Request/Response type definitions
@@ -473,6 +475,52 @@ export interface IPCContract {
         };
         response: {
             success: boolean;
+        };
+    };
+    [IPC_CHANNELS.CONFIG_CHECK_DEVICE_STATUS]: {
+        request: {
+            macAddress: string;
+            serialNumber?: string;
+        };
+        response: {
+            success: boolean;
+            registeredInRMS?: boolean;
+            isRegisteredInRms?: boolean;
+            rmsDevice?: {
+                id: number;
+                serial_number?: string;
+                serialNumber?: string;
+                mac_address?: string;
+                macAddress?: string;
+                system_id?: string;
+                ngoName?: string;
+            } | null;
+            registeredInAFE?: boolean;
+            isRegisteredInAfe?: boolean;
+            afeDevice?: any;
+            isMismatch?: boolean;
+            suggestedSerialNumber?: string;
+            error?: string;
+        };
+    };
+    [IPC_CHANNELS.CONFIG_RECONCILE_DEVICE]: {
+        request: {
+            macAddress: string;
+            serialNumber: string;
+            oldSerialNumber?: string;
+            schoolName?: string;
+            partnerName?: string;
+            ngoKey?: string;
+        };
+        response: {
+            success: boolean;
+            linkedRMS?: boolean;
+            isRegisteredInRms?: boolean;
+            deviceId?: number | null;
+            serialNumber?: string;
+            macAddress?: string;
+            message?: string;
+            error?: string;
         };
     };
 }

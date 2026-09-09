@@ -358,6 +358,14 @@ class IPCClient {
         return await this.invoke(IPC_CHANNELS.CONFIG_UPDATE_DEVICE_INFO, data);
     }
 
+    async checkDeviceStatus(data: { macAddress: string; serialNumber?: string }) {
+        return await this.invoke(IPC_CHANNELS.CONFIG_CHECK_DEVICE_STATUS, data);
+    }
+
+    async reconcileDevice(data: { serialNumber: string; macAddress: string; oldSerialNumber?: string }) {
+        return await this.invoke(IPC_CHANNELS.CONFIG_RECONCILE_DEVICE, data);
+    }
+
     // Auto-updater
     async restartAndInstall(): Promise<void> {
         return await this.invoke('updater:restart-and-install' as any, undefined);
