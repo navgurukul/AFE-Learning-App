@@ -847,16 +847,20 @@ export function registerIPCHandlers() {
         }
     });
 
+    ipcMain.handle(IPC_CHANNELS.APP_GET_VERSION, async () => {
+        return app.getVersion();
+    });
+
     ipcMain.handle(IPC_CHANNELS.CONFIG_GET_DEVICE_INFO, async () => {
         try {
             const [serialNumber, macAddress] = await Promise.all([
                 getSerialNumber(),
                 getMacAddress(),
             ]);
-            return { serialNumber, macAddress };
+            return { serialNumber, macAddress, appVersion: app.getVersion() };
         } catch (error) {
             console.error('[IPC] Failed to get device info:', error);
-            return { serialNumber: 'UNKNOWN-SERIAL', macAddress: 'UNKNOWN-MAC' };
+            return { serialNumber: 'UNKNOWN-SERIAL', macAddress: 'UNKNOWN-MAC', appVersion: app.getVersion() };
         }
     });
 
@@ -922,11 +926,11 @@ export function registerIPCHandlers() {
                         serialNumber,
                         oldSerialNumber
                     });
-                    if (res.success) {
+                    if (res && res.success) {
                         setPendingServerReconciliation(false);
                         console.log('[IPC] Server reconciliation completed successfully');
                     } else {
-                        console.warn('[IPC] Server reconciliation deferred (server returned false):', res.error);
+                        console.warn('[IPC] Server reconciliation deferred (server returned false):', res?.error || 'unsuccessful');
                     }
                 } catch (e) {
                     console.warn('[IPC] Server reconciliation deferred (offline/error):', e);

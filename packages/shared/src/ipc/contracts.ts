@@ -93,6 +93,7 @@ export const IPC_CHANNELS = {
     CONFIG_RECONCILE_DEVICE: 'config:reconcileDevice',
     UPDATER_GET_STATUS: 'updater:get-update-status',
     UPDATER_RESTART_AND_INSTALL: 'updater:restart-and-install',
+    APP_GET_VERSION: 'app:get-version',
 } as const;
 
 // Request/Response type definitions
@@ -535,6 +536,10 @@ export interface IPCContract {
     [IPC_CHANNELS.UPDATER_RESTART_AND_INSTALL]: {
         request: void;
         response: void;
+    };
+    [IPC_CHANNELS.APP_GET_VERSION]: {
+        request: void;
+        response: string;
     };
 }
 

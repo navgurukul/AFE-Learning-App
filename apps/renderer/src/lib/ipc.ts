@@ -366,6 +366,19 @@ class IPCClient {
         return await this.invoke(IPC_CHANNELS.CONFIG_RECONCILE_DEVICE, data);
     }
 
+    private cachedVersion: string | null = null;
+
+    async getAppVersion(): Promise<string> {
+        if (this.cachedVersion) return this.cachedVersion;
+        try {
+            const version = await this.invoke(IPC_CHANNELS.APP_GET_VERSION, undefined);
+            if (version) this.cachedVersion = version;
+            return version || '';
+        } catch (e) {
+            return '';
+        }
+    }
+
     // Auto-updater
     async getUpdateStatus(): Promise<{ hasUpdate: boolean; version?: string | null }> {
         return await this.invoke(IPC_CHANNELS.UPDATER_GET_STATUS, undefined);

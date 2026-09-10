@@ -8,6 +8,7 @@ import log from 'electron-log';
 
 // Remove the default application menu header (File, Edit, View, etc.)
 Menu.setApplicationMenu(null);
+app.name = 'Amazon Future Engineer';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -420,17 +421,26 @@ async function initialize() {
 
             // Setup offline-first periodic session synchronization & one-time historical backfill
             const startSyncEngine = () => {
+                let wasOffline: boolean | null = null;
+                let lastBackfillAttemptTime = 0;
+                let lastReconAttemptTime = 0;
+
                 const attemptSync = async () => {
                     try {
                         const isOnline = checkIsOnline();
 
                         if (isOnline) {
-                            // Try to resolve location from IP if allowed and unset
+                            if (wasOffline === true) {
+                                console.log('[SyncEngine] Network restored - back online.');
+                            }
+                            wasOffline = false;
+                            // Try to resolve location from IP if allowed and unset (internally throttled)
                             await updateLocationFromIP(net.fetch);
-                        }
-
-                        if (!isOnline) {
-                            console.log('[SyncEngine] Offline - skipping sync attempt.');
+                        } else {
+                            if (wasOffline !== true) {
+                                console.log('[SyncEngine] Offline - skipping sync attempt.');
+                                wasOffline = true;
+                            }
                             return;
                         }
 
@@ -442,32 +452,38 @@ async function initialize() {
                         // 1. One-time historical backfill (Runs once per laptop to link legacy/orphaned sessions in RMS DB)
                         const config = readConfig();
                         if (config.historicalSyncCompleted !== true) {
-                            console.log('[SyncEngine] Initiating one-time historical backfill...');
-                            const backfillRes = await syncService.backfillHistoricalSessions(deviceInfo);
-                            if (backfillRes.success) {
-                                writeConfig({ historicalSyncCompleted: true });
-                                console.log('[SyncEngine] Historical backfill complete and marked in config.');
-                            } else {
-                                console.warn('[SyncEngine] Historical backfill failed, will retry next online cycle.');
+                            if (Date.now() - lastBackfillAttemptTime > 5 * 60 * 1000) {
+                                lastBackfillAttemptTime = Date.now();
+                                console.log('[SyncEngine] Initiating one-time historical backfill...');
+                                const backfillRes = await syncService.backfillHistoricalSessions(deviceInfo);
+                                if (backfillRes.success) {
+                                    writeConfig({ historicalSyncCompleted: true });
+                                    console.log('[SyncEngine] Historical backfill complete and marked in config.');
+                                } else {
+                                    console.warn('[SyncEngine] Historical backfill failed, will retry in 5 minutes.');
+                                }
                             }
                         }
 
                         // 2. Flush pending server reconciliation if marked offline/deferred previously
                         if (config.pendingServerReconciliation === true) {
-                            console.log('[SyncEngine] Found pending server reconciliation, flushing to RMS server...');
-                            try {
-                                const reconRes = await syncService.reconcileDeviceWithRMS({
-                                    macAddress: deviceInfo.macAddress,
-                                    serialNumber: deviceInfo.serialNumber
-                                });
-                                if (reconRes.success) {
-                                    writeConfig({ pendingServerReconciliation: false });
-                                    console.log('[SyncEngine] Pending server reconciliation flushed successfully.');
-                                } else {
-                                    console.warn('[SyncEngine] Server reconciliation returned false, will retry next cycle.');
+                            if (Date.now() - lastReconAttemptTime > 5 * 60 * 1000) {
+                                lastReconAttemptTime = Date.now();
+                                console.log('[SyncEngine] Found pending server reconciliation, flushing to RMS server...');
+                                try {
+                                    const reconRes = await syncService.reconcileDeviceWithRMS({
+                                        macAddress: deviceInfo.macAddress,
+                                        serialNumber: deviceInfo.serialNumber
+                                    });
+                                    if (reconRes.success) {
+                                        writeConfig({ pendingServerReconciliation: false });
+                                        console.log('[SyncEngine] Pending server reconciliation flushed successfully.');
+                                    } else {
+                                        console.warn('[SyncEngine] Server reconciliation returned false, will retry in 5 minutes.');
+                                    }
+                                } catch (e) {
+                                    console.warn('[SyncEngine] Failed to flush server reconciliation:', e);
                                 }
-                            } catch (e) {
-                                console.warn('[SyncEngine] Failed to flush server reconciliation:', e);
                             }
                         }
 
@@ -515,13 +531,17 @@ async function initialize() {
 // App lifecycle
 
 app.whenReady().then(async () => {
-    // Allow microphone/camera for STT; log to see exact permission strings
+    // Allow microphone/camera for STT; log each distinct permission check once to prevent log spam
     const ses = session.defaultSession;
     const allowMedia = (p: string) =>
         p === 'media' || p === 'mediaKeySystem' || p === 'fullscreen' || p.includes('media') || p.includes('microphone') || p.includes('fullscreen');
+    const checkedPermissions = new Set<string>();
     ses.setPermissionCheckHandler((_, permission) => {
         const allow = allowMedia(permission);
-        console.log('[Electron] Permission check:', permission, '->', allow);
+        if (!checkedPermissions.has(permission)) {
+            checkedPermissions.add(permission);
+            console.log('[Electron] Permission check:', permission, '->', allow);
+        }
         return allow;
     });
     ses.setPermissionRequestHandler((_, permission, callback) => {

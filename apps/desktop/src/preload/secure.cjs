@@ -93,7 +93,10 @@ const VALID_CHANNELS = [
     // Auto-updater
     'updater:update-downloaded',
     'updater:restart-and-install',
-    'updater:get-update-status'
+    'updater:get-update-status',
+
+    // App info
+    'app:get-version'
 ];
 
 contextBridge.exposeInMainWorld('electronAPI', {

@@ -65,6 +65,18 @@ function isValidSerial(s: string | null | undefined): boolean {
     return !INVALID_SERIALS.has(lower) && lower.length >= 4;
 }
 
+let cachedSerialNumber: string | null = null;
+let cachedMacAddress: string | null = null;
+let lastLoggedRmsSerial: string | null = null;
+let lastLoggedFingerprint: string | null = null;
+
+export function invalidateDeviceInfoCache(): void {
+    cachedSerialNumber = null;
+    cachedMacAddress = null;
+    lastLoggedFingerprint = null;
+    lastLoggedRmsSerial = null;
+}
+
 /**
  * Get device MAC address cross-platform using Node os module (Primary Source of Truth)
  */
@@ -75,6 +87,9 @@ export async function getMacAddress(forceHardware = false): Promise<string> {
             if (config.customMacAddress && config.customMacAddress.trim().length >= 10) {
                 return config.customMacAddress.trim().toLowerCase();
             }
+            if (cachedMacAddress) {
+                return cachedMacAddress;
+            }
         }
 
         // 1. Check RMS cached device_info.json first
@@ -83,7 +98,9 @@ export async function getMacAddress(forceHardware = false): Promise<string> {
                 const content = fs.readFileSync(RMS_DEVICE_INFO_PATH, 'utf-8');
                 const rmsInfo = JSON.parse(content);
                 if (rmsInfo && rmsInfo.macAddress && rmsInfo.macAddress !== 'Unknown') {
-                    return rmsInfo.macAddress.replace(/-/g, ':').toLowerCase();
+                    const mac = rmsInfo.macAddress.replace(/-/g, ':').toLowerCase();
+                    cachedMacAddress = mac;
+                    return mac;
                 }
             } catch (e) {}
         }
@@ -97,7 +114,9 @@ export async function getMacAddress(forceHardware = false): Promise<string> {
             for (const iface of ifaces) {
                 // Skip internal (loopback) and virtual interfaces without MAC
                 if (!iface.internal && iface.mac && iface.mac !== '00:00:00:00:00:00') {
-                    return iface.mac.replace(/-/g, ':').toLowerCase();
+                    const mac = iface.mac.replace(/-/g, ':').toLowerCase();
+                    cachedMacAddress = mac;
+                    return mac;
                 }
             }
         }
@@ -118,6 +137,9 @@ export async function getSerialNumber(forceHardware = false): Promise<string> {
             if (config.customSerialNumber && isValidSerial(config.customSerialNumber)) {
                 return config.customSerialNumber.trim();
             }
+            if (cachedSerialNumber) {
+                return cachedSerialNumber;
+            }
         }
 
         // 1. Check RMS cached device_info.json on Windows first
@@ -126,8 +148,13 @@ export async function getSerialNumber(forceHardware = false): Promise<string> {
                 const content = fs.readFileSync(RMS_DEVICE_INFO_PATH, 'utf-8');
                 const rmsInfo = JSON.parse(content);
                 if (rmsInfo && isValidSerial(rmsInfo.serialNumber)) {
-                    console.log('[DeviceInfo] Using RMS cached serial:', rmsInfo.serialNumber);
-                    return rmsInfo.serialNumber;
+                    const serial = rmsInfo.serialNumber.trim();
+                    if (lastLoggedRmsSerial !== serial) {
+                        console.log('[DeviceInfo] Using RMS cached serial:', serial);
+                        lastLoggedRmsSerial = serial;
+                    }
+                    cachedSerialNumber = serial;
+                    return serial;
                 }
             } catch (e) {}
         }
@@ -215,18 +242,27 @@ export async function getSerialNumber(forceHardware = false): Promise<string> {
                 detectedSerial = `NG-${uuid}`;
             }
 
+            if (detectedSerial && detectedSerial !== 'UNKNOWN-SERIAL') {
+                cachedSerialNumber = detectedSerial;
+            }
             return detectedSerial;
         } else if (process.platform === 'darwin') {
             const { stdout } = await execAsync(
                 "ioreg -l | grep IOPlatformSerialNumber | awk '{print $4}' | sed 's/\"//g'"
             );
-            return stdout.trim() || 'UNKNOWN-SERIAL';
+            const serial = stdout.trim() || 'UNKNOWN-SERIAL';
+            if (serial !== 'UNKNOWN-SERIAL') cachedSerialNumber = serial;
+            return serial;
         } else if (process.platform === 'linux') {
             try {
-                return fs.readFileSync('/sys/class/dmi/id/product_serial', 'utf8').trim();
+                const serial = fs.readFileSync('/sys/class/dmi/id/product_serial', 'utf8').trim();
+                if (serial && serial !== 'UNKNOWN-SERIAL') cachedSerialNumber = serial;
+                return serial;
             } catch (e) {
                 const { stdout } = await execAsync('cat /var/lib/dbus/machine-id');
-                return stdout.trim() || 'UNKNOWN-SERIAL';
+                const serial = stdout.trim() || 'UNKNOWN-SERIAL';
+                if (serial !== 'UNKNOWN-SERIAL') cachedSerialNumber = serial;
+                return serial;
             }
         }
         return 'UNKNOWN-SERIAL';
@@ -249,7 +285,7 @@ export function readConfig(): Required<Config> {
         city: '',
         district: '',
         districtCode: '',
-        zipcodePostalCode: '110001',
+        zipcodePostalCode: '',
         schoolType: 'Government School',
         countryCode: 'IN',
         distributionChannelHostId: 'Sama Platform 1',
@@ -433,6 +469,9 @@ export function writeConfig(config: Partial<Config>): void {
         }
 
         const newConfig = { ...existing, ...config };
+        if (config.customSerialNumber !== undefined || config.customMacAddress !== undefined) {
+            invalidateDeviceInfoCache();
+        }
         fs.writeFileSync(CONFIG_PATH, JSON.stringify(newConfig, null, 2), 'utf-8');
         console.log(`[DeviceInfo] Config written to ${CONFIG_PATH}`);
     } catch (error) {
@@ -472,11 +511,15 @@ export async function getDeviceInfo(): Promise<DeviceInfo> {
         city: config.city,
         district: config.district,
         districtCode: config.districtCode,
-        zipcodePostalCode: config.zipcodePostalCode || '110001',
+        zipcodePostalCode: config.zipcodePostalCode || '',
         schoolType: config.schoolType || 'Government School'
     };
 
-    console.log('[DeviceInfo] Device fingerprint:', deviceInfo);
+    const fpStr = JSON.stringify(deviceInfo);
+    if (fpStr !== lastLoggedFingerprint) {
+        console.log('[DeviceInfo] Device fingerprint:', deviceInfo);
+        lastLoggedFingerprint = fpStr;
+    }
     return deviceInfo;
 }
 
@@ -524,6 +567,8 @@ export function checkLocationPermissionAndPrompt(parentWindow: BrowserWindow): v
     }
 }
 
+let lastLocationFetchTime = 0;
+
 /**
  * Resolves location using a free IP geolocation API if permission is granted but location is empty.
  * Runs in the background when sync starts.
@@ -532,10 +577,17 @@ export async function updateLocationFromIP(fetchFn: any): Promise<void> {
     try {
         const config = readConfig();
         if (config.locationPermissionStatus === 'granted' && (!config.state || !config.district)) {
+            // Throttle attempts to once every 5 minutes to prevent spamming if offline or failing
+            if (Date.now() - lastLocationFetchTime < 5 * 60 * 1000) {
+                return;
+            }
+            lastLocationFetchTime = Date.now();
             console.log('[DeviceInfo] Location permission is granted but state/district is empty. Fetching live location...');
             
             let state = '';
             let district = '';
+            let city = '';
+            let postal = '';
             
             // Try ipinfo.io first (often more accurate)
             try {
@@ -545,7 +597,9 @@ export async function updateLocationFromIP(fetchFn: any): Promise<void> {
                     if (data && data.region && data.city) {
                         state = data.region;
                         district = data.city;
-                        console.log(`[DeviceInfo] Resolved location via ipinfo.io: State="${state}", District="${district}"`);
+                        city = data.city;
+                        postal = data.postal || '';
+                        console.log(`[DeviceInfo] Resolved location via ipinfo.io: State="${state}", District="${district}", Postal="${postal}"`);
                     }
                 }
             } catch (err) {
@@ -561,7 +615,9 @@ export async function updateLocationFromIP(fetchFn: any): Promise<void> {
                         if (data && data.status === 'success') {
                             state = data.regionName || '';
                             district = data.city || '';
-                            console.log(`[DeviceInfo] Resolved location via ip-api.com fallback: State="${state}", District="${district}"`);
+                            city = data.city || '';
+                            postal = data.zip || '';
+                            console.log(`[DeviceInfo] Resolved location via ip-api.com fallback: State="${state}", District="${district}", Postal="${postal}"`);
                         }
                     }
                 } catch (err) {
@@ -570,8 +626,11 @@ export async function updateLocationFromIP(fetchFn: any): Promise<void> {
             }
 
             if (state || district) {
-                writeConfig({ state, district });
-                console.log(`[DeviceInfo] Geolocation retrieved successfully: State="${state}", District="${district}"`);
+                const updates: Partial<Config> = { state, district };
+                if (city && !config.city) updates.city = city;
+                if (postal && !config.zipcodePostalCode) updates.zipcodePostalCode = postal;
+                writeConfig(updates);
+                console.log(`[DeviceInfo] Geolocation retrieved successfully: State="${state}", District="${district}", Postal="${postal || config.zipcodePostalCode || ''}"`);
             } else {
                 console.warn('[DeviceInfo] Could not resolve geolocation from any provider.');
             }

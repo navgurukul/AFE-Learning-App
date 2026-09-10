@@ -34,10 +34,18 @@ function Chip({ active, onClick, children }: { active: boolean, onClick: () => v
 }
 
 function Footer() {
+  const [version, setVersion] = useState<string>('');
+
+  useEffect(() => {
+    ipc.getAppVersion().then(v => {
+      if (v) setVersion(v);
+    }).catch(() => {});
+  }, []);
+
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, padding: '30px 0 20px', fontSize: 14, color: '#6E6A64', fontWeight: 600 }}>
       <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#3FB873', border: `2px solid #141210`, display: 'inline-block' }} />
-      <span>Amazon Future Engineer · Works offline</span>
+      <span>Amazon Future Engineer · Works offline{version ? ` · v${version}` : ''}</span>
     </div>
   );
 }
