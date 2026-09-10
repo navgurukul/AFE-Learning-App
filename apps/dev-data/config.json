@@ -1,6 +1,6 @@
 {
-  "ngoKey": "SAM-87",
-  "partnerName": "sama demo",
+  "ngoKey": "SAM-DEFAULT",
+  "partnerName": "Sama Digital Foundation – 1",
   "schoolName": "samatest",
   "schoolUdise": "1234556",
   "state": "Maharashtra",
@@ -15,5 +15,6 @@
   "distributionChannelHostId": "Sama Platform 1",
   "zipcodePostalCode": "234353",
   "customSerialNumber": "5CG0210RKW",
-  "customMacAddress": "74:d8:3e:7f:9a:86"
+  "customMacAddress": "74:d8:3e:7f:9a:86",
+  "pendingServerReconciliation": false
 }

@@ -367,8 +367,12 @@ class IPCClient {
     }
 
     // Auto-updater
+    async getUpdateStatus(): Promise<{ hasUpdate: boolean; version?: string | null }> {
+        return await this.invoke(IPC_CHANNELS.UPDATER_GET_STATUS, undefined);
+    }
+
     async restartAndInstall(): Promise<void> {
-        return await this.invoke('updater:restart-and-install' as any, undefined);
+        return await this.invoke(IPC_CHANNELS.UPDATER_RESTART_AND_INSTALL, undefined);
     }
 }
 

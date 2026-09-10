@@ -9,9 +9,48 @@ interface UpdateRestartModalProps {
 
 export function UpdateRestartModal({ isOpen, version, onRestart, onClose }: UpdateRestartModalProps) {
     const isImportant = Boolean(version && version.trim().endsWith('1'));
+    const storageKey = version ? `afe_major_update_dismiss_count_${version.trim()}` : '';
+
     const [countdown, setCountdown] = useState(30);
     const [isMinimized, setIsMinimized] = useState(false);
+    const [dismissCount, setDismissCount] = useState(0);
     const hasTriggeredRef = useRef(false);
+
+    useEffect(() => {
+        if (!storageKey) return;
+        const stored = localStorage.getItem(storageKey);
+        const count = stored ? parseInt(stored, 10) || 0 : 0;
+        setDismissCount(count);
+    }, [storageKey, isOpen]);
+
+    const isLockedOut = isImportant && dismissCount >= 3;
+
+    const handleMinimize = () => {
+        if (isLockedOut) return;
+        if (storageKey) {
+            const nextCount = dismissCount + 1;
+            setDismissCount(nextCount);
+            localStorage.setItem(storageKey, String(nextCount));
+            if (nextCount >= 3) {
+                // If 3 is reached now, do not allow minimize
+                return;
+            }
+        }
+        setIsMinimized(true);
+    };
+
+    const handleClose = () => {
+        if (isLockedOut) return;
+        if (isImportant && storageKey) {
+            const nextCount = dismissCount + 1;
+            setDismissCount(nextCount);
+            localStorage.setItem(storageKey, String(nextCount));
+            if (nextCount >= 3) {
+                return;
+            }
+        }
+        if (onClose) onClose();
+    };
 
     useEffect(() => {
         if (!isOpen) {
@@ -55,7 +94,8 @@ export function UpdateRestartModal({ isOpen, version, onRestart, onClose }: Upda
     if (!isOpen) return null;
 
     // Case 1: Important Update - Minimized view (Floating Top-Right Badge)
-    if (isImportant && isMinimized) {
+    // Only available if not locked out
+    if (isImportant && isMinimized && !isLockedOut) {
         return (
             <div
                 style={{
@@ -177,24 +217,26 @@ export function UpdateRestartModal({ isOpen, version, onRestart, onClose }: Upda
                         boxShadow: '8px 8px 0px 0px #141210',
                     }}
                 >
-                    {/* Minimize button top right */}
-                    <button
-                        type="button"
-                        onClick={() => setIsMinimized(true)}
-                        className="neo-btn"
-                        style={{
-                            position: 'absolute',
-                            top: '16px',
-                            right: '16px',
-                            padding: '6px 12px',
-                            fontSize: '13px',
-                            fontWeight: 700,
-                            backgroundColor: '#F8F9FA',
-                        }}
-                        title="Minimize to top right"
-                    >
-                        🗕 Minimize
-                    </button>
+                    {/* Minimize button top right - hidden when locked out */}
+                    {!isLockedOut && (
+                        <button
+                            type="button"
+                            onClick={handleMinimize}
+                            className="neo-btn"
+                            style={{
+                                position: 'absolute',
+                                top: '16px',
+                                right: '16px',
+                                padding: '6px 12px',
+                                fontSize: '13px',
+                                fontWeight: 700,
+                                backgroundColor: '#F8F9FA',
+                            }}
+                            title="Minimize to top right"
+                        >
+                            🗕 Minimize
+                        </button>
+                    )}
 
                     <div style={{ fontSize: '50px', marginBottom: '12px' }}>🚀</div>
 
@@ -254,6 +296,23 @@ export function UpdateRestartModal({ isOpen, version, onRestart, onClose }: Upda
                         for an important update. Don't worry, your progress has been saved.
                     </p>
 
+                    {isLockedOut && (
+                        <div
+                            style={{
+                                backgroundColor: '#FFE3E3',
+                                border: '2px solid #E03131',
+                                borderRadius: '8px',
+                                padding: '10px 14px',
+                                marginBottom: '20px',
+                                fontSize: '13px',
+                                fontWeight: 700,
+                                color: '#C92A2A',
+                            }}
+                        >
+                            ⚠️ Maximum dismissals reached (3/3). This critical update is mandatory and cannot be postponed.
+                        </div>
+                    )}
+
                     {/* Progress bar countdown */}
                     <div
                         className="neo-bar"
@@ -296,19 +355,21 @@ export function UpdateRestartModal({ isOpen, version, onRestart, onClose }: Upda
                         >
                             Restart Immediately 🔄
                         </button>
-                        <button
-                            type="button"
-                            className="neo-btn"
-                            onClick={() => setIsMinimized(true)}
-                            style={{
-                                padding: '14px 20px',
-                                fontSize: '15px',
-                                fontWeight: 700,
-                                backgroundColor: '#F8F9FA',
-                            }}
-                        >
-                            Minimize 🗕
-                        </button>
+                        {!isLockedOut && (
+                            <button
+                                type="button"
+                                className="neo-btn"
+                                onClick={handleMinimize}
+                                style={{
+                                    padding: '14px 20px',
+                                    fontSize: '15px',
+                                    fontWeight: 700,
+                                    backgroundColor: '#F8F9FA',
+                                }}
+                            >
+                                Minimize 🗕
+                            </button>
+                        )}
                     </div>
                 </div>
                 <style>{`

@@ -10,6 +10,7 @@ import { ConfirmModal } from './components/ConfirmModal.tsx';
 import { SchoolSetupModal } from './components/SchoolSetupModal.tsx';
 import { AdminPasswordModal } from './components/AdminPasswordModal.tsx';
 import { UpdateRestartModal } from './components/UpdateRestartModal.tsx';
+import { UpdateWarningBanner } from './components/UpdateWarningBanner.tsx';
 import { ipc } from './lib/ipc.ts';
 import { exitPictureInPictureAndCleanup } from './lib/mediaCleanup.ts';
 
@@ -35,7 +36,7 @@ function App() {
         schoolType: string;
     } | undefined>(undefined);
 
-    // First-run setup check
+    // First-run setup and update status check
     useEffect(() => {
         (async () => {
             try {
@@ -55,6 +56,21 @@ function App() {
                 }
             } catch (e) {
                 console.error('[App] Failed to check setup status:', e);
+            }
+
+            try {
+                const updateStatus = await ipc.getUpdateStatus();
+                if (updateStatus.hasUpdate && updateStatus.version) {
+                    setDownloadedVersion(updateStatus.version);
+                    const isMajor = updateStatus.version.trim().endsWith('1');
+                    const key = `afe_major_update_dismiss_count_${updateStatus.version.trim()}`;
+                    const count = parseInt(localStorage.getItem(key) || '0', 10);
+                    if (isMajor && count >= 3) {
+                        setIsUpdateModalOpen(true);
+                    }
+                }
+            } catch (e) {
+                console.error('[App] Failed to check update status on startup:', e);
             }
         })();
     }, []);
@@ -209,6 +225,13 @@ function App() {
 
     return (
         <div className="app">
+            {downloadedVersion && (
+                <UpdateWarningBanner
+                    version={downloadedVersion}
+                    onRestart={handleRestartAndInstall}
+                    onOpenModal={() => setIsUpdateModalOpen(true)}
+                />
+            )}
             <Routes>
                 <Route path="/" element={<BeginLearning />} />
                 <Route path="/avatar-selection" element={<AvatarSelection />} />

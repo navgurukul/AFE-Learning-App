@@ -68,9 +68,9 @@ module.exports = {
         category: 'Education',
     },
 
-    // NSIS installer configuration (CRITICAL for silent install)
+    // NSIS installer configuration (CRITICAL for silent 1-click install & update)
     nsis: {
-        oneClick: false, // Allow custom install directory
+        oneClick: true, // 1-click silent background updates
         allowToChangeInstallationDirectory: false, // Fixed install path
         perMachine: true, // System-wide installation (NOT per-user)
 
@@ -82,11 +82,10 @@ module.exports = {
         allowElevation: true,
         createDesktopShortcut: true,
         createStartMenuShortcut: true,
+        runAfterFinish: false,
 
-        // CRITICAL: Enable silent install with /S flag
-        // This allows: OfflineLearningApp-Setup.exe /S
-        include: 'build/installer-script.nsh', // Custom NSIS script (optional)
-        // Installer language
+        // Custom NSIS script for silent command-line / parameter handling
+        include: 'build/installer-script.nsh',
         language: '1033', // English
 
         // Uninstall support

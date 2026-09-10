@@ -1,6 +1,50 @@
-# Release Notes
+# Release Notes - Amazon Future Engineer
 
-## Release Notes: v1.3.4 (First-Time School/NGO Setup Onboarding, Admin Re-edit Shortcut & Telemetry Synchronization) - August 22, 2026
+## Release Notes: v1.5.1 (Silent 1-Click Auto-Updates, Controlled RMS Store Registration, Critical Update Lockout & Config Preservation) - September 9, 2026
+
+This release introduces **Fully Silent 1-Click Auto-Updates (`oneClick: true`)**, **Bypass of Code-Signing Verification for Unsigned Local Builds**, **School Configuration & Serial Preservation Guard**, **Controlled RMS Store Registration (`installed_softwares.json`)**, **Persistent Top Update Warning Banner**, and a **Strict 3-Dismiss Lockout for Major Updates**.
+
+### 🚀 Key Highlights & Major Features
+
+#### 1. Fully Silent 1-Click Auto-Updates (NSIS `oneClick: true`)
+- **Unattended Background Updates:** Configured NSIS installer packaging to `oneClick: true` and removed legacy interactive wizard pages (`customInstallPage`, `ShowNGOKeyPage`, `LeaveNGOKeyPage`) that previously blocked unattended background installations.
+- **Silent Restart Execution:** Electron auto-updater now executes `quitAndInstall(true, true)` upon user confirmation. The installer runs with the native `/S` silent switch, uncompresses new binaries, and restarts seamlessly into the new version without requiring manual wizard interactions.
+- **Eliminated Background Update Hangs:** Eliminates background UAC and interactive wizard dialog hangs that previously caused auto-updates to fail silently on student and school machines.
+
+#### 2. Code Signing Verification Bypass for Local Deployments
+- **Unsigned Executable Support:** Configured `win.sign = null` and `win.signAndEditExecutable = false` in `electron-builder.config.cjs`.
+- **Zero Authenticode Editing Errors:** Prevents Windows installer corruption and `ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES` signing exceptions when building or updating unsigned release binaries in offline school labs.
+
+#### 3. School Configuration & Serial Preservation Guard
+- **First-Install Guard:** Added an explicit NSIS file-existence guard `${IfNot} ${FileExists} "$APPDATA\OfflineLearningApp\config.json"` in `installer-script.nsh`.
+- **Preserved Identity:** Routine updates and silent auto-installers will **never overwrite** existing school metadata, UDISE codes, customized serial numbers, or partner NGO keys configured during the initial onboarding wizard.
+
+#### 4. Controlled RMS Store Registration (`registerAfeInControlledRmsStore`)
+- **Mutual RMS Integration:** During application startup (`apps/desktop/src/main/index.ts`), AFE automatically registers its presence in the shared system configuration file:
+  `C:\System.ServiceData\installed_softwares.json`
+- **Dual-Slug Registration:** Populates metadata under both `amazon-future-engineer` and `afe` keys (`{ installed: true, version: '1.5.1', installSource: 'afe-runtime', lastSeen }`).
+- **Bandwidth Optimization:** Enables the co-located Sama RMS Client to detect that AFE is already installed, permanently eliminating redundant **1.3 GB** installer downloads from the RMS software repository.
+
+#### 5. Persistent Update Warning Banner (`UpdateWarningBanner.tsx`)
+- **Visual Update Notification:** Added a high-contrast Neo-Brutalism warning banner pinned to the top of the main application viewport whenever a software update has downloaded in the background.
+- **Actionable Controls:** Provides immediate "Restart Now 🔄" and "Details" action buttons, giving teachers and students immediate clarity that an update is ready to be applied.
+- **Dismissal Counter:** Displays the remaining dismissals allowed (`Dismissals: X/3`) when a critical curriculum release is detected.
+
+#### 6. Major Update 3-Dismiss Lockout Enforcement (`UpdateRestartModal.tsx`)
+- **Major Release Identification:** Automatically flags releases ending in `1` (e.g., `v1.5.1`) as critical/major releases.
+- **Strict Lockout Policy:** Students can dismiss or minimize the update prompt up to 3 times to finish their immediate lesson.
+- **Non-Bypassable Lockout State:** Upon the 3rd dismissal:
+  - Top-right and bottom modal minimize/close controls are removed from the DOM.
+  - A prominent critical warning banner informs the user: *"Maximum dismissals reached (3/3). This critical update is mandatory and cannot be postponed."*
+  - The application restricts navigation until "Restart & Install Now" is executed, ensuring fleet-wide curriculum consistency.
+
+#### 7. Enhanced IPC Architecture & Preload Hardening
+- **New IPC Channels:**
+  - `updater:get-update-status` (`UPDATER_GET_STATUS`): Allows the frontend renderer to check on startup whether an update was downloaded in a previous session.
+  - `updater:restart-and-install` (`UPDATER_RESTART_AND_INSTALL`): Invokes silent installation and application reboot.
+- **Contract Whitelisting:** Updated `apps/desktop/src/preload/secure.cjs` and `@afe/shared` contracts to maintain full context-isolation and sandbox security standards.
+
+---
 
 This release introduces **First-Time School & NGO Onboarding**, **Admin Password Protected Re-edit Shortcut (`Ctrl+Shift+A` × 5)**, **Secure Bcrypt Password Verification**, **Neo-Brutalism UI Styling**, and **Server-Side Database & Telemetry Sync for School Metadata**.
 

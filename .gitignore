@@ -6,6 +6,8 @@ package.json
 # Build outputs
 dist
 build
+!apps/desktop/build
+!apps/desktop/build/**
 out
 *.tsbuildinfo
 

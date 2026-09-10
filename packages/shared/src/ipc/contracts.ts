@@ -91,6 +91,8 @@ export const IPC_CHANNELS = {
     CONFIG_UPDATE_DEVICE_INFO: 'config:updateDeviceInfo',
     CONFIG_CHECK_DEVICE_STATUS: 'config:checkDeviceStatus',
     CONFIG_RECONCILE_DEVICE: 'config:reconcileDevice',
+    UPDATER_GET_STATUS: 'updater:get-update-status',
+    UPDATER_RESTART_AND_INSTALL: 'updater:restart-and-install',
 } as const;
 
 // Request/Response type definitions
@@ -522,6 +524,17 @@ export interface IPCContract {
             message?: string;
             error?: string;
         };
+    };
+    [IPC_CHANNELS.UPDATER_GET_STATUS]: {
+        request: void;
+        response: {
+            hasUpdate: boolean;
+            version?: string | null;
+        };
+    };
+    [IPC_CHANNELS.UPDATER_RESTART_AND_INSTALL]: {
+        request: void;
+        response: void;
     };
 }
 

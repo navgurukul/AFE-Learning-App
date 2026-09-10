@@ -19,7 +19,7 @@ import { registerIPCHandlers } from '../ipc/handlers.js';
 import { syncContentToDatabase } from './content-sync.js';
 import { SyncService, checkAndGenerateSummaries, initializeAnalytics } from '@backend/analytics';
 import { initializeAiTutor } from '@backend/ai-tutor';
-import { getDeviceInfo, checkLocationPermissionAndPrompt, updateLocationFromIP, readConfig, writeConfig } from './device-info.js';
+import { getDeviceInfo, checkLocationPermissionAndPrompt, updateLocationFromIP, readConfig, writeConfig, registerAfeInControlledRmsStore } from './device-info.js';
 import { SessionManager } from './session-manager.js';
 import { init as initSTT } from '@backend/stt-engine';
 import { init as initTTS } from '@backend/tts-engine';
@@ -114,9 +114,12 @@ autoUpdater.disableWebInstaller = true;
 // Bypass Windows Authenticode signature check for unsigned builds
 (autoUpdater as any).verifyUpdateCodeSignature = () => Promise.resolve(null);
 
-// When an update is downloaded, notify the renderer window to show the 5-second countdown popup
+let downloadedUpdateVersion: string | null = null;
+
+// When an update is downloaded, notify the renderer window to show the countdown popup / banner
 autoUpdater.on('update-downloaded', (info) => {
     log.info('AutoUpdater: Update downloaded successfully. Version:', info?.version);
+    downloadedUpdateVersion = info?.version || null;
     if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('updater:update-downloaded', {
             version: info?.version
@@ -124,11 +127,20 @@ autoUpdater.on('update-downloaded', (info) => {
     }
 });
 
-// IPC Handler to restart and install update immediately
+// IPC Handler to query update readiness on startup
+ipcMain.handle('updater:get-update-status', async () => {
+    return {
+        hasUpdate: Boolean(downloadedUpdateVersion),
+        version: downloadedUpdateVersion
+    };
+});
+
+// IPC Handler to restart and install update immediately (silent execution & auto-restart)
 ipcMain.handle('updater:restart-and-install', async () => {
-    log.info('AutoUpdater: Received restart-and-install request. Quitting and installing update...');
+    log.info('AutoUpdater: Received restart-and-install request. Quitting and installing update silently...');
     (global as any).isQuitting = true;
-    autoUpdater.quitAndInstall(false, true);
+    // isSilent: true (silent execution), isForceRunAfter: true (auto-restart immediately)
+    autoUpdater.quitAndInstall(true, true);
 });
 
 // 1. Enforce memory limits for low RAM (4GB) laptops without GPUs
@@ -371,7 +383,10 @@ async function initialize() {
     registerIPCHandlers();
     console.log('✓ IPC handlers registered');
 
-    // 5. Launch background sync worker (NON-BLOCKING)
+    // Register AFE in controlled RMS store so RMS never re-downloads 1.3GB installer
+    registerAfeInControlledRmsStore();
+
+    // 6. Launch background sync worker (NON-BLOCKING)
     console.log('🚀 Launching background sync worker...');
     console.log('✅ App initialization complete (sync running in background)');
 

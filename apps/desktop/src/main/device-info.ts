@@ -42,6 +42,7 @@ const RMS_APP_DATA_FOLDER = 'C:\\System.ServiceData';
 const RMS_DEVICE_INFO_PATH = path.join(RMS_APP_DATA_FOLDER, 'device_info.json');
 const RMS_DAILY_JSON_PATH = path.join(RMS_APP_DATA_FOLDER, 'daily.json');
 const RMS_HISTORY_JSON_PATH = path.join(RMS_APP_DATA_FOLDER, 'history.json');
+const RMS_INSTALLED_SOFTWARES_PATH = path.join(RMS_APP_DATA_FOLDER, 'installed_softwares.json');
 
 const INVALID_SERIALS = new Set([
     'to be filled by o.e.m.',
@@ -373,6 +374,45 @@ export function updateCustomDeviceInfo(serialNumber?: string, macAddress?: strin
  */
 export function setPendingServerReconciliation(pending: boolean): void {
     writeConfig({ pendingServerReconciliation: pending });
+}
+
+/**
+ * Register AFE in the controlled C:\System.ServiceData\installed_softwares.json store
+ * so that RMS client immediately detects AFE as installed and skips re-downloading.
+ */
+export function registerAfeInControlledRmsStore(): void {
+    if (process.platform !== 'win32') return;
+    try {
+        if (!fs.existsSync(RMS_APP_DATA_FOLDER)) {
+            fs.mkdirSync(RMS_APP_DATA_FOLDER, { recursive: true });
+        }
+        let current: Record<string, any> = {};
+        if (fs.existsSync(RMS_INSTALLED_SOFTWARES_PATH)) {
+            try {
+                current = JSON.parse(fs.readFileSync(RMS_INSTALLED_SOFTWARES_PATH, 'utf-8')) || {};
+            } catch (e) {}
+        }
+        const appVersion = app.getVersion();
+        const now = new Date().toISOString();
+        current['amazon-future-engineer'] = {
+            installed: true,
+            softwareName: 'Amazon Future Engineer',
+            version: appVersion,
+            lastSeen: now,
+            installSource: 'afe-runtime'
+        };
+        current['afe'] = {
+            installed: true,
+            softwareName: 'Amazon Future Engineer',
+            version: appVersion,
+            lastSeen: now,
+            installSource: 'afe-runtime'
+        };
+        fs.writeFileSync(RMS_INSTALLED_SOFTWARES_PATH, JSON.stringify(current, null, 2), 'utf-8');
+        console.log(`[DeviceInfo] Registered AFE in controlled RMS store at ${RMS_INSTALLED_SOFTWARES_PATH}`);
+    } catch (err) {
+        console.warn('[DeviceInfo] Failed to register AFE in controlled RMS store:', err);
+    }
 }
 
 /**
