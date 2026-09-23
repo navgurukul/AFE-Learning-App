@@ -20,7 +20,8 @@ import { registerIPCHandlers } from '../ipc/handlers.js';
 import { syncContentToDatabase } from './content-sync.js';
 import { SyncService, checkAndGenerateSummaries, initializeAnalytics } from '@backend/analytics';
 import { initializeAiTutor } from '@backend/ai-tutor';
-import { getDeviceInfo, checkLocationPermissionAndPrompt, updateLocationFromIP, readConfig, writeConfig, registerAfeInControlledRmsStore } from './device-info.js';
+import { getDeviceInfo, checkLocationPermissionAndPrompt, updateLocationFromIP, readConfig, writeConfig, registerAfeInControlledRmsStore, getEffectiveServerUrl, isDeveloperModeActive } from './device-info.js';
+import { flushUnsyncedFeedbacks } from './feedback-sync.js';
 import { SessionManager } from './session-manager.js';
 import { init as initSTT } from '@backend/stt-engine';
 import { init as initTTS } from '@backend/tts-engine';
@@ -436,6 +437,9 @@ async function initialize() {
                             wasOffline = false;
                             // Try to resolve location from IP if allowed and unset (internally throttled)
                             await updateLocationFromIP(net.fetch);
+
+                            // Flush any pending unsynced user feedbacks
+                            await flushUnsyncedFeedbacks();
                         } else {
                             if (wasOffline !== true) {
                                 console.log('[SyncEngine] Offline - skipping sync attempt.');
@@ -445,8 +449,7 @@ async function initialize() {
                         }
 
                         const deviceInfo = await getDeviceInfo();
-                        const rawServerUrl = process.env.CENTRALIZED_SERVER_URL || 'https://rms-api.thesama.in/api/afe';
-                        const serverUrl = rawServerUrl.replace(/\/+$/, '');
+                        const serverUrl = getEffectiveServerUrl();
                         const syncService = new SyncService(serverUrl, net.fetch);
 
                         // 1. One-time historical backfill (Runs once per laptop to link legacy/orphaned sessions in RMS DB)

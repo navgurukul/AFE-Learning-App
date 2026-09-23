@@ -96,7 +96,17 @@ const VALID_CHANNELS = [
     'updater:get-update-status',
 
     // App info
-    'app:get-version'
+    'app:get-version',
+
+    // Developer Mode
+    'dev:get-status',
+    'dev:set-status',
+    'dev:turn-off-and-purge',
+    'dev:status-changed',
+
+    // Feedback
+    'feedback:submit',
+    'feedback:capture-screen'
 ];
 
 contextBridge.exposeInMainWorld('electronAPI', {

@@ -387,6 +387,36 @@ class IPCClient {
     async restartAndInstall(): Promise<void> {
         return await this.invoke(IPC_CHANNELS.UPDATER_RESTART_AND_INSTALL, undefined);
     }
+
+    // Developer Mode
+    async getDeveloperModeStatus() {
+        return await this.invoke(IPC_CHANNELS.DEV_GET_STATUS, undefined);
+    }
+
+    async setDeveloperMode(enabled: boolean) {
+        return await this.invoke(IPC_CHANNELS.DEV_SET_STATUS, { enabled });
+    }
+
+    async turnOffDevModeAndPurge() {
+        return await this.invoke(IPC_CHANNELS.DEV_TURN_OFF_AND_PURGE, undefined);
+    }
+
+    // Feedback
+    async submitFeedback(message: string, screenshotBase64?: string, feedbackType?: string) {
+        return await this.invoke(IPC_CHANNELS.FEEDBACK_SUBMIT, {
+            message,
+            screenshotBase64,
+            feedbackType
+        });
+    }
+
+    async captureScreen() {
+        return await this.invoke(IPC_CHANNELS.FEEDBACK_CAPTURE_SCREEN, undefined);
+    }
+
+    async checkFeedbackRateLimit() {
+        return await this.invoke(IPC_CHANNELS.FEEDBACK_CHECK_RATE_LIMIT, undefined);
+    }
 }
 
 export const ipc = new IPCClient();

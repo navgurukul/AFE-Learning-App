@@ -185,6 +185,45 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
     const [saving, setSaving] = useState(false);
     const [deviceModalOpen, setDeviceModalOpen] = useState(false);
     const [savedDeviceInfo, setSavedDeviceInfo] = useState({ serialNumber: '', macAddress: '' });
+    const [devModeNotice, setDevModeNotice] = useState<string | null>(null);
+    const devModeCountRef = React.useRef(0);
+    const devModeTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // Ctrl + Shift + D x5 to activate Developer Mode
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const handleKeyDown = async (e: KeyboardEvent) => {
+            if (e.ctrlKey && e.shiftKey && (e.key === 'D' || e.key === 'd')) {
+                e.preventDefault();
+                devModeCountRef.current++;
+
+                if (devModeTimerRef.current) {
+                    clearTimeout(devModeTimerRef.current);
+                }
+                devModeTimerRef.current = setTimeout(() => {
+                    devModeCountRef.current = 0;
+                }, 3000);
+
+                if (devModeCountRef.current >= 5) {
+                    devModeCountRef.current = 0;
+                    if (devModeTimerRef.current) {
+                        clearTimeout(devModeTimerRef.current);
+                    }
+                    try {
+                        await ipc.setDeveloperMode(true);
+                        setDevModeNotice('🚀 Developer Mode Activated! Connected to Dev Server.');
+                        setTimeout(() => setDevModeNotice(null), 5000);
+                    } catch (err) {
+                        console.error('Failed to activate developer mode:', err);
+                    }
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen]);
 
     // Helper to fetch schools for an NGO (with embedded fallback & API query)
     const fetchSchoolsForNgo = async (ngoId: string, embeddedSchools?: SchoolItem[]) => {
@@ -518,6 +557,24 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                 <div className="school-setup-header">
                     <h2>🏫 School & NGO Setup</h2>
                     <p>Select your NGO and school details. This information will be used for session reporting.</p>
+                    {devModeNotice && (
+                        <div style={{
+                            marginTop: 10,
+                            padding: '10px 14px',
+                            background: '#FEF3C7',
+                            border: '2px solid #F59E0B',
+                            borderRadius: 8,
+                            color: '#92400E',
+                            fontWeight: 700,
+                            fontSize: 14,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 8
+                        }}>
+                            <span>⚙️</span>
+                            <span>{devModeNotice}</span>
+                        </div>
+                    )}
                 </div>
 
                 <div className="school-setup-body">

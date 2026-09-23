@@ -31,6 +31,7 @@ export interface Config {
     customSerialNumber?: string;
     customMacAddress?: string;
     pendingServerReconciliation?: boolean;
+    isDeveloperMode?: boolean;
 }
 
 // Config file path
@@ -294,7 +295,8 @@ export function readConfig(): Required<Config> {
         historicalSyncCompleted: false,
         customSerialNumber: '',
         customMacAddress: '',
-        pendingServerReconciliation: false
+        pendingServerReconciliation: false,
+        isDeveloperMode: false
     };
 
     try {
@@ -324,12 +326,40 @@ export function readConfig(): Required<Config> {
             historicalSyncCompleted: config.historicalSyncCompleted === true,
             customSerialNumber: config.customSerialNumber || defaultConfig.customSerialNumber,
             customMacAddress: config.customMacAddress || defaultConfig.customMacAddress,
-            pendingServerReconciliation: config.pendingServerReconciliation === true
+            pendingServerReconciliation: config.pendingServerReconciliation === true,
+            isDeveloperMode: config.isDeveloperMode === true
         };
     } catch (error) {
         console.error('[DeviceInfo] Failed to read config:', error);
         return defaultConfig;
     }
+}
+
+/**
+ * Check if developer mode is currently active (via config or env IS_DEV)
+ */
+export function isDeveloperModeActive(): boolean {
+    return readConfig().isDeveloperMode === true || process.env.IS_DEV === 'true' || process.env.IS_DEV === '1';
+}
+
+/**
+ * Toggle or set Developer Mode state
+ */
+export function setDeveloperModeActive(enabled: boolean): void {
+    writeConfig({ isDeveloperMode: enabled });
+    console.log(`🛠️ [DeviceInfo] Developer mode set to: ${enabled}`);
+}
+
+/**
+ * Get the effective centralized server URL depending on whether Developer Mode is active
+ */
+export function getEffectiveServerUrl(): string {
+    if (isDeveloperModeActive()) {
+        const raw = process.env.CENTRALIZED_DEV_SERVER_URL || 'https://rms-api.thesama.in/api/afe';
+        return raw.replace(/\/+$/, '');
+    }
+    const raw = process.env.CENTRALIZED_SERVER_URL || 'https://rms-api.thesama.in/api/afe';
+    return raw.replace(/\/+$/, '');
 }
 
 /**

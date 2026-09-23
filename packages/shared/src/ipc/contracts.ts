@@ -94,6 +94,16 @@ export const IPC_CHANNELS = {
     UPDATER_GET_STATUS: 'updater:get-update-status',
     UPDATER_RESTART_AND_INSTALL: 'updater:restart-and-install',
     APP_GET_VERSION: 'app:get-version',
+
+    // Developer Mode
+    DEV_GET_STATUS: 'dev:get-status',
+    DEV_SET_STATUS: 'dev:set-status',
+    DEV_TURN_OFF_AND_PURGE: 'dev:turn-off-and-purge',
+
+    // Feedback
+    FEEDBACK_SUBMIT: 'feedback:submit',
+    FEEDBACK_CAPTURE_SCREEN: 'feedback:capture-screen',
+    FEEDBACK_CHECK_RATE_LIMIT: 'feedback:check-rate-limit',
 } as const;
 
 // Request/Response type definitions
@@ -540,6 +550,54 @@ export interface IPCContract {
     [IPC_CHANNELS.APP_GET_VERSION]: {
         request: void;
         response: string;
+    };
+    [IPC_CHANNELS.DEV_GET_STATUS]: {
+        request: void;
+        response: {
+            isDevMode: boolean;
+            serverUrl: string;
+        };
+    };
+    [IPC_CHANNELS.DEV_SET_STATUS]: {
+        request: { enabled: boolean };
+        response: {
+            success: boolean;
+            isDevMode: boolean;
+            serverUrl: string;
+        };
+    };
+    [IPC_CHANNELS.DEV_TURN_OFF_AND_PURGE]: {
+        request: void;
+        response: {
+            success: boolean;
+            message: string;
+        };
+    };
+    [IPC_CHANNELS.FEEDBACK_SUBMIT]: {
+        request: {
+            message: string;
+            screenshotBase64?: string;
+            feedbackType?: string;
+        };
+        response: {
+            success: boolean;
+            feedbackId: string;
+            synced: boolean;
+            message: string;
+        };
+    };
+    [IPC_CHANNELS.FEEDBACK_CAPTURE_SCREEN]: {
+        request: void;
+        response: {
+            screenshotBase64: string;
+        };
+    };
+    [IPC_CHANNELS.FEEDBACK_CHECK_RATE_LIMIT]: {
+        request: void;
+        response: {
+            allowed: boolean;
+            remainingMinutes: number;
+        };
     };
 }
 

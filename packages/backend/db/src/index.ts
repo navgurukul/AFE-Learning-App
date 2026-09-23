@@ -7,6 +7,7 @@ export { schema };
 export * from './services/students.js';
 export * from './services/progress.js';
 export * from './services/sessions.js';
+export * from './services/feedbacks.js';
 
 // Export Drizzle utilities
 export { eq, and, or, sql, desc, asc, inArray } from 'drizzle-orm';

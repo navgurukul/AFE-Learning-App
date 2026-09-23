@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { ipc } from '../lib/ipc.ts';
 import type { Student } from '@afe/shared';
 import { exitPictureInPictureAndCleanup } from '../lib/mediaCleanup.ts';
+import { FeedbackModal } from '../components/FeedbackModal.tsx';
 
 const AVATARS: Record<string, { emoji: string, bg: string }> = {
   Lion:      { emoji: '🦁', bg: '#FFE08A' },
@@ -80,6 +81,7 @@ function BeginLearning() {
     const [students, setStudents] = useState<Student[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
     useEffect(() => {
         exitPictureInPictureAndCleanup();
@@ -139,8 +141,20 @@ function BeginLearning() {
                     <p style={{ fontSize: 15, color: '#6E6A64', fontWeight: 600, margin: '0 0 36px' }}>
                     Works fully offline. No internet needed.
                     </p>
-                    <button className="neo-btn neo-btn--primary neo-btn--lg" onClick={handleCreateNew}>Make my profile →</button>
+                    <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
+                        <button className="neo-btn neo-btn--primary neo-btn--lg" onClick={handleCreateNew}>Make my profile →</button>
+                        <button
+                            type="button"
+                            id="afe-landing-feedback-empty-btn"
+                            className="neo-btn neo-btn--lg"
+                            onClick={() => setIsFeedbackOpen(true)}
+                            style={{ backgroundColor: '#FFFDF9' }}
+                        >
+                            💬 Share Feedback
+                        </button>
+                    </div>
                 </div>
+                <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
                 <Footer />
             </div>
         );
@@ -151,7 +165,18 @@ function BeginLearning() {
             <div style={{ maxWidth: 940, margin: '0 auto', width: '100%', flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 22 }}>
                     <h1 className="h-hero" style={{ fontSize: 'clamp(32px,5vw,46px)', margin: 0 }}>Who's learning today?</h1>
-                    <button className="neo-btn neo-btn--primary" onClick={handleCreateNew}>+ New profile</button>
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                        <button
+                            type="button"
+                            id="afe-landing-feedback-btn"
+                            className="neo-btn"
+                            onClick={() => setIsFeedbackOpen(true)}
+                            style={{ backgroundColor: '#FFFDF9', fontSize: 15, padding: '9px 16px' }}
+                        >
+                            💬 Share Feedback
+                        </button>
+                        <button className="neo-btn neo-btn--primary" onClick={handleCreateNew}>+ New profile</button>
+                    </div>
                 </div>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 26, alignItems: 'center' }}>
                     <input 
@@ -173,6 +198,7 @@ function BeginLearning() {
                     </div>
                 )}
             </div>
+            <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
             <Footer />
         </div>
     );

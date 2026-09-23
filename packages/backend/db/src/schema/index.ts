@@ -234,3 +234,22 @@ export const afeSessions = sqliteTable('afe_sessions', {
 export type AFESession = typeof afeSessions.$inferSelect;
 export type NewAFESession = typeof afeSessions.$inferInsert;
 
+// Feedbacks table for offline-first feedback tracking
+export const localFeedbacks = sqliteTable('afe_feedbacks', {
+    id: text('id').primaryKey(),
+    serialNumber: text('serial_number'),
+    schoolUdise: text('school_udise'),
+    schoolName: text('school_name'),
+    message: text('message'),
+    feedbackType: text('feedback_type').notNull().default('USER_FEEDBACK'),
+    screenshotPath: text('screenshot_path'),
+    logFilePath: text('log_file_path'),
+    synced: integer('synced', { mode: 'boolean' }).notNull().default(false),
+    isDevMode: integer('is_dev_mode', { mode: 'boolean' }).notNull().default(false),
+    createdAt: text('created_at').notNull(),
+    syncedAt: text('synced_at'),
+});
+
+export type LocalFeedback = typeof localFeedbacks.$inferSelect;
+export type NewLocalFeedback = typeof localFeedbacks.$inferInsert;
+

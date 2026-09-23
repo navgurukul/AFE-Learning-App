@@ -6,3 +6,4 @@ export { getDatabase, initializeDatabase } from './index.js';
 export * from './services/students.js';
 export * from './services/progress.js';
 export * from './services/sessions.js';
+export * from './services/feedbacks.js';

@@ -46,6 +46,15 @@ export class SessionManager {
     public static closeOnSessionEnd = false;
     private static cachedManifest: ContentManifest | null = null;
 
+    /**
+     * Clear all active in-memory session state (for clean-slate purges)
+     */
+    public static clear(): void {
+        this.activeSession = null;
+        this.closeOnSessionEnd = false;
+        this.cachedManifest = null;
+    }
+
     private static getManifest(): ContentManifest {
         if (!this.cachedManifest) {
             this.cachedManifest = loadContentManifest(PATHS.ROOT);

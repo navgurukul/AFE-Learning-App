@@ -11,6 +11,7 @@ import { SchoolSetupModal } from './components/SchoolSetupModal.tsx';
 import { AdminPasswordModal } from './components/AdminPasswordModal.tsx';
 import { UpdateRestartModal } from './components/UpdateRestartModal.tsx';
 import { UpdateWarningBanner } from './components/UpdateWarningBanner.tsx';
+import { DeveloperModeBanner } from './components/DeveloperModeBanner.tsx';
 import { ipc } from './lib/ipc.ts';
 import { exitPictureInPictureAndCleanup } from './lib/mediaCleanup.ts';
 
@@ -21,6 +22,8 @@ function App() {
     const [isExitModalOpen, setIsExitModalOpen] = useState(false);
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
     const [downloadedVersion, setDownloadedVersion] = useState<string | undefined>(undefined);
+    const [isDevMode, setIsDevMode] = useState(false);
+    const [devServerUrl, setDevServerUrl] = useState('');
 
     // School Setup state
     const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
@@ -71,6 +74,14 @@ function App() {
                 }
             } catch (e) {
                 console.error('[App] Failed to check update status on startup:', e);
+            }
+
+            try {
+                const devStatus = await ipc.getDeveloperModeStatus();
+                setIsDevMode(devStatus.isDevMode);
+                setDevServerUrl(devStatus.serverUrl);
+            } catch (e) {
+                console.error('[App] Failed to check dev mode status:', e);
             }
         })();
     }, []);
@@ -161,10 +172,16 @@ function App() {
             setIsUpdateModalOpen(true);
         });
 
+        const unsubscribeDevStatus = window.electronAPI.on('dev:status-changed', (data?: { isDevMode?: boolean }) => {
+            console.log('[App] Dev mode status changed:', data?.isDevMode);
+            setIsDevMode(!!data?.isDevMode);
+        });
+
         return () => {
             if (typeof unsubscribeLogout === 'function') unsubscribeLogout();
             if (typeof unsubscribeExit === 'function') unsubscribeExit();
             if (typeof unsubscribeUpdate === 'function') unsubscribeUpdate();
+            if (typeof unsubscribeDevStatus === 'function') unsubscribeDevStatus();
         };
     }, [location.pathname, navigate]);
 
@@ -225,6 +242,11 @@ function App() {
 
     return (
         <div className="app">
+            <DeveloperModeBanner
+                isDevMode={isDevMode}
+                serverUrl={devServerUrl}
+                onStatusChange={(val) => setIsDevMode(val)}
+            />
             {downloadedVersion && (
                 <UpdateWarningBanner
                     version={downloadedVersion}

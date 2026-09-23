@@ -63,7 +63,9 @@ import { PATHS, APP_DATA_ROOT } from '../main/paths.js';
 import { getMp4Duration } from '../main/mp4-parser.js';
 import { getMkvDuration } from '../main/mkv-parser.js';
 import { SessionManager } from '../main/session-manager.js';
-import { writeConfig, getSerialNumber, getMacAddress, updateCustomDeviceInfo, setPendingServerReconciliation } from '../main/device-info.js';
+import { writeConfig, getSerialNumber, getMacAddress, updateCustomDeviceInfo, setPendingServerReconciliation, isDeveloperModeActive, setDeveloperModeActive, getEffectiveServerUrl } from '../main/device-info.js';
+import { submitFeedback, checkFeedbackRateLimit, turnOffDevModeAndPurge } from '../main/feedback-sync.js';
+import { BrowserWindow } from 'electron';
 
 // Admin password hash (bcrypt, 10 rounds) — raw password is never stored
 const ADMIN_PWD_HASH = '$2b$10$TnoAwkgzB/PuqDdXW50v4.552E/D/uudKE8OVxiGj5V1LXQC13Koa';
@@ -941,6 +943,87 @@ export function registerIPCHandlers() {
         } catch (error) {
             console.error('[IPC] Failed to reconcile device info:', error);
             return { success: false, error: String(error) };
+        }
+    });
+
+    // Developer Mode Handlers
+    ipcMain.handle(IPC_CHANNELS.DEV_GET_STATUS, async () => {
+        return {
+            isDevMode: isDeveloperModeActive(),
+            serverUrl: getEffectiveServerUrl()
+        };
+    });
+
+    ipcMain.handle(IPC_CHANNELS.DEV_SET_STATUS, async (_event, data: { enabled: boolean }) => {
+        setDeveloperModeActive(data.enabled);
+        const isDev = isDeveloperModeActive();
+        const serverUrl = getEffectiveServerUrl();
+        BrowserWindow.getAllWindows().forEach((win) => {
+            if (!win.isDestroyed()) {
+                win.webContents.send('dev:status-changed', { isDevMode: isDev });
+            }
+        });
+        return {
+            success: true,
+            isDevMode: isDev,
+            serverUrl
+        };
+    });
+
+    ipcMain.handle(IPC_CHANNELS.DEV_TURN_OFF_AND_PURGE, async (event) => {
+        try {
+            const win = BrowserWindow.fromWebContents(event.sender);
+            await turnOffDevModeAndPurge(win);
+            return {
+                success: true,
+                message: 'Developer mode turned off and database purged to a clean slate.'
+            };
+        } catch (error: any) {
+            console.error('[IPC] Failed to turn off developer mode:', error);
+            return {
+                success: false,
+                message: error?.message || 'Failed to turn off developer mode'
+            };
+        }
+    });
+
+    // Feedback Handlers
+    ipcMain.handle(IPC_CHANNELS.FEEDBACK_SUBMIT, async (_event, data) => {
+        try {
+            return await submitFeedback(data);
+        } catch (error: any) {
+            console.error('[IPC] Failed to submit feedback:', error);
+            return {
+                success: true, // Always show success to user (offline resilience)
+                feedbackId: '',
+                synced: false,
+                message: 'Feedback queued locally'
+            };
+        }
+    });
+
+    ipcMain.handle(IPC_CHANNELS.FEEDBACK_CAPTURE_SCREEN, async (event) => {
+        try {
+            const win = BrowserWindow.fromWebContents(event.sender) || BrowserWindow.getFocusedWindow();
+            if (!win || win.isDestroyed()) {
+                return { screenshotBase64: '' };
+            }
+            const image = await win.webContents.capturePage();
+            return {
+                screenshotBase64: image.toDataURL()
+            };
+        } catch (error) {
+            console.error('[IPC] Failed to capture screen:', error);
+            return { screenshotBase64: '' };
+        }
+    });
+
+    ipcMain.handle(IPC_CHANNELS.FEEDBACK_CHECK_RATE_LIMIT, async () => {
+        try {
+            return await checkFeedbackRateLimit();
+        } catch (error: any) {
+            console.error('[IPC] Failed to check feedback rate limit:', error);
+            return { allowed: true, remainingMinutes: 0 };
         }
     });
 
