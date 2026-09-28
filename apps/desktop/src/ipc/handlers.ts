@@ -767,7 +767,7 @@ export function registerIPCHandlers() {
                 zipcodePostalCode: config.zipcodePostalCode || '110001',
                 schoolType: config.schoolType || 'Government School',
                 countryCode: config.countryCode || 'IN',
-                partnerName: config.partnerName || 'Sama Digital Foundation – 1',
+                partnerName: config.partnerName || 'Sama Digital Platform',
                 distributionChannelHostId: config.distributionChannelHostId || 'Sama Platform 1',
             };
         } catch (error) {
@@ -783,7 +783,7 @@ export function registerIPCHandlers() {
                 zipcodePostalCode: '110001',
                 schoolType: 'Government School',
                 countryCode: 'IN',
-                partnerName: 'Sama Digital Foundation – 1',
+                partnerName: 'Sama Digital Platform',
                 distributionChannelHostId: 'Sama Platform 1',
             };
         }
@@ -802,7 +802,7 @@ export function registerIPCHandlers() {
                 zipcodePostalCode: zipcodePostalCode || '110001',
                 schoolType,
                 countryCode: countryCode || 'IN',
-                partnerName: partnerName || 'Sama Digital Foundation – 1',
+                partnerName: partnerName || 'Sama Digital Platform',
                 distributionChannelHostId: distributionChannelHostId || 'Sama Platform 1',
                 setupCompleted: true,
             };

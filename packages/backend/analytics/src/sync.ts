@@ -283,7 +283,7 @@ export class SyncService {
                     countryCode: (session as any).countryCode || deviceInfo.countryCode || 'IN',
                     distributionChannelHostId: (session as any).distributionChannelHostId || deviceInfo.distributionChannelHostId || 'Sama Platform 1',
                     dataCollectionMethod: 'Method 2 - Individual Tracking',
-                    partnerName: (session as any).partnerName || deviceInfo.partnerName || 'Sama Digital Foundation – 1',
+                    partnerName: (session as any).partnerName || deviceInfo.partnerName || 'Sama Digital Platform',
                     sessionDate: session.sessionDate,
                     sessionStartDate,
                     sessionEndDate,

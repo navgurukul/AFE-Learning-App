@@ -279,7 +279,7 @@ export async function getSerialNumber(forceHardware = false): Promise<string> {
 export function readConfig(): Required<Config> {
     const defaultConfig: Required<Config> = {
         ngoKey: 'D3F41T-K37',
-        partnerName: 'Sama Digital Foundation – 1',
+        partnerName: 'Sama Digital Platform',
         schoolName: 'sama',
         schoolUdise: null,
         state: '',
@@ -531,7 +531,7 @@ export async function getDeviceInfo(): Promise<DeviceInfo> {
         serialNumber,
         macAddress,
         appVersion: app.getVersion(),
-        partnerName: config.partnerName || 'Sama Digital Foundation – 1',
+        partnerName: config.partnerName || 'Sama Digital Platform',
         countryCode: config.countryCode || 'IN',
         distributionChannelHostId: config.distributionChannelHostId || 'Sama Platform 1',
         ngoKey: config.ngoKey,

@@ -129,7 +129,7 @@ const PRESET_SCHOOLS: SchoolItem[] = [
 ];
 
 const FALLBACK_NGOS: NgoItem[] = [
-    { id: 'SAM-DEFAULT', name: 'Sama Digital Foundation' },
+    { id: 'SAM-DEFAULT', name: 'Sama Digital Platform' },
 ];
 
 const SCHOOL_TYPE_OPTIONS = [
@@ -180,7 +180,7 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
     const [zipcodePostalCode, setZipcodePostalCode] = useState('110001');
     const [schoolType, setSchoolType] = useState('Government School');
     const [countryCode, setCountryCode] = useState('IN');
-    const [partnerName, setPartnerName] = useState('Sama Digital Foundation – 1');
+    const [partnerName, setPartnerName] = useState('Sama Digital Platform');
     const [distributionChannelHostId, setDistributionChannelHostId] = useState('Sama Platform 1');
     const [saving, setSaving] = useState(false);
     const [deviceModalOpen, setDeviceModalOpen] = useState(false);
@@ -282,7 +282,7 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
         }
     };
 
-    // Fetch NGOs from live API with graceful fallback to Sama Digital Foundation
+    // Fetch NGOs from live API with graceful fallback to Sama Digital Platform
     useEffect(() => {
         if (!isOpen) return;
 
@@ -320,15 +320,15 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                         }))
                         .filter((item: NgoItem) => item.name.length > 0);
 
-                    // Ensure Sama Digital Foundation is present
+                    // Ensure Sama Digital Platform is present
                     const hasSama = mapped.some(
-                        (n) => n.name.toLowerCase().includes('sama digital foundation')
+                        (n) => n.name.toLowerCase().includes('sama digital platform')
                     );
                     if (!hasSama) {
-                        mapped.unshift({ id: 'SAM-DEFAULT', name: 'Sama Digital Foundation', schools: PRESET_SCHOOLS as any });
+                        mapped.unshift({ id: 'SAM-DEFAULT', name: 'Sama Digital Platform', schools: PRESET_SCHOOLS as any });
                     }
 
-                    // Sort alphabetically, keeping Sama Digital Foundation at top
+                    // Sort alphabetically, keeping Sama Digital Platform at top
                     mapped.sort((a, b) => {
                         if (a.id === 'SAM-DEFAULT') return -1;
                         if (b.id === 'SAM-DEFAULT') return 1;
@@ -341,7 +341,7 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                 }
             })
             .catch((err) => {
-                console.warn('[SchoolSetupModal] Failed to fetch NGOs from API, falling back to Sama Digital Foundation:', err);
+                console.warn('[SchoolSetupModal] Failed to fetch NGOs from API, falling back to Sama Digital Platform:', err);
                 setNgos(FALLBACK_NGOS);
             })
             .finally(() => {
@@ -383,7 +383,7 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                 setSelectedNgoKey('');
                 setCustomNgo(rawPartner);
             } else {
-                setSelectedNgo('Sama Digital Foundation');
+                setSelectedNgo('Sama Digital Platform');
                 setSelectedNgoKey('SAM-DEFAULT');
                 setCustomNgo('');
             }
@@ -397,14 +397,14 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
             setZipcodePostalCode(initialData.zipcodePostalCode || '110001');
             setSchoolType(initialData.schoolType || 'Government School');
             setCountryCode(initialData.countryCode || 'IN');
-            setPartnerName(initialData.partnerName || 'Sama Digital Foundation – 1');
+            setPartnerName(initialData.partnerName || 'Sama Digital Platform');
             setDistributionChannelHostId(initialData.distributionChannelHostId || 'Sama Platform 1');
         } else {
             // Default initial selection
             if (!selectedNgo) {
-                setSelectedNgo('Sama Digital Foundation');
+                setSelectedNgo('Sama Digital Platform');
                 setSelectedNgoKey('SAM-DEFAULT');
-                setPartnerName('Sama Digital Foundation');
+                setPartnerName('Sama Digital Platform');
             }
         }
     }, [initialData, ngos]);
@@ -523,7 +523,7 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
         if (!isFormValid || saving) return;
         setSaving(true);
         try {
-            const finalPartnerName = partnerName.trim() || (selectedNgo === '__OTHER__' ? customNgo.trim() : selectedNgo) || 'Sama Digital Foundation – 1';
+            const finalPartnerName = partnerName.trim() || (selectedNgo === '__OTHER__' ? customNgo.trim() : selectedNgo) || 'Sama Digital Platform';
             const saveRes = await ipc.saveSchoolDetails({
                 schoolName: schoolName.trim(),
                 schoolUdise: schoolUdise.trim(),
@@ -682,9 +682,10 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                             <label>Partner Name <span className="required">*</span></label>
                             <input
                                 type="text"
-                                placeholder="e.g., Sama Digital Foundation – 1"
+                                placeholder="e.g., Sama Digital Platform"
                                 value={partnerName}
                                 onChange={(e) => setPartnerName(e.target.value)}
+                                disabled
                             />
                         </div>
 

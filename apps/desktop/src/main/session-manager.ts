@@ -424,7 +424,7 @@ export class SessionManager {
                     avatarName: student.name,
                     countryCode: deviceInfo.countryCode || 'IN',
                     distributionChannelHostId: deviceInfo.distributionChannelHostId || 'Sama Platform 1',
-                    partnerName: deviceInfo.partnerName || 'Sama Digital Foundation – 1',
+                    partnerName: deviceInfo.partnerName || 'Sama Digital Platform',
                     sessionDate,
                     startTime: startISO,
                     endTime: endISO,
