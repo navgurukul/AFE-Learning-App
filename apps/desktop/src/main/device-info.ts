@@ -255,16 +255,62 @@ export async function getSerialNumber(forceHardware = false): Promise<string> {
             if (serial !== 'UNKNOWN-SERIAL') cachedSerialNumber = serial;
             return serial;
         } else if (process.platform === 'linux') {
+            // 1. Try product_serial (requires root or relaxed DMI permissions)
             try {
                 const serial = fs.readFileSync('/sys/class/dmi/id/product_serial', 'utf8').trim();
-                if (serial && serial !== 'UNKNOWN-SERIAL') cachedSerialNumber = serial;
-                return serial;
-            } catch (e) {
-                const { stdout } = await execAsync('cat /var/lib/dbus/machine-id');
-                const serial = stdout.trim() || 'UNKNOWN-SERIAL';
-                if (serial !== 'UNKNOWN-SERIAL') cachedSerialNumber = serial;
-                return serial;
-            }
+                if (isValidSerial(serial)) {
+                    cachedSerialNumber = serial;
+                    return serial;
+                }
+            } catch (e) {}
+
+            // 2. Try board_serial
+            try {
+                const serial = fs.readFileSync('/sys/class/dmi/id/board_serial', 'utf8').trim();
+                if (isValidSerial(serial)) {
+                    cachedSerialNumber = serial;
+                    return serial;
+                }
+            } catch (e) {}
+
+            // 3. Try dmidecode (if available and running with elevated permissions)
+            try {
+                const { stdout } = await execAsync('dmidecode -s system-serial-number', { timeout: 3000 });
+                const serial = stdout.trim();
+                if (isValidSerial(serial)) {
+                    cachedSerialNumber = serial;
+                    return serial;
+                }
+            } catch (e) {}
+
+            // 4. Fallback: machine-id (/var/lib/dbus/machine-id or /etc/machine-id)
+            try {
+                let machineId = '';
+                if (fs.existsSync('/var/lib/dbus/machine-id')) {
+                    machineId = fs.readFileSync('/var/lib/dbus/machine-id', 'utf8').trim();
+                } else if (fs.existsSync('/etc/machine-id')) {
+                    machineId = fs.readFileSync('/etc/machine-id', 'utf8').trim();
+                }
+                if (machineId && machineId.length >= 8) {
+                    cachedSerialNumber = machineId;
+                    return machineId;
+                }
+            } catch (e) {}
+
+            // 5. Hardware MAC hash fallback
+            try {
+                const mac = await getMacAddress();
+                if (mac && mac !== 'UNKNOWN-MAC') {
+                    const hash = crypto.createHash('sha256').update(mac).digest('hex').slice(0, 8).toUpperCase();
+                    cachedSerialNumber = `FP-${hash}`;
+                    return cachedSerialNumber;
+                }
+            } catch (e) {}
+
+            // 6. Final fallback: persist a generated UUID
+            const uuid = crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase();
+            cachedSerialNumber = `NG-${uuid}`;
+            return cachedSerialNumber;
         }
         return 'UNKNOWN-SERIAL';
     } catch (error) {

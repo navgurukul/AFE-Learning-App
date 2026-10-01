@@ -34,10 +34,18 @@ export function isLowEndDevice(): boolean {
         }
         else {
             // Linux
-            const stdout = execSync('lspci | grep -i vga', { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'ignore'] });
-            gpuInfo = stdout.trim();
-            if (gpuInfo.toLowerCase().includes('nvidia') || gpuInfo.toLowerCase().includes('radeon')) {
-                hasDedicatedGPU = true;
+            try {
+                const stdout = execSync('lspci 2>/dev/null', { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'ignore'] });
+                const matchedLines = stdout.split('\n').filter(line => /vga|3d|display/i.test(line));
+                if (matchedLines.length > 0) {
+                    gpuInfo = matchedLines.join(', ').trim();
+                    const lower = gpuInfo.toLowerCase();
+                    if (lower.includes('nvidia') || lower.includes('radeon')) {
+                        hasDedicatedGPU = true;
+                    }
+                }
+            } catch {
+                // Ignore errors if lspci is not available
             }
         }
     } catch {

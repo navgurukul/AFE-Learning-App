@@ -32,6 +32,9 @@ logs
 # Installer outputs
 *.exe
 *.msi
+*.deb
+*.AppImage
+*.rpm
 release
 
 # Database (local development)

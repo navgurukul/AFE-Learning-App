@@ -12,7 +12,9 @@
     "dev": "pnpm --filter desktop dev",
     "build": "pnpm -r build",
     "build:installer": "pnpm --filter desktop build:installer",
+    "build:installer:linux": "pnpm --filter desktop build:installer:linux",
     "publish:installer": "pnpm --filter desktop publish:installer",
+    "publish:installer:linux": "pnpm --filter desktop publish:installer:linux",
     "lint": "eslint . --ext .ts,.tsx",
     "typecheck": "pnpm -r typecheck",
     "postinstall": "pnpm --filter desktop exec electron-rebuild"

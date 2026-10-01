@@ -1,7 +1,7 @@
 {
     "name": "desktop",
     "type": "module",
-    "version": "1.5.31",
+    "version": "1.5.4",
     "private": true,
     "description": "Electron main process for Offline Learning App",
     "author": "NavGurukul",
@@ -17,7 +17,9 @@
         "copy-preload": "node -e \"const fs=require('fs'); fs.mkdirSync('dist/preload', { recursive: true }); fs.copyFileSync('src/preload/secure.cjs', 'dist/preload/secure.cjs')\"",
         "build": "tsc && pnpm copy-preload",
         "build:installer": "pnpm build && pnpm --filter renderer build && npx cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --config electron-builder.config.cjs",
+        "build:installer:linux": "pnpm build && pnpm --filter renderer build && npx cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --linux --config electron-builder.config.cjs",
         "publish:installer": "pnpm build && pnpm --filter renderer build && npx cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --config electron-builder.config.cjs -p always",
+        "publish:installer:linux": "pnpm build && pnpm --filter renderer build && npx cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --linux --config electron-builder.config.cjs -p always",
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {

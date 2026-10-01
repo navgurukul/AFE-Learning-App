@@ -114,7 +114,9 @@ autoUpdater.autoInstallOnAppQuit = true;
 autoUpdater.disableWebInstaller = true;
 
 // Bypass Windows Authenticode signature check for unsigned builds
-(autoUpdater as any).verifyUpdateCodeSignature = () => Promise.resolve(null);
+if (process.platform === 'win32') {
+    (autoUpdater as any).verifyUpdateCodeSignature = () => Promise.resolve(null);
+}
 
 let downloadedUpdateVersion: string | null = null;
 
@@ -555,17 +557,18 @@ app.whenReady().then(async () => {
 
     // Register 'media' protocol to serve videos securely from APP_DATA
     protocol.handle('media', (request) => {
-        const url = request.url.replace('media://', '');
+        const url = request.url.replace(/^media:\/\/+/, '');
         // Decode URL to handle spaces etc
         const decodedPath = decodeURIComponent(url);
+        const cleanRelativePath = decodedPath.replace(/^[/\\]+/, '');
 
         // Construct absolute path to the file
         // Manifest paths are relative to APP_DATA_ROOT (e.g. "assets/videos/foo.mp4")
-        let assetPath = path.join(PATHS.ROOT, decodedPath);
+        let assetPath = path.join(PATHS.ROOT, cleanRelativePath);
 
         // In development, if the file doesn't exist in dev-data/assets, fallback to installer-assets/assets
         if (!app.isPackaged && !fs.existsSync(assetPath)) {
-            const devFallbackPath = path.join(app.getAppPath(), '../../installer-assets', decodedPath);
+            const devFallbackPath = path.join(app.getAppPath(), '../../installer-assets', cleanRelativePath);
             if (fs.existsSync(devFallbackPath)) {
                 assetPath = devFallbackPath;
             }
