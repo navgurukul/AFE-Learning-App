@@ -66,6 +66,7 @@ module.exports = {
         icon: 'build/icon.png',
         target: ['AppImage', 'deb'],
         category: 'Education',
+        maintainer: 'NavGurukul <info@navgurukul.org>',
         executableName: 'amazon-future-engineer',
         synopsis: 'Offline-first learning platform by NavGurukul',
         description: 'Amazon Future Engineer - Offline Learning App for students',
