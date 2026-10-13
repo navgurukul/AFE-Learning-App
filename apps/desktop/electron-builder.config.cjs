@@ -64,7 +64,7 @@ module.exports = {
     },
     linux: {
         icon: 'build/icon.png',
-        target: ['AppImage', 'deb'],
+        target: process.platform === 'win32' ? ['dir'] : ['AppImage', 'deb'],
         category: 'Education',
         maintainer: 'NavGurukul <info@navgurukul.org>',
         executableName: 'amazon-future-engineer',
@@ -118,6 +118,26 @@ module.exports = {
         }
     },
 
+    afterAllArtifactBuild: async (buildResult) => {
+        if (process.platform === 'win32') {
+            const { execSync } = require('child_process');
+            const path = require('path');
+            const fs = require('fs');
+            const releaseDir = path.resolve(__dirname, 'release');
+            const unpackedDir = path.join(releaseDir, 'linux-unpacked');
+            if (fs.existsSync(unpackedDir)) {
+                const tarPath = path.join(releaseDir, 'Amazon Future Engineer-Setup-1.5.311.tar.gz');
+                console.log(`📦 Packaging ${path.basename(tarPath)} via native tar...`);
+                try {
+                    execSync(`tar -czf "${tarPath}" -C "${unpackedDir}" .`);
+                    console.log(`✓ Successfully created ${tarPath}`);
+                } catch (err) {
+                    console.warn(`[afterAllArtifactBuild] tar packaging warning:`, err);
+                }
+            }
+        }
+    },
+
     // NSIS installer configuration (CRITICAL for silent 1-click install & update)
     nsis: {
         oneClick: true, // 1-click silent background updates
@@ -153,6 +173,6 @@ module.exports = {
     ],
 
     // Metadata
-    compression: 'maximum',
+    compression: process.platform === 'win32' ? 'normal' : 'maximum',
     artifactName: '${productName}-Setup-${version}.${ext}',
 };
