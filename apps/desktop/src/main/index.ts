@@ -114,9 +114,7 @@ autoUpdater.autoInstallOnAppQuit = true;
 autoUpdater.disableWebInstaller = true;
 
 // Bypass Windows Authenticode signature check for unsigned builds
-if (process.platform === 'win32') {
-    (autoUpdater as any).verifyUpdateCodeSignature = () => Promise.resolve(null);
-}
+(autoUpdater as any).verifyUpdateCodeSignature = () => Promise.resolve(null);
 
 let downloadedUpdateVersion: string | null = null;
 
@@ -153,6 +151,11 @@ if (isLowEndDevice()) {
     app.commandLine.appendSwitch('js-flags', '--max-old-space-size=512');
 }
 app.commandLine.appendSwitch('enable-experimental-web-platform-features');
+if (process.platform === 'linux') {
+    app.commandLine.appendSwitch('ignore-gpu-blocklist');
+    app.commandLine.appendSwitch('enable-gpu-rasterization');
+    app.commandLine.appendSwitch('enable-zero-copy');
+}
 
 /**
  * Convert Windows paths to file: URLs for net.fetch
