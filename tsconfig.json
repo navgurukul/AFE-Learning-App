@@ -49,8 +49,10 @@
         },
         {
             "path":"./packages/backend/stt-engine"
+        },
+        {
+            "path":"./packages/backend/tts-engine"
         }
-
     ],
     "exclude": [
         "node_modules",

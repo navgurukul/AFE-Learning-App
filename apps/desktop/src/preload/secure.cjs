@@ -1,6 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-console.log('🔌 Preload script loading (CommonJS)...');
+console.log('[Preload] Preload script loading (CommonJS)...');
 
 const VALID_CHANNELS = [
     // Student operations

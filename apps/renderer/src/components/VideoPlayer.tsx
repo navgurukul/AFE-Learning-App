@@ -384,7 +384,7 @@ export function VideoPlayer({ src, lessonId, studentId, language, initialProgres
                 // Reject the seek by snapping back
                 isProgrammaticSeek.current = true;
                 videoRef.current.currentTime = lastTimeRef.current;
-                showToast("⚠️ You cannot skip forward to unwatched parts");
+                showToast("You cannot skip forward to unwatched parts");
             }
         }
     };

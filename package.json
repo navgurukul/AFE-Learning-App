@@ -9,12 +9,13 @@
     "url": "https://github.com/navgurukul/AFE-Learning-App"
   },
   "scripts": {
-    "dev": "pnpm --filter desktop dev",
-    "build": "pnpm -r build",
-    "build:installer": "pnpm --filter desktop build:installer",
-    "build:installer:linux": "pnpm --filter desktop build:installer:linux",
-    "publish:installer": "pnpm --filter desktop publish:installer",
-    "publish:installer:linux": "pnpm --filter desktop publish:installer:linux",
+    "pc": "node scripts/pc.js",
+    "dev": "node scripts/platform-runner.js dev",
+    "build": "node scripts/platform-runner.js build",
+    "build:installer": "node scripts/platform-runner.js build:installer",
+    "build:installer:linux": "node scripts/platform-runner.js build:installer --target=linux",
+    "publish:installer": "node scripts/platform-runner.js publish:installer",
+    "publish:installer:linux": "node scripts/platform-runner.js publish:installer --target=linux",
     "lint": "eslint . --ext .ts,.tsx",
     "typecheck": "pnpm -r typecheck",
     "postinstall": "pnpm --filter desktop exec electron-rebuild"

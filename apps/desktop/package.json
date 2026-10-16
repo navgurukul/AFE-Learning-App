@@ -1,7 +1,7 @@
 {
     "name": "desktop",
     "type": "module",
-    "version": "1.5.311",
+    "version": "1.3.32",
     "private": true,
     "description": "Electron main process for Offline Learning App",
     "author": "NavGurukul <info@navgurukul.org>",
@@ -11,15 +11,16 @@
         "url": "https://github.com/navgurukul/AFE-Learning-App"
     },
     "scripts": {
-        "dev": "concurrently \"pnpm dev:main\" \"pnpm dev:renderer\"",
-        "dev:main": "tsc -b && pnpm copy-preload && electron .",
+        "pc": "node ../../scripts/pc.js",
+        "dev": "node ../../scripts/platform-runner.js dev",
+        "dev:main": "tsc -b && node ../../scripts/copy-preload.js && electron .",
         "dev:renderer": "pnpm --filter renderer dev",
-        "copy-preload": "node -e \"const fs=require('fs'); fs.mkdirSync('dist/preload', { recursive: true }); fs.copyFileSync('src/preload/secure.cjs', 'dist/preload/secure.cjs')\"",
-        "build": "tsc && pnpm copy-preload",
-        "build:installer": "pnpm build && pnpm --filter renderer build && npx cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --config electron-builder.config.cjs",
-        "build:installer:linux": "pnpm build && pnpm --filter renderer build && npx cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --linux --config electron-builder.config.cjs",
-        "publish:installer": "pnpm build && pnpm --filter renderer build && npx cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --config electron-builder.config.cjs -p always",
-        "publish:installer:linux": "pnpm build && pnpm --filter renderer build && npx cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --linux --config electron-builder.config.cjs -p always",
+        "copy-preload": "node ../../scripts/copy-preload.js",
+        "build": "tsc && node ../../scripts/copy-preload.js",
+        "build:installer": "node ../../scripts/platform-runner.js build:installer",
+        "build:installer:linux": "node ../../scripts/platform-runner.js build:installer --target=linux",
+        "publish:installer": "node ../../scripts/platform-runner.js publish:installer",
+        "publish:installer:linux": "node ../../scripts/platform-runner.js publish:installer --target=linux",
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {

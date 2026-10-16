@@ -102,17 +102,27 @@ module.exports = {
             const fs = require('fs');
             const path = require('path');
             const resourcesDir = path.join(context.appOutDir, 'resources');
-            const binaries = [
-                path.join(resourcesDir, 'stt', 'whisper-cli'),
-                path.join(resourcesDir, 'tts', 'piper'),
-            ];
-            for (const bin of binaries) {
-                try {
-                    if (fs.existsSync(bin)) {
-                        fs.chmodSync(bin, 0o755);
+
+            // Chmod all binaries and shared libraries in stt and tts
+            for (const sub of ['stt', 'tts']) {
+                const subDir = path.join(resourcesDir, sub);
+                if (fs.existsSync(subDir)) {
+                    try {
+                        const files = fs.readdirSync(subDir);
+                        for (const file of files) {
+                            if (file.includes('.so') || file === 'whisper-cli' || file === 'piper') {
+                                const fullPath = path.join(subDir, file);
+                                try {
+                                    fs.chmodSync(fullPath, 0o755);
+                                    console.log(`[afterPack] Chmod 0o755 applied to ${fullPath}`);
+                                } catch (e) {
+                                    console.warn(`[afterPack] Could not chmod ${fullPath}:`, e.message);
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.warn(`[afterPack] Could not inspect directory ${subDir}:`, e.message);
                     }
-                } catch (err) {
-                    console.warn(`[afterPack] Could not chmod ${bin}:`, err);
                 }
             }
         }
@@ -126,11 +136,13 @@ module.exports = {
             const releaseDir = path.resolve(__dirname, 'release');
             const unpackedDir = path.join(releaseDir, 'linux-unpacked');
             if (fs.existsSync(unpackedDir)) {
-                const tarPath = path.join(releaseDir, 'Amazon Future Engineer-Setup-1.5.311.tar.gz');
-                console.log(`📦 Packaging ${path.basename(tarPath)} via native tar...`);
+                const pkg = require('./package.json');
+                const tarName = `Amazon Future Engineer-Setup-${pkg.version}.tar.gz`;
+                const tarPath = path.join(releaseDir, tarName);
+                console.log(`[afterAllArtifactBuild] Packaging ${tarName} via native tar...`);
                 try {
                     execSync(`tar -czf "${tarPath}" -C "${unpackedDir}" .`);
-                    console.log(`✓ Successfully created ${tarPath}`);
+                    console.log(`[afterAllArtifactBuild] Successfully created ${tarPath}`);
                 } catch (err) {
                     console.warn(`[afterAllArtifactBuild] tar packaging warning:`, err);
                 }
