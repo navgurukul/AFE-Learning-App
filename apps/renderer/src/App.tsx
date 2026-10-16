@@ -37,6 +37,9 @@ function App() {
         districtCode: string;
         zipcodePostalCode?: string;
         schoolType: string;
+        partnerName?: string;
+        distributionChannelHostId?: string;
+        countryCode?: string;
     } | undefined>(undefined);
 
     // First-run setup and update status check
@@ -54,6 +57,9 @@ function App() {
                         districtCode: status.districtCode,
                         zipcodePostalCode: status.zipcodePostalCode || '110001',
                         schoolType: status.schoolType,
+                        partnerName: status.partnerName,
+                        distributionChannelHostId: status.distributionChannelHostId,
+                        countryCode: status.countryCode,
                     });
                     setIsSetupModalOpen(true);
                 }
@@ -129,6 +135,8 @@ function App() {
                 districtCode: status.districtCode,
                 zipcodePostalCode: status.zipcodePostalCode || '110001',
                 schoolType: status.schoolType,
+                partnerName: status.partnerName,
+                distributionChannelHostId: status.distributionChannelHostId,
             });
             setIsSetupModalOpen(true);
         } catch (e) {

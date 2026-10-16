@@ -439,6 +439,9 @@ export interface IPCContract {
             districtCode: string;
             zipcodePostalCode?: string;
             schoolType: string;
+            countryCode?: string;
+            partnerName?: string;
+            distributionChannelHostId?: string;
         };
     };
     [IPC_CHANNELS.CONFIG_SAVE_SCHOOL_DETAILS]: {

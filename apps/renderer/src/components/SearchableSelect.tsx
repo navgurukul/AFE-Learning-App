@@ -32,7 +32,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
     loading = false,
     loadingText = 'Loading...',
     allowOther = true,
-    otherLabel = '➕ Other (Enter manually)',
+    otherLabel = 'Other (Enter manually)',
     otherValue = '__OTHER__',
     id
 }) => {

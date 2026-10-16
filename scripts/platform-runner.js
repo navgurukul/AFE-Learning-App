@@ -10,6 +10,7 @@ const rootDir = path.resolve(__dirname, '..');
 // Helper to run a command as child process
 function execute(command, args, options = {}) {
     return new Promise((resolve, reject) => {
+        let isInterrupted = false;
         console.log(`[Runner] Executing: ${command} ${args.join(' ')}`);
         const proc = spawn(command, args, {
             cwd: options.cwd || rootDir,
@@ -22,7 +23,7 @@ function execute(command, args, options = {}) {
         });
 
         proc.on('close', (code) => {
-            if (code === 0) {
+            if (code === 0 || code === 130 || isInterrupted) {
                 resolve();
             } else {
                 reject(new Error(`Command "${command} ${args.join(' ')}" exited with code ${code}`));
@@ -35,6 +36,7 @@ function execute(command, args, options = {}) {
 
         // Forward signals
         const onSignal = () => {
+            isInterrupted = true;
             if (!proc.killed) {
                 proc.kill();
             }
@@ -95,6 +97,7 @@ async function main() {
             await execute('npx', [
                 'concurrently',
                 '--kill-others',
+                '--success', 'first',
                 '--prefix', '[{name}]',
                 '--names', 'MAIN,UI',
                 '--prefix-colors', 'blue,magenta',

@@ -5,6 +5,7 @@ import { SearchableSelect, SearchableOption } from './SearchableSelect.tsx';
 import './SchoolSetupModal.css';
 
 interface SchoolItem {
+    id?: number | string;
     school_id?: string;
     udise?: string;
     name: string;
@@ -19,117 +20,189 @@ interface SchoolItem {
     district_code?: string;
     school_type?: string;
     schoolType?: string;
+    school_type_id?: number | string | null;
+    countryCode?: string;
 }
 
-interface NgoItem {
-    id: string;
-    name: string;
-    schools?: SchoolItem[];
-}
+const SCHOOL_TYPE_MAP: Record<number, string> = {
+    1: 'Government School',
+    2: 'Government Aided School',
+    3: 'Private School',
+    4: 'Central Government School (KV/JNV)',
+    5: 'EMRS / Tribal School',
+    6: 'KGBV',
+    7: 'Other',
+};
 
 const PRESET_SCHOOLS: SchoolItem[] = [
     {
         name: 'KGBV, Vanchanagiri, Warangal',
         district: 'Warangal',
         state: 'Telangana',
+        city: 'Warangal',
         schoolType: 'KGBV',
+        school_type_id: 6,
         zipcodePostalCode: '506001',
+        partner_name: 'Bala Vikasa Social Service Society',
+        ngo_id: 'SAM-91',
+        distribution_host_id: 'Sama Platform',
     },
     {
         name: 'TGMS, Vanchanagiri, Warangal',
         district: 'Warangal',
         state: 'Telangana',
+        city: 'Warangal',
         schoolType: 'Government School',
+        school_type_id: 1,
         zipcodePostalCode: '506001',
+        partner_name: 'AFE Lab Default',
+        ngo_id: 'SAM-000',
+        distribution_host_id: 'Sama Platform',
     },
     {
         name: 'ZPHS Somdi, Hanamkonda',
         district: 'Hanamkonda',
         state: 'Telangana',
+        city: 'Hanamkonda',
         schoolType: 'Government School',
+        school_type_id: 1,
         zipcodePostalCode: '506001',
+        partner_name: 'Bala Vikasa Social Service Society',
+        ngo_id: 'SAM-91',
+        distribution_host_id: 'Sama Platform',
     },
     {
         name: 'ZPHS Markazi, Hanamkonda',
         district: 'Hanamkonda',
         state: 'Telangana',
+        city: 'Hanamkonda',
         schoolType: 'Government School',
+        school_type_id: 1,
         zipcodePostalCode: '506001',
+        partner_name: 'Bala Vikasa Social Service Society',
+        ngo_id: 'SAM-91',
+        distribution_host_id: 'Sama Platform',
     },
     {
         name: 'ZPHS Shayampet, Hanamkonda',
         district: 'Hanamkonda',
         state: 'Telangana',
+        city: 'Hanamkonda',
         schoolType: 'Government School',
+        school_type_id: 1,
         zipcodePostalCode: '506001',
+        partner_name: 'Bala Vikasa Social Service Society',
+        ngo_id: 'SAM-91',
+        distribution_host_id: 'Sama Platform',
     },
     {
         name: 'ZPHS, Mulugu',
         district: 'Mulugu',
         state: 'Telangana',
+        city: 'Mulugu',
         schoolType: 'Government School',
+        school_type_id: 1,
         zipcodePostalCode: '506343',
+        partner_name: 'Bala Vikasa Social Service Society',
+        ngo_id: 'SAM-91',
+        distribution_host_id: 'Sama Platform',
     },
     {
         name: 'GGB, Mulugu',
         district: 'Mulugu',
         state: 'Telangana',
+        city: 'Mulugu',
         schoolType: 'Government School',
+        school_type_id: 1,
         zipcodePostalCode: '506343',
+        partner_name: 'Bala Vikasa Social Service Society',
+        ngo_id: 'SAM-91',
+        distribution_host_id: 'Sama Platform',
     },
     {
         name: 'ZPHS, Tharapally, Warangal',
         district: 'Warangal',
         state: 'Telangana',
+        city: 'Warangal',
         schoolType: 'Government School',
+        school_type_id: 1,
         zipcodePostalCode: '506001',
+        partner_name: 'Bala Vikasa Social Service Society',
+        ngo_id: 'SAM-91',
+        distribution_host_id: 'Sama Platform',
     },
     {
         name: 'ZPHS Indiranagar, Siddipet',
         district: 'Siddipet',
         state: 'Telangana',
+        city: 'Siddipet',
         schoolType: 'Government School',
+        school_type_id: 1,
         zipcodePostalCode: '502103',
+        partner_name: 'Bala Vikasa Social Service Society',
+        ngo_id: 'SAM-91',
+        distribution_host_id: 'Sama Platform',
     },
     {
         name: 'GHS Sapthagiri Colony, Karimnagar',
         district: 'Karimnagar',
         state: 'Telangana',
+        city: 'Karimnagar',
         schoolType: 'Government School',
+        school_type_id: 1,
         zipcodePostalCode: '505001',
+        partner_name: 'Bala Vikasa Social Service Society',
+        ngo_id: 'SAM-91',
+        distribution_host_id: 'Sama Platform',
     },
     {
         name: 'Sarswathi Shishumandir, Karimnagar',
         district: 'Karimnagar',
         state: 'Telangana',
+        city: 'Karimnagar',
         schoolType: 'Private School',
+        school_type_id: 3,
         zipcodePostalCode: '505001',
+        partner_name: 'Bala Vikasa Social Service Society',
+        ngo_id: 'SAM-91',
+        distribution_host_id: 'Sama Platform',
     },
     {
         name: 'ZPHS, Manthani',
         district: 'Peddapalli',
         state: 'Telangana',
+        city: 'Peddapalli',
         schoolType: 'Government School',
+        school_type_id: 1,
         zipcodePostalCode: '505184',
+        partner_name: 'Bala Vikasa Social Service Society',
+        ngo_id: 'SAM-91',
+        distribution_host_id: 'Sama Platform',
     },
     {
         name: 'ZPHS, Armur, Manthani',
         district: 'Peddapalli',
         state: 'Telangana',
+        city: 'Peddapalli',
         schoolType: 'Government School',
+        school_type_id: 1,
         zipcodePostalCode: '505184',
+        partner_name: 'Bala Vikasa Social Service Society',
+        ngo_id: 'SAM-91',
+        distribution_host_id: 'Sama Platform',
     },
     {
         name: 'ZPHS Perkakondaram, Nalgonda',
         district: 'Nalgonda',
         state: 'Telangana',
+        city: 'Nalgonda',
         schoolType: 'Government School',
+        school_type_id: 1,
         zipcodePostalCode: '508001',
+        partner_name: 'Bala Vikasa Social Service Society',
+        ngo_id: 'SAM-91',
+        distribution_host_id: 'Sama Platform',
     },
-];
-
-const FALLBACK_NGOS: NgoItem[] = [
-    { id: 'SAM-DEFAULT', name: 'Sama Digital Platform' },
 ];
 
 const SCHOOL_TYPE_OPTIONS = [
@@ -162,12 +235,7 @@ interface SchoolSetupModalProps {
 }
 
 export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupModalProps) {
-    const [ngos, setNgos] = useState<NgoItem[]>(FALLBACK_NGOS);
-    const [loadingNgos, setLoadingNgos] = useState(false);
-    const [selectedNgo, setSelectedNgo] = useState('');
-    const [selectedNgoKey, setSelectedNgoKey] = useState('SAM-DEFAULT');
-    const [customNgo, setCustomNgo] = useState('');
-    const [availableSchools, setAvailableSchools] = useState<SchoolItem[]>(PRESET_SCHOOLS);
+    const [schools, setSchools] = useState<SchoolItem[]>(PRESET_SCHOOLS);
     const [loadingSchools, setLoadingSchools] = useState(false);
     const [selectedDropdown, setSelectedDropdown] = useState('');
     const [customSchoolName, setCustomSchoolName] = useState('');
@@ -181,7 +249,8 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
     const [schoolType, setSchoolType] = useState('Government School');
     const [countryCode, setCountryCode] = useState('IN');
     const [partnerName, setPartnerName] = useState('Sama Digital Platform');
-    const [distributionChannelHostId, setDistributionChannelHostId] = useState('Sama Platform 1');
+    const [selectedNgoKey, setSelectedNgoKey] = useState('SAM-DEFAULT');
+    const [distributionChannelHostId, setDistributionChannelHostId] = useState('Sama Platform');
     const [saving, setSaving] = useState(false);
     const [deviceModalOpen, setDeviceModalOpen] = useState(false);
     const [savedDeviceInfo, setSavedDeviceInfo] = useState({ serialNumber: '', macAddress: '' });
@@ -212,7 +281,7 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                     }
                     try {
                         await ipc.setDeveloperMode(true);
-                        setDevModeNotice('🚀 Developer Mode Activated! Connected to Dev Server.');
+                        setDevModeNotice('Developer Mode Activated! Connected to Dev Server.');
                         setTimeout(() => setDevModeNotice(null), 5000);
                     } catch (err) {
                         console.error('Failed to activate developer mode:', err);
@@ -225,128 +294,62 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [isOpen]);
 
-    // Helper to fetch schools for an NGO (with embedded fallback & API query)
-    const fetchSchoolsForNgo = async (ngoId: string, embeddedSchools?: SchoolItem[]) => {
-        if (embeddedSchools && embeddedSchools.length > 0) {
-            setAvailableSchools(embeddedSchools);
-        }
-
-        if (!ngoId || ngoId === 'SAM-DEFAULT') {
-            if (!embeddedSchools || embeddedSchools.length === 0) {
-                setAvailableSchools(PRESET_SCHOOLS);
-            }
-            return;
-        }
-
-        setLoadingSchools(true);
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 6000);
-            const res = await fetch(`https://sama-api.thesama.in/api/schools?ngo_id=${encodeURIComponent(ngoId)}`, {
-                signal: controller.signal
-            });
-            clearTimeout(timeoutId);
-
-            if (res.ok) {
-                const data = await res.json();
-                if (data && data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
-                    const fetchedSchools: SchoolItem[] = data.data.map((item: any) => ({
-                        school_id: item.school_id ? String(item.school_id) : undefined,
-                        udise: item.udise ? String(item.udise) : '',
-                        name: String(item.name || '').trim(),
-                        city: item.city ? String(item.city) : '',
-                        partner_name: item.partner_name ? String(item.partner_name) : '',
-                        ngo_id: item.ngo_id ? String(item.ngo_id) : ngoId,
-                        distribution_host_id: item.distribution_host_id ? String(item.distribution_host_id) : '',
-                        zipcode: item.zipcode ? String(item.zipcode) : '',
-                        state: item.state ? String(item.state) : '',
-                        district: item.district ? String(item.district) : '',
-                        district_code: item.district_code ? String(item.district_code) : '',
-                        school_type: item.school_type ? String(item.school_type) : undefined,
-                    })).filter((s: SchoolItem) => s.name.length > 0);
-
-                    if (fetchedSchools.length > 0) {
-                        setAvailableSchools(fetchedSchools);
-                        return;
-                    }
-                }
-            }
-        } catch (err) {
-            console.warn('[SchoolSetupModal] Failed to fetch schools for NGO from API:', err);
-        } finally {
-            setLoadingSchools(false);
-        }
-
-        if (!embeddedSchools || embeddedSchools.length === 0) {
-            setAvailableSchools(PRESET_SCHOOLS);
-        }
-    };
-
-    // Fetch NGOs from live API with graceful fallback to Sama Digital Platform
+    // Fetch all schools directly from https://sama-api.thesama.in/api/schools
     useEffect(() => {
         if (!isOpen) return;
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 7000);
 
-        setLoadingNgos(true);
-        fetch('https://sama-api.thesama.in/api/ngos', { signal: controller.signal })
+        setLoadingSchools(true);
+        fetch('https://sama-api.thesama.in/api/schools', { signal: controller.signal })
             .then((res) => {
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 return res.json();
             })
             .then((data) => {
-                if (data && data.status === 'success' && Array.isArray(data.data)) {
-                    const mapped: NgoItem[] = data.data
-                        .map((item: any) => ({
-                            id: String(item.id || '').trim(),
-                            name: String(item.organization_name || '').trim(),
-                            schools: Array.isArray(item.schools)
-                                ? item.schools.map((s: any) => ({
-                                    school_id: s.school_id ? String(s.school_id) : undefined,
-                                    udise: s.udise ? String(s.udise) : '',
-                                    name: String(s.name || '').trim(),
-                                    city: s.city ? String(s.city) : '',
-                                    partner_name: s.partner_name ? String(s.partner_name) : '',
-                                    ngo_id: s.ngo_id ? String(s.ngo_id) : '',
-                                    distribution_host_id: s.distribution_host_id ? String(s.distribution_host_id) : '',
-                                    zipcode: s.zipcode ? String(s.zipcode) : '',
-                                    state: s.state ? String(s.state) : '',
-                                    district: s.district ? String(s.district) : '',
-                                    district_code: s.district_code ? String(s.district_code) : '',
-                                    school_type: s.school_type ? String(s.school_type) : undefined,
-                                }))
-                                : undefined
-                        }))
-                        .filter((item: NgoItem) => item.name.length > 0);
+                if (data && data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
+                    const fetchedSchools: SchoolItem[] = data.data
+                        .map((item: any) => {
+                            // If API is not sending any school_type_id, use 1 (Government School) as default
+                            const typeId = item.school_type_id ? Number(item.school_type_id) : 1;
+                            const resolvedSchoolType = SCHOOL_TYPE_MAP[typeId] || item.school_type || 'Government School';
 
-                    // Ensure Sama Digital Platform is present
-                    const hasSama = mapped.some(
-                        (n) => n.name.toLowerCase().includes('sama digital platform')
-                    );
-                    if (!hasSama) {
-                        mapped.unshift({ id: 'SAM-DEFAULT', name: 'Sama Digital Platform', schools: PRESET_SCHOOLS as any });
+                            return {
+                                id: item.id ? String(item.id) : undefined,
+                                school_id: item.school_id ? String(item.school_id) : undefined,
+                                udise: item.udise ? String(item.udise) : '',
+                                name: String(item.name || '').trim(),
+                                city: item.city ? String(item.city) : '',
+                                partner_name: item.partner_name ? String(item.partner_name) : 'Sama Digital Platform',
+                                ngo_id: item.ngo_id ? String(item.ngo_id) : 'SAM-DEFAULT',
+                                distribution_host_id: item.distribution_host_id ? String(item.distribution_host_id) : 'Sama Platform',
+                                zipcode: item.zipcode ? String(item.zipcode) : '',
+                                state: item.state ? String(item.state) : '',
+                                district: item.district ? String(item.district) : '',
+                                district_code: item.district_code ? String(item.district_code) : '',
+                                school_type_id: typeId,
+                                school_type: resolvedSchoolType,
+                                schoolType: resolvedSchoolType,
+                            };
+                        })
+                        .filter((s: SchoolItem) => s.name.length > 0);
+
+                    // Sort alphabetically by school name
+                    fetchedSchools.sort((a, b) => a.name.localeCompare(b.name));
+
+                    if (fetchedSchools.length > 0) {
+                        setSchools(fetchedSchools);
                     }
-
-                    // Sort alphabetically, keeping Sama Digital Platform at top
-                    mapped.sort((a, b) => {
-                        if (a.id === 'SAM-DEFAULT') return -1;
-                        if (b.id === 'SAM-DEFAULT') return 1;
-                        return a.name.localeCompare(b.name);
-                    });
-
-                    setNgos(mapped);
-                } else {
-                    setNgos(FALLBACK_NGOS);
                 }
             })
             .catch((err) => {
-                console.warn('[SchoolSetupModal] Failed to fetch NGOs from API, falling back to Sama Digital Platform:', err);
-                setNgos(FALLBACK_NGOS);
+                console.warn('[SchoolSetupModal] Failed to fetch schools from API, using preset schools fallback:', err);
+                setSchools(PRESET_SCHOOLS);
             })
             .finally(() => {
                 clearTimeout(timeoutId);
-                setLoadingNgos(false);
+                setLoadingSchools(false);
             });
 
         return () => {
@@ -355,13 +358,17 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
         };
     }, [isOpen]);
 
+    // Handle initialData pre-fill (when re-editing or on open)
     useEffect(() => {
         if (initialData) {
             const rawName = initialData.schoolName || '';
-            const matchingPreset = availableSchools.find((s) => s.name === rawName) || PRESET_SCHOOLS.find((s) => s.name === rawName);
+            const matchingSchool = schools.find((s) =>
+                s.name.toLowerCase() === rawName.toLowerCase() ||
+                (initialData.schoolUdise && s.udise && s.udise === initialData.schoolUdise)
+            );
 
-            if (matchingPreset) {
-                setSelectedDropdown(matchingPreset.name);
+            if (matchingSchool) {
+                setSelectedDropdown(matchingSchool.name);
                 setCustomSchoolName('');
             } else if (rawName) {
                 setSelectedDropdown('__OTHER__');
@@ -369,23 +376,6 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
             } else {
                 setSelectedDropdown('');
                 setCustomSchoolName('');
-            }
-
-            const rawPartner = initialData.partnerName || '';
-            const matchingNgo = ngos.find((n) => n.name.toLowerCase() === rawPartner.toLowerCase() || rawPartner.toLowerCase().includes(n.name.toLowerCase()));
-            if (matchingNgo) {
-                setSelectedNgo(matchingNgo.name);
-                setSelectedNgoKey(matchingNgo.id);
-                setCustomNgo('');
-                fetchSchoolsForNgo(matchingNgo.id, matchingNgo.schools);
-            } else if (rawPartner) {
-                setSelectedNgo('__OTHER__');
-                setSelectedNgoKey('');
-                setCustomNgo(rawPartner);
-            } else {
-                setSelectedNgo('Sama Digital Platform');
-                setSelectedNgoKey('SAM-DEFAULT');
-                setCustomNgo('');
             }
 
             setSchoolName(rawName);
@@ -398,16 +388,9 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
             setSchoolType(initialData.schoolType || 'Government School');
             setCountryCode(initialData.countryCode || 'IN');
             setPartnerName(initialData.partnerName || 'Sama Digital Platform');
-            setDistributionChannelHostId(initialData.distributionChannelHostId || 'Sama Platform 1');
-        } else {
-            // Default initial selection
-            if (!selectedNgo) {
-                setSelectedNgo('Sama Digital Platform');
-                setSelectedNgoKey('SAM-DEFAULT');
-                setPartnerName('Sama Digital Platform');
-            }
+            setDistributionChannelHostId(initialData.distributionChannelHostId || 'Sama Platform');
         }
-    }, [initialData, ngos]);
+    }, [initialData, schools]);
 
     if (!isOpen) return null;
 
@@ -422,46 +405,21 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                 initialSerial={savedDeviceInfo.serialNumber}
                 initialMac={savedDeviceInfo.macAddress}
                 schoolName={schoolName.trim()}
-                partnerName={partnerName.trim() || (selectedNgo === '__OTHER__' ? customNgo.trim() : selectedNgo)}
+                partnerName={partnerName.trim() || 'Sama Digital Platform'}
             />
         );
     }
-
-    const handleNgoSelect = (val: string) => {
-        setSelectedNgo(val);
-        setSelectedDropdown(''); // Reset school selection on NGO change
-        if (val === '__OTHER__') {
-            setPartnerName(customNgo);
-            setSelectedNgoKey('');
-            setAvailableSchools(PRESET_SCHOOLS);
-        } else if (val) {
-            setPartnerName(val);
-            const match = ngos.find((n) => n.name === val);
-            if (match) {
-                setSelectedNgoKey(match.id);
-                fetchSchoolsForNgo(match.id, match.schools);
-            } else {
-                setAvailableSchools(PRESET_SCHOOLS);
-            }
-        } else {
-            setSelectedNgoKey('');
-            setAvailableSchools(PRESET_SCHOOLS);
-        }
-    };
-
-    const handleCustomNgoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = e.target.value;
-        setCustomNgo(val);
-        setPartnerName(val);
-    };
 
     const handleSchoolSelect = (val: string) => {
         setSelectedDropdown(val);
 
         if (val === '__OTHER__') {
             setSchoolName(customSchoolName);
-        } else if (val) {
-            const school = availableSchools.find((s) => s.name === val) || PRESET_SCHOOLS.find((s) => s.name === val);
+            return;
+        }
+
+        if (val) {
+            const school = schools.find((s) => s.name === val || s.school_id === val);
             if (school) {
                 setSchoolName(school.name);
                 if (school.udise) setSchoolUdise(school.udise);
@@ -472,12 +430,20 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                 if (school.zipcode || school.zipcodePostalCode) {
                     setZipcodePostalCode(school.zipcode || school.zipcodePostalCode || '110001');
                 }
+                if (school.partner_name) {
+                    setPartnerName(school.partner_name);
+                }
+                if (school.ngo_id) {
+                    setSelectedNgoKey(school.ngo_id);
+                }
                 if (school.distribution_host_id) {
                     setDistributionChannelHostId(school.distribution_host_id);
                 }
-                if (school.school_type || school.schoolType) {
-                    setSchoolType(school.school_type || school.schoolType || 'Government School');
-                }
+
+                // If the API is not sending any school_type_id then use 1 (Government School) as default
+                const typeId = school.school_type_id ? Number(school.school_type_id) : 1;
+                const resolvedType = SCHOOL_TYPE_MAP[typeId] || school.school_type || school.schoolType || 'Government School';
+                setSchoolType(resolvedType);
             } else {
                 setSchoolName(val);
             }
@@ -492,17 +458,10 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
         setSchoolName(val);
     };
 
-    const ngoOptions: SearchableOption[] = ngos.map((ngo) => ({
-        value: ngo.name,
-        label: ngo.name,
-        badge: ngo.id !== 'SAM-DEFAULT' ? ngo.id : undefined,
-        subLabel: ngo.schools && ngo.schools.length > 0 
-            ? `${ngo.schools.length} school${ngo.schools.length > 1 ? 's' : ''}` 
-            : undefined,
-    }));
-
-    const schoolOptions: SearchableOption[] = availableSchools.map((school) => {
+    // Format school options with name, partner, city, district, and UDISE for live search
+    const schoolOptions: SearchableOption[] = schools.map((school) => {
         const details = [
+            school.partner_name,
             school.city,
             school.district,
             school.udise ? `UDISE: ${school.udise}` : undefined
@@ -516,14 +475,16 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
         };
     });
 
-    const isNgoValid = selectedNgo === '__OTHER__' ? customNgo.trim().length > 0 : selectedNgo.trim().length > 0;
-    const isFormValid = isNgoValid && schoolName.trim() && state.trim() && district.trim();
+    const isSchoolValid = selectedDropdown === '__OTHER__'
+        ? customSchoolName.trim().length > 0
+        : schoolName.trim().length > 0;
+    const isFormValid = isSchoolValid && state.trim().length > 0 && district.trim().length > 0;
 
     const handleSave = async () => {
         if (!isFormValid || saving) return;
         setSaving(true);
         try {
-            const finalPartnerName = partnerName.trim() || (selectedNgo === '__OTHER__' ? customNgo.trim() : selectedNgo) || 'Sama Digital Platform';
+            const finalPartnerName = partnerName.trim() || 'Sama Digital Platform';
             const saveRes = await ipc.saveSchoolDetails({
                 schoolName: schoolName.trim(),
                 schoolUdise: schoolUdise.trim(),
@@ -535,7 +496,7 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                 schoolType,
                 countryCode: countryCode.trim() || 'IN',
                 partnerName: finalPartnerName,
-                distributionChannelHostId: distributionChannelHostId.trim() || 'Sama Platform 1',
+                distributionChannelHostId: distributionChannelHostId.trim() || 'Sama Platform',
                 ngoKey: selectedNgoKey || undefined,
             });
 
@@ -555,8 +516,8 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
         <div className="school-setup-overlay" onClick={onClose}>
             <div className="school-setup-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="school-setup-header">
-                    <h2>🏫 School & NGO Setup</h2>
-                    <p>Select your NGO and school details. This information will be used for session reporting.</p>
+                    <h2>School Setup</h2>
+                    <p>Select your school details. All information will be populated automatically.</p>
                     {devModeNotice && (
                         <div style={{
                             marginTop: 10,
@@ -571,7 +532,7 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                             alignItems: 'center',
                             gap: 8
                         }}>
-                            <span>⚙️</span>
+                            <span style={{ fontWeight: 800 }}>[DEV]</span>
                             <span>{devModeNotice}</span>
                         </div>
                     )}
@@ -579,40 +540,6 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
 
                 <div className="school-setup-body">
                     <div className="school-setup-form">
-                        <div className="school-setup-field">
-                            <label>
-                                Select NGO <span className="required">*</span>
-                            </label>
-                            <SearchableSelect
-                                id="school-setup-ngo-select"
-                                options={ngoOptions}
-                                value={selectedNgo}
-                                onChange={handleNgoSelect}
-                                placeholder="-- Search & Select NGO --"
-                                searchPlaceholder="Type NGO name or ID (e.g., sama, SAM-87)..."
-                                loading={loadingNgos}
-                                loadingText="-- Loading NGOs from API... --"
-                                allowOther={true}
-                                otherLabel="➕ Other (Enter manually)"
-                                otherValue="__OTHER__"
-                            />
-                        </div>
-
-                        {selectedNgo === '__OTHER__' && (
-                            <div className="school-setup-field">
-                                <label>
-                                    Custom NGO Name <span className="required">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Enter NGO name..."
-                                    value={customNgo}
-                                    onChange={handleCustomNgoChange}
-                                    autoFocus
-                                />
-                            </div>
-                        )}
-
                         <div className="school-setup-field">
                             <label>
                                 Select School <span className="required">*</span>
@@ -623,11 +550,11 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                                 value={selectedDropdown}
                                 onChange={handleSchoolSelect}
                                 placeholder="-- Search & Select School --"
-                                searchPlaceholder="Search school by name, city, district, or UDISE..."
+                                searchPlaceholder="Type school name, city, district, UDISE, or partner..."
                                 loading={loadingSchools}
                                 loadingText="-- Loading schools from API... --"
                                 allowOther={true}
-                                otherLabel="➕ Other (Enter manually)"
+                                otherLabel="Other (Enter manually)"
                                 otherValue="__OTHER__"
                             />
                         </div>
@@ -657,6 +584,16 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                             />
                         </div>
 
+                        <div className="school-setup-field">
+                            <label>Partner Name / NGO <span className="required">*</span></label>
+                            <input
+                                type="text"
+                                placeholder="e.g., Sama Digital Platform"
+                                value={partnerName}
+                                onChange={(e) => setPartnerName(e.target.value)}
+                            />
+                        </div>
+
                         <div className="school-setup-row">
                             <div className="school-setup-field">
                                 <label>Country Code <span className="required">*</span></label>
@@ -671,22 +608,11 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                                 <label>Distribution Host ID <span className="required">*</span></label>
                                 <input
                                     type="text"
-                                    placeholder="e.g., Sama Platform 1"
+                                    placeholder="e.g., Sama Platform"
                                     value={distributionChannelHostId}
                                     onChange={(e) => setDistributionChannelHostId(e.target.value)}
                                 />
                             </div>
-                        </div>
-
-                        <div className="school-setup-field">
-                            <label>Partner Name <span className="required">*</span></label>
-                            <input
-                                type="text"
-                                placeholder="e.g., Sama Digital Platform"
-                                value={partnerName}
-                                onChange={(e) => setPartnerName(e.target.value)}
-                                disabled
-                            />
                         </div>
 
                         <div className="school-setup-field">
@@ -779,7 +705,7 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                         disabled={!isFormValid || saving}
                         type="button"
                     >
-                        {saving ? 'Saving...' : 'Save Details ✓'}
+                        {saving ? 'Saving...' : 'Save Details'}
                     </button>
                 </div>
             </div>
