@@ -123,6 +123,8 @@ async function main() {
                 platformFlag,
                 '--config',
                 'electron-builder.config.cjs',
+                '--publish',
+                'never',
                 ...forwardedArgs
             ];
 
