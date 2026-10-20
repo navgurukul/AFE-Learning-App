@@ -27,6 +27,18 @@ jobs:
         with:
           lfs: true
 
+      - name: Download and extract video assets
+        shell: pwsh
+        run: |
+          $videoDir = "installer-assets/assets"
+          Write-Host "Downloading videos.rar from GitHub Release..."
+          curl -L -o "$videoDir/videos.rar" "https://github.com/navgurukul/AFE-Learning-App/releases/download/assests-v1/videos.rar"
+          Write-Host "Extracting videos..."
+          tar -xf "$videoDir/videos.rar" -C "$videoDir"
+          Remove-Item "$videoDir/videos.rar" -Force
+          Write-Host "Video assets ready:"
+          Get-ChildItem "$videoDir/videos" -Recurse | Select-Object FullName
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -74,6 +86,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           lfs: true
+
+      - name: Download and extract video assets
+        run: |
+          VIDEO_DIR="installer-assets/assets"
+          echo "Downloading videos.rar from GitHub Release..."
+          curl -L -o "$VIDEO_DIR/videos.rar" "https://github.com/navgurukul/AFE-Learning-App/releases/download/assests-v1/videos.rar"
+          echo "Extracting videos..."
+          tar -xf "$VIDEO_DIR/videos.rar" -C "$VIDEO_DIR"
+          rm -f "$VIDEO_DIR/videos.rar"
+          echo "Video assets ready:"
+          ls -lR "$VIDEO_DIR/videos/"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
