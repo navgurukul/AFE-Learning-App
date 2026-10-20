@@ -34,7 +34,7 @@ jobs:
           Write-Host "Downloading videos.rar from GitHub Release..."
           curl -L -o "$videoDir/videos.rar" "https://github.com/navgurukul/AFE-Learning-App/releases/download/assests-v1/videos.rar"
           Write-Host "Extracting videos..."
-          tar -xf "$videoDir/videos.rar" -C "$videoDir"
+          7z x "$videoDir/videos.rar" -o"$videoDir" -y
           Remove-Item "$videoDir/videos.rar" -Force
           Write-Host "Video assets ready:"
           Get-ChildItem "$videoDir/videos" -Recurse | Select-Object FullName
@@ -93,7 +93,7 @@ jobs:
           echo "Downloading videos.rar from GitHub Release..."
           curl -L -o "$VIDEO_DIR/videos.rar" "https://github.com/navgurukul/AFE-Learning-App/releases/download/assests-v1/videos.rar"
           echo "Extracting videos..."
-          tar -xf "$VIDEO_DIR/videos.rar" -C "$VIDEO_DIR"
+          7z x "$VIDEO_DIR/videos.rar" -o"$VIDEO_DIR" -y
           rm -f "$VIDEO_DIR/videos.rar"
           echo "Video assets ready:"
           ls -lR "$VIDEO_DIR/videos/"
