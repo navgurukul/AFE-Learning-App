@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { ipc } from '../lib/ipc.ts';
 import { DeviceDetailsModal } from './DeviceDetailsModal.tsx';
 import { SearchableSelect, SearchableOption } from './SearchableSelect.tsx';
+import { PRESET_SCHOOLS } from './presetSchools.ts';
 import './SchoolSetupModal.css';
 
-interface SchoolItem {
+export interface SchoolItem {
     id?: number | string;
     school_id?: string;
     udise?: string;
@@ -24,7 +25,7 @@ interface SchoolItem {
     countryCode?: string;
 }
 
-const SCHOOL_TYPE_MAP: Record<number, string> = {
+export const SCHOOL_TYPE_MAP: Record<number, string> = {
     1: 'Government School',
     2: 'Government Aided School',
     3: 'Private School',
@@ -34,178 +35,7 @@ const SCHOOL_TYPE_MAP: Record<number, string> = {
     7: 'Other',
 };
 
-const PRESET_SCHOOLS: SchoolItem[] = [
-    {
-        name: 'KGBV, Vanchanagiri, Warangal',
-        district: 'Warangal',
-        state: 'Telangana',
-        city: 'Warangal',
-        schoolType: 'KGBV',
-        school_type_id: 6,
-        zipcodePostalCode: '506001',
-        partner_name: 'Bala Vikasa Social Service Society',
-        ngo_id: 'SAM-91',
-        distribution_host_id: 'Sama Platform',
-    },
-    {
-        name: 'TGMS, Vanchanagiri, Warangal',
-        district: 'Warangal',
-        state: 'Telangana',
-        city: 'Warangal',
-        schoolType: 'Government School',
-        school_type_id: 1,
-        zipcodePostalCode: '506001',
-        partner_name: 'AFE Lab Default',
-        ngo_id: 'SAM-000',
-        distribution_host_id: 'Sama Platform',
-    },
-    {
-        name: 'ZPHS Somdi, Hanamkonda',
-        district: 'Hanamkonda',
-        state: 'Telangana',
-        city: 'Hanamkonda',
-        schoolType: 'Government School',
-        school_type_id: 1,
-        zipcodePostalCode: '506001',
-        partner_name: 'Bala Vikasa Social Service Society',
-        ngo_id: 'SAM-91',
-        distribution_host_id: 'Sama Platform',
-    },
-    {
-        name: 'ZPHS Markazi, Hanamkonda',
-        district: 'Hanamkonda',
-        state: 'Telangana',
-        city: 'Hanamkonda',
-        schoolType: 'Government School',
-        school_type_id: 1,
-        zipcodePostalCode: '506001',
-        partner_name: 'Bala Vikasa Social Service Society',
-        ngo_id: 'SAM-91',
-        distribution_host_id: 'Sama Platform',
-    },
-    {
-        name: 'ZPHS Shayampet, Hanamkonda',
-        district: 'Hanamkonda',
-        state: 'Telangana',
-        city: 'Hanamkonda',
-        schoolType: 'Government School',
-        school_type_id: 1,
-        zipcodePostalCode: '506001',
-        partner_name: 'Bala Vikasa Social Service Society',
-        ngo_id: 'SAM-91',
-        distribution_host_id: 'Sama Platform',
-    },
-    {
-        name: 'ZPHS, Mulugu',
-        district: 'Mulugu',
-        state: 'Telangana',
-        city: 'Mulugu',
-        schoolType: 'Government School',
-        school_type_id: 1,
-        zipcodePostalCode: '506343',
-        partner_name: 'Bala Vikasa Social Service Society',
-        ngo_id: 'SAM-91',
-        distribution_host_id: 'Sama Platform',
-    },
-    {
-        name: 'GGB, Mulugu',
-        district: 'Mulugu',
-        state: 'Telangana',
-        city: 'Mulugu',
-        schoolType: 'Government School',
-        school_type_id: 1,
-        zipcodePostalCode: '506343',
-        partner_name: 'Bala Vikasa Social Service Society',
-        ngo_id: 'SAM-91',
-        distribution_host_id: 'Sama Platform',
-    },
-    {
-        name: 'ZPHS, Tharapally, Warangal',
-        district: 'Warangal',
-        state: 'Telangana',
-        city: 'Warangal',
-        schoolType: 'Government School',
-        school_type_id: 1,
-        zipcodePostalCode: '506001',
-        partner_name: 'Bala Vikasa Social Service Society',
-        ngo_id: 'SAM-91',
-        distribution_host_id: 'Sama Platform',
-    },
-    {
-        name: 'ZPHS Indiranagar, Siddipet',
-        district: 'Siddipet',
-        state: 'Telangana',
-        city: 'Siddipet',
-        schoolType: 'Government School',
-        school_type_id: 1,
-        zipcodePostalCode: '502103',
-        partner_name: 'Bala Vikasa Social Service Society',
-        ngo_id: 'SAM-91',
-        distribution_host_id: 'Sama Platform',
-    },
-    {
-        name: 'GHS Sapthagiri Colony, Karimnagar',
-        district: 'Karimnagar',
-        state: 'Telangana',
-        city: 'Karimnagar',
-        schoolType: 'Government School',
-        school_type_id: 1,
-        zipcodePostalCode: '505001',
-        partner_name: 'Bala Vikasa Social Service Society',
-        ngo_id: 'SAM-91',
-        distribution_host_id: 'Sama Platform',
-    },
-    {
-        name: 'Sarswathi Shishumandir, Karimnagar',
-        district: 'Karimnagar',
-        state: 'Telangana',
-        city: 'Karimnagar',
-        schoolType: 'Private School',
-        school_type_id: 3,
-        zipcodePostalCode: '505001',
-        partner_name: 'Bala Vikasa Social Service Society',
-        ngo_id: 'SAM-91',
-        distribution_host_id: 'Sama Platform',
-    },
-    {
-        name: 'ZPHS, Manthani',
-        district: 'Peddapalli',
-        state: 'Telangana',
-        city: 'Peddapalli',
-        schoolType: 'Government School',
-        school_type_id: 1,
-        zipcodePostalCode: '505184',
-        partner_name: 'Bala Vikasa Social Service Society',
-        ngo_id: 'SAM-91',
-        distribution_host_id: 'Sama Platform',
-    },
-    {
-        name: 'ZPHS, Armur, Manthani',
-        district: 'Peddapalli',
-        state: 'Telangana',
-        city: 'Peddapalli',
-        schoolType: 'Government School',
-        school_type_id: 1,
-        zipcodePostalCode: '505184',
-        partner_name: 'Bala Vikasa Social Service Society',
-        ngo_id: 'SAM-91',
-        distribution_host_id: 'Sama Platform',
-    },
-    {
-        name: 'ZPHS Perkakondaram, Nalgonda',
-        district: 'Nalgonda',
-        state: 'Telangana',
-        city: 'Nalgonda',
-        schoolType: 'Government School',
-        school_type_id: 1,
-        zipcodePostalCode: '508001',
-        partner_name: 'Bala Vikasa Social Service Society',
-        ngo_id: 'SAM-91',
-        distribution_host_id: 'Sama Platform',
-    },
-];
-
-const SCHOOL_TYPE_OPTIONS = [
+export const SCHOOL_TYPE_OPTIONS = [
     { value: 'Government School', label: '1. Government School' },
     { value: 'Government Aided School', label: '2. Government Aided School' },
     { value: 'Private School', label: '3. Private School' },
@@ -238,14 +68,13 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
     const [schools, setSchools] = useState<SchoolItem[]>(PRESET_SCHOOLS);
     const [loadingSchools, setLoadingSchools] = useState(false);
     const [selectedDropdown, setSelectedDropdown] = useState('');
-    const [customSchoolName, setCustomSchoolName] = useState('');
     const [schoolName, setSchoolName] = useState('');
     const [schoolUdise, setSchoolUdise] = useState('');
     const [state, setState] = useState('');
     const [city, setCity] = useState('');
     const [district, setDistrict] = useState('');
     const [districtCode, setDistrictCode] = useState('');
-    const [zipcodePostalCode, setZipcodePostalCode] = useState('110001');
+    const [zipcodePostalCode, setZipcodePostalCode] = useState('');
     const [schoolType, setSchoolType] = useState('Government School');
     const [countryCode, setCountryCode] = useState('IN');
     const [partnerName, setPartnerName] = useState('Sama Digital Platform');
@@ -294,22 +123,40 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [isOpen]);
 
-    // Fetch all schools directly from https://sama-api.thesama.in/api/schools
+    // Fetch schools from live API https://sama-api.thesama.in/api/schools/udise-map
     useEffect(() => {
         if (!isOpen) return;
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 7000);
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
 
         setLoadingSchools(true);
-        fetch('https://sama-api.thesama.in/api/schools', { signal: controller.signal })
-            .then((res) => {
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                return res.json();
-            })
-            .then((data) => {
-                if (data && data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
-                    const fetchedSchools: SchoolItem[] = data.data
+
+        const fetchSchools = async () => {
+            try {
+                let data: any = null;
+                try {
+                    const res = await fetch('https://sama-api.thesama.in/api/schools/udise-map', { signal: controller.signal });
+                    if (res.ok) {
+                        data = await res.json();
+                    }
+                } catch (e) {
+                    console.warn('[SchoolSetupModal] Failed to fetch /api/schools/udise-map, trying /api/schools:', e);
+                }
+
+                if (!data || data.status !== 'success' || !data.data) {
+                    const fallbackRes = await fetch('https://sama-api.thesama.in/api/schools', { signal: controller.signal });
+                    if (fallbackRes.ok) {
+                        data = await fallbackRes.json();
+                    }
+                }
+
+                if (data && data.status === 'success' && data.data) {
+                    const rawList: any[] = Array.isArray(data.data)
+                        ? data.data
+                        : (typeof data.data === 'object' ? Object.values(data.data) : []);
+
+                    const fetchedSchools: SchoolItem[] = rawList
                         .map((item: any) => {
                             // If API is not sending any school_type_id, use 1 (Government School) as default
                             const typeId = item.school_type_id ? Number(item.school_type_id) : 1;
@@ -342,15 +189,16 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                         setSchools(fetchedSchools);
                     }
                 }
-            })
-            .catch((err) => {
+            } catch (err) {
                 console.warn('[SchoolSetupModal] Failed to fetch schools from API, using preset schools fallback:', err);
                 setSchools(PRESET_SCHOOLS);
-            })
-            .finally(() => {
+            } finally {
                 clearTimeout(timeoutId);
                 setLoadingSchools(false);
-            });
+            }
+        };
+
+        fetchSchools();
 
         return () => {
             clearTimeout(timeoutId);
@@ -363,32 +211,38 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
         if (initialData) {
             const rawName = initialData.schoolName || '';
             const matchingSchool = schools.find((s) =>
-                s.name.toLowerCase() === rawName.toLowerCase() ||
-                (initialData.schoolUdise && s.udise && s.udise === initialData.schoolUdise)
+                (initialData.schoolUdise && s.udise && s.udise === initialData.schoolUdise) ||
+                (s.name && rawName && s.name.toLowerCase() === rawName.toLowerCase())
             );
 
             if (matchingSchool) {
-                setSelectedDropdown(matchingSchool.name);
-                setCustomSchoolName('');
+                setSelectedDropdown(matchingSchool.udise || matchingSchool.name);
+                setSchoolName(matchingSchool.name);
+                setSchoolUdise(matchingSchool.udise || initialData.schoolUdise || '');
+                setState(matchingSchool.state || initialData.state || '');
+                setCity(matchingSchool.city || initialData.city || '');
+                setDistrict(matchingSchool.district || initialData.district || '');
+                setDistrictCode(matchingSchool.district_code || initialData.districtCode || '');
+                setZipcodePostalCode(matchingSchool.zipcode || matchingSchool.zipcodePostalCode || initialData.zipcodePostalCode || '110001');
+                const typeId = matchingSchool.school_type_id ? Number(matchingSchool.school_type_id) : 1;
+                setSchoolType(SCHOOL_TYPE_MAP[typeId] || matchingSchool.school_type || initialData.schoolType || 'Government School');
+                setPartnerName(matchingSchool.partner_name || initialData.partnerName || 'Sama Digital Platform');
+                setSelectedNgoKey(matchingSchool.ngo_id || 'SAM-DEFAULT');
+                setDistributionChannelHostId(matchingSchool.distribution_host_id || initialData.distributionChannelHostId || 'Sama Platform');
             } else if (rawName) {
-                setSelectedDropdown('__OTHER__');
-                setCustomSchoolName(rawName);
-            } else {
-                setSelectedDropdown('');
-                setCustomSchoolName('');
+                setSelectedDropdown(rawName);
+                setSchoolName(rawName);
+                setSchoolUdise(initialData.schoolUdise || '');
+                setState(initialData.state || '');
+                setCity(initialData.city || '');
+                setDistrict(initialData.district || '');
+                setDistrictCode(initialData.districtCode || '');
+                setZipcodePostalCode(initialData.zipcodePostalCode || '110001');
+                setSchoolType(initialData.schoolType || 'Government School');
+                setPartnerName(initialData.partnerName || 'Sama Digital Platform');
+                setDistributionChannelHostId(initialData.distributionChannelHostId || 'Sama Platform');
             }
-
-            setSchoolName(rawName);
-            setSchoolUdise(initialData.schoolUdise || '');
-            setState(initialData.state || '');
-            setCity(initialData.city || '');
-            setDistrict(initialData.district || '');
-            setDistrictCode(initialData.districtCode || '');
-            setZipcodePostalCode(initialData.zipcodePostalCode || '110001');
-            setSchoolType(initialData.schoolType || 'Government School');
             setCountryCode(initialData.countryCode || 'IN');
-            setPartnerName(initialData.partnerName || 'Sama Digital Platform');
-            setDistributionChannelHostId(initialData.distributionChannelHostId || 'Sama Platform');
         }
     }, [initialData, schools]);
 
@@ -413,32 +267,19 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
     const handleSchoolSelect = (val: string) => {
         setSelectedDropdown(val);
 
-        if (val === '__OTHER__') {
-            setSchoolName(customSchoolName);
-            return;
-        }
-
         if (val) {
-            const school = schools.find((s) => s.name === val || s.school_id === val);
+            const school = schools.find((s) => (s.udise && s.udise === val) || s.name === val || s.school_id === val);
             if (school) {
                 setSchoolName(school.name);
-                if (school.udise) setSchoolUdise(school.udise);
-                if (school.city) setCity(school.city);
-                if (school.district) setDistrict(school.district);
-                if (school.district_code) setDistrictCode(school.district_code);
-                if (school.state) setState(school.state);
-                if (school.zipcode || school.zipcodePostalCode) {
-                    setZipcodePostalCode(school.zipcode || school.zipcodePostalCode || '110001');
-                }
-                if (school.partner_name) {
-                    setPartnerName(school.partner_name);
-                }
-                if (school.ngo_id) {
-                    setSelectedNgoKey(school.ngo_id);
-                }
-                if (school.distribution_host_id) {
-                    setDistributionChannelHostId(school.distribution_host_id);
-                }
+                setSchoolUdise(school.udise || '');
+                setCity(school.city || '');
+                setDistrict(school.district || '');
+                setDistrictCode(school.district_code || '');
+                setState(school.state || '');
+                setZipcodePostalCode(school.zipcode || school.zipcodePostalCode || '110001');
+                setPartnerName(school.partner_name || 'Sama Digital Platform');
+                setSelectedNgoKey(school.ngo_id || 'SAM-DEFAULT');
+                setDistributionChannelHostId(school.distribution_host_id || 'Sama Platform');
 
                 // If the API is not sending any school_type_id then use 1 (Government School) as default
                 const typeId = school.school_type_id ? Number(school.school_type_id) : 1;
@@ -449,13 +290,17 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
             }
         } else {
             setSchoolName('');
+            setSchoolUdise('');
+            setCity('');
+            setDistrict('');
+            setDistrictCode('');
+            setState('');
+            setZipcodePostalCode('');
+            setPartnerName('Sama Digital Platform');
+            setSelectedNgoKey('SAM-DEFAULT');
+            setDistributionChannelHostId('Sama Platform');
+            setSchoolType('Government School');
         }
-    };
-
-    const handleCustomNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = e.target.value;
-        setCustomSchoolName(val);
-        setSchoolName(val);
     };
 
     // Format school options with name, partner, city, district, and UDISE for live search
@@ -468,17 +313,14 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
         ].filter(Boolean).join(' • ');
 
         return {
-            value: school.name,
+            value: school.udise || school.name,
             label: school.name,
             subLabel: details || undefined,
             badge: school.state || undefined,
         };
     });
 
-    const isSchoolValid = selectedDropdown === '__OTHER__'
-        ? customSchoolName.trim().length > 0
-        : schoolName.trim().length > 0;
-    const isFormValid = isSchoolValid && state.trim().length > 0 && district.trim().length > 0;
+    const isFormValid = schoolName.trim().length > 0 && state.trim().length > 0 && district.trim().length > 0;
 
     const handleSave = async () => {
         if (!isFormValid || saving) return;
@@ -517,7 +359,7 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
             <div className="school-setup-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="school-setup-header">
                     <h2>School Setup</h2>
-                    <p>Select your school details. All information will be populated automatically.</p>
+                    <p>Select your school from the list. All information is populated automatically.</p>
                     {devModeNotice && (
                         <div style={{
                             marginTop: 10,
@@ -553,34 +395,19 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                                 searchPlaceholder="Type school name, city, district, UDISE, or partner..."
                                 loading={loadingSchools}
                                 loadingText="-- Loading schools from API... --"
-                                allowOther={true}
-                                otherLabel="Other (Enter manually)"
-                                otherValue="__OTHER__"
+                                allowOther={false}
                             />
                         </div>
-
-                        {selectedDropdown === '__OTHER__' && (
-                            <div className="school-setup-field">
-                                <label>
-                                    Custom School Name <span className="required">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Enter school name..."
-                                    value={customSchoolName}
-                                    onChange={handleCustomNameChange}
-                                    autoFocus
-                                />
-                            </div>
-                        )}
 
                         <div className="school-setup-field">
                             <label>School UDISE Code</label>
                             <input
                                 type="text"
-                                placeholder="e.g., 09010100101"
+                                placeholder="Populated automatically"
                                 value={schoolUdise}
-                                onChange={(e) => setSchoolUdise(e.target.value)}
+                                readOnly
+                                tabIndex={-1}
+                                className="school-setup-input-readonly"
                             />
                         </div>
 
@@ -588,9 +415,11 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                             <label>Partner Name / NGO <span className="required">*</span></label>
                             <input
                                 type="text"
-                                placeholder="e.g., Sama Digital Platform"
+                                placeholder="Populated automatically"
                                 value={partnerName}
-                                onChange={(e) => setPartnerName(e.target.value)}
+                                readOnly
+                                tabIndex={-1}
+                                className="school-setup-input-readonly"
                             />
                         </div>
 
@@ -601,16 +430,20 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                                     type="text"
                                     placeholder="e.g., IN"
                                     value={countryCode}
-                                    onChange={(e) => setCountryCode(e.target.value)}
+                                    readOnly
+                                    tabIndex={-1}
+                                    className="school-setup-input-readonly"
                                 />
                             </div>
                             <div className="school-setup-field">
                                 <label>Distribution Host ID <span className="required">*</span></label>
                                 <input
                                     type="text"
-                                    placeholder="e.g., Sama Platform"
+                                    placeholder="Populated automatically"
                                     value={distributionChannelHostId}
-                                    onChange={(e) => setDistributionChannelHostId(e.target.value)}
+                                    readOnly
+                                    tabIndex={-1}
+                                    className="school-setup-input-readonly"
                                 />
                             </div>
                         </div>
@@ -621,7 +454,10 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                             </label>
                             <select
                                 value={schoolType}
-                                onChange={(e) => setSchoolType(e.target.value)}
+                                disabled
+                                tabIndex={-1}
+                                aria-disabled="true"
+                                className="school-setup-select-fixed"
                             >
                                 {SCHOOL_TYPE_OPTIONS.map((opt) => (
                                     <option key={opt.value} value={opt.value}>
@@ -638,18 +474,22 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                                 </label>
                                 <input
                                     type="text"
-                                    placeholder="e.g., Telangana"
+                                    placeholder="Populated automatically"
                                     value={state}
-                                    onChange={(e) => setState(e.target.value)}
+                                    readOnly
+                                    tabIndex={-1}
+                                    className="school-setup-input-readonly"
                                 />
                             </div>
                             <div className="school-setup-field">
                                 <label>City</label>
                                 <input
                                     type="text"
-                                    placeholder="e.g., Warangal"
+                                    placeholder="Populated automatically"
                                     value={city}
-                                    onChange={(e) => setCity(e.target.value)}
+                                    readOnly
+                                    tabIndex={-1}
+                                    className="school-setup-input-readonly"
                                 />
                             </div>
                         </div>
@@ -661,18 +501,22 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                                 </label>
                                 <input
                                     type="text"
-                                    placeholder="e.g., Hanamkonda"
+                                    placeholder="Populated automatically"
                                     value={district}
-                                    onChange={(e) => setDistrict(e.target.value)}
+                                    readOnly
+                                    tabIndex={-1}
+                                    className="school-setup-input-readonly"
                                 />
                             </div>
                             <div className="school-setup-field">
                                 <label>District Code</label>
                                 <input
                                     type="text"
-                                    placeholder="e.g., 0712"
+                                    placeholder="Populated automatically"
                                     value={districtCode}
-                                    onChange={(e) => setDistrictCode(e.target.value)}
+                                    readOnly
+                                    tabIndex={-1}
+                                    className="school-setup-input-readonly"
                                 />
                             </div>
                         </div>
@@ -683,9 +527,11 @@ export function SchoolSetupModal({ isOpen, onClose, initialData }: SchoolSetupMo
                             </label>
                             <input
                                 type="text"
-                                placeholder="e.g., 110001"
+                                placeholder="Populated automatically"
                                 value={zipcodePostalCode}
-                                onChange={(e) => setZipcodePostalCode(e.target.value)}
+                                readOnly
+                                tabIndex={-1}
+                                className="school-setup-input-readonly"
                             />
                         </div>
                     </div>

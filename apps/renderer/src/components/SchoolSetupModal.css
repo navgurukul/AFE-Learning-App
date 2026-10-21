@@ -170,6 +170,27 @@
     padding: 8px;
 }
 
+/* Read-only and fixed auto-populated fields */
+.school-setup-field input.school-setup-input-readonly,
+.school-setup-field input[readonly],
+.school-setup-field select.school-setup-select-fixed,
+.school-setup-field select:disabled {
+    background-color: #F8F8F6;
+    color: #4A4A4A;
+    border: 2px solid #C4C4C4;
+    box-shadow: 2px 2px 0 0 #D1D5DB;
+    cursor: not-allowed;
+    pointer-events: none;
+    user-select: none;
+}
+
+.school-setup-field input.school-setup-input-readonly:focus,
+.school-setup-field select.school-setup-select-fixed:focus {
+    transform: none;
+    box-shadow: 2px 2px 0 0 #D1D5DB;
+    border-color: #C4C4C4;
+}
+
 .school-setup-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
