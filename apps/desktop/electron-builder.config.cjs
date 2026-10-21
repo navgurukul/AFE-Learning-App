@@ -1,6 +1,7 @@
 module.exports = {
     appId: 'com.navgurukul.AFE',
     productName: 'Amazon Future Engineer',
+    electronVersion: '28.1.3',
     copyright: 'Copyright © 2026',
 
     // Directories
